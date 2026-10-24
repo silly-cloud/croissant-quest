@@ -7,7 +7,8 @@ import {
 } from "@cq/shared";
 import { clipGave } from "./engine";
 
-export const COACH_TIMEOUT_MS = 30_000;
+/** Longer than either server deadline (25 s API, 90 s local Claude CLI), so the server's own fallback arrives first. */
+export const COACH_TIMEOUT_MS = 100_000;
 
 type Fetch = typeof fetch;
 

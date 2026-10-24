@@ -182,11 +182,16 @@ export class ClaudeCliCoachClient implements CoachClient {
     const env = childEnv(this.opts.env ?? process.env, {
       CLAUDE_CODE_MAX_OUTPUT_TOKENS: String(req.maxTokens),
     });
+    const t0 = Date.now();
     const r = await this.run(
       cliArgs(this.opts.model ?? coachConfig.model),
       req.prompt,
       env,
       signal
+    );
+    // timing and token counts only, never the text
+    this.log.log(
+      `claude -p exit ${String(r.code)} in ${Date.now() - t0} ms${usageOf(r.stdout)}`
     );
     if (r.overflow) throw new CoachClientError("invalid", false);
     return parseCliResult(r.code, r.stdout, r.stderr);
@@ -354,5 +359,24 @@ function killGroup(pid: number, sig: NodeJS.Signals): void {
     process.kill(-pid, sig);
   } catch {
     // already gone
+  }
+}
+
+/** ", 812 output tokens (0 thinking), CLI 14200 ms" from the result's usage, or "" if absent. */
+export function usageOf(stdout: string): string {
+  try {
+    const j = JSON.parse(stdout) as {
+      duration_ms?: unknown;
+      usage?: {
+        output_tokens?: unknown;
+        output_tokens_details?: { thinking_tokens?: unknown };
+      };
+    };
+    const out = j.usage?.output_tokens;
+    const think = j.usage?.output_tokens_details?.thinking_tokens;
+    if (typeof out !== "number") return "";
+    return `, ${out} output tokens (${typeof think === "number" ? think : "?"} thinking), CLI ${String(j.duration_ms ?? "?")} ms`;
+  } catch {
+    return "";
   }
 }

@@ -37,7 +37,8 @@ provider is unchanged.
 
 ## Consequences
 
-- Each call starts the CLI (1-3 s). The 25 s deadline in `coach.config.ts` still applies.
+- Each call starts the CLI (1-3 s). A real 8-question round timed out at the API's 25 s, so the CLI has its own
+  deadline (`cliTimeoutMs`, 90 s) and the web waits 100 s. Each run logs duration and token counts, never text.
 - The flags were checked against `claude --help` on v2.1.310. If a future CLI renames one, the run exits
   with a non-JSON error and the coach answers `error`. Nothing falls back to another provider.
 - Policy: `claude -p` is documented for scripts, and Anthropic does not stop an end user signing in to the

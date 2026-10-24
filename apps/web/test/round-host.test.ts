@@ -68,12 +68,12 @@ describe("Fresh questions / Drill", () => {
     );
   });
 
-  it("is disabled (busy) while waiting, and gives up after 30 s", async () => {
+  it("is disabled (busy) while waiting, and gives up after 100 s (past both server deadlines)", async () => {
     const { host } = setup("hang");
     const p = host.fresh();
     await vi.advanceTimersByTimeAsync(0);
     expect(host.getSnapshot().busy).toBe(true);
-    await vi.advanceTimersByTimeAsync(29_999);
+    await vi.advanceTimersByTimeAsync(99_999);
     expect(host.getSnapshot().busy).toBe(true);
     await vi.advanceTimersByTimeAsync(1);
     expect(await p).toBe("weak");

@@ -86,6 +86,7 @@ export class CoachService {
   private async call(req: CoachRequest): Promise<Called> {
     const client = this.client!;
     const ctrl = new AbortController();
+    const t0 = Date.now();
     const timer = setTimeout(() => ctrl.abort(), this.cfg.timeoutMs);
     try {
       for (let attempt = 0; ; attempt++) {
@@ -95,7 +96,12 @@ export class CoachService {
             text: await client.complete(req, { signal: ctrl.signal }),
           };
         } catch (e) {
-          if (ctrl.signal.aborted) return { ok: false, reason: "timeout" };
+          if (ctrl.signal.aborted) {
+            this.log.warn(
+              `coach call timed out after ${Date.now() - t0} ms (deadline ${this.cfg.timeoutMs} ms)`
+            );
+            return { ok: false, reason: "timeout" };
+          }
           if (e instanceof CoachClientError) {
             // already classified (Claude CLI): signed out, plan limit or bad output are never retried
             this.log.warn(

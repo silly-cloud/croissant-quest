@@ -51,9 +51,9 @@ code=$(curl -sS -o /dev/null -w '%{http_code}' -H 'host: attacker.example' "$API
 pass "a request with a foreign Host header is refused (403)"
 
 # 4. a real coach round: Claude must write it (no local-round fallback)
-echo "asking Claude for 8 questions through the app (can take 10-25 s)..."
+echo "asking Claude for 8 questions through the app (can take up to 90 s)..."
 t0=$(date +%s)
-body=$(curl -sS --max-time 40 -b "$jar" -H 'content-type: application/json' -H "origin: $WEB" \
+body=$(curl -sS --max-time 120 -b "$jar" -H 'content-type: application/json' -H "origin: $WEB" \
   -X POST "$WEB/v1/coach/round" -d '{"n":8,"focus":["m","f","neg"]}' || true)
 t1=$(date +%s)
 printf '%s' "$body" | node -e '

@@ -76,15 +76,15 @@ round and fails unless Claude wrote it (`fallback: false`). It ends with `ALL PA
 
 ## Troubleshooting
 
-| You see                                                                              | Meaning                                                                  | Do                                                                               |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| "Claude Code is signed out on this computer…" in the app, or `reason=login_required` | the CLI is not signed in, or its login expired                           | run `claude`, type `/login`; no restart needed                                   |
-| "Your Claude plan's usage limit is reached…", or `reason=rate_limited`               | your plan's own limit (e.g. the session or weekly limit)                 | wait; `claude` shows when it resets. The app does not retry                      |
-| API exits: `ANTHROPIC_API_KEY: must be unset…`                                       | a key is set in the shell or `apps/api/.env`                             | remove it; this provider never uses a key                                        |
-| API exits: `Claude Code CLI uses "api_key"…`                                         | the CLI itself is set to an API key, helper or provider                  | `claude auth logout`, then `claude` and `/login` with your claude.ai account     |
-| API exits: `Claude Code CLI not found`                                               | `claude` is not on the API's PATH                                        | install it, or set `CLAUDE_CLI_PATH=/absolute/path/to/claude` in `apps/api/.env` |
-| `reason=timeout`                                                                     | no answer within the coach deadline (25 s, `coach.config.ts`)            | try again; if it keeps happening, send the smoke-test output                     |
-| `reason=error`                                                                       | anything else (the API terminal logs the category, never the CLI's text) | send the API terminal lines                                                      |
+| You see                                                                              | Meaning                                                                     | Do                                                                                            |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| "Claude Code is signed out on this computer…" in the app, or `reason=login_required` | the CLI is not signed in, or its login expired                              | run `claude`, type `/login`; no restart needed                                                |
+| "Your Claude plan's usage limit is reached…", or `reason=rate_limited`               | your plan's own limit (e.g. the session or weekly limit)                    | wait; `claude` shows when it resets. The app does not retry                                   |
+| API exits: `ANTHROPIC_API_KEY: must be unset…`                                       | a key is set in the shell or `apps/api/.env`                                | remove it; this provider never uses a key                                                     |
+| API exits: `Claude Code CLI uses "api_key"…`                                         | the CLI itself is set to an API key, helper or provider                     | `claude auth logout`, then `claude` and `/login` with your claude.ai account                  |
+| API exits: `Claude Code CLI not found`                                               | `claude` is not on the API's PATH                                           | install it, or set `CLAUDE_CLI_PATH=/absolute/path/to/claude` in `apps/api/.env`              |
+| `reason=timeout`                                                                     | no answer within the CLI deadline (`cliTimeoutMs`, 90 s, `coach.config.ts`) | send the API log lines `claude -p exit … in … ms, N output tokens` and `timed out after … ms` |
+| `reason=error`                                                                       | anything else (the API terminal logs the category, never the CLI's text)    | send the API terminal lines                                                                   |
 
 ## Limits and what is not promised
 

@@ -17,9 +17,11 @@ import {
   childEnv,
   cliArgs,
   parseCliResult,
+  usageOf,
 } from "../../src/modules/coach/coach.cli-client.js";
 import {
   coachConfig,
+  coachConfigFor,
   type CoachConfig,
 } from "../../src/modules/coach/coach.config.js";
 import { CoachService } from "../../src/modules/coach/coach.service.js";
@@ -541,5 +543,25 @@ describe("parseCliResult", () => {
         ""
       )
     ).toContain("rate limit");
+  });
+});
+
+describe("deadlines and timing log", () => {
+  it("the CLI provider gets its own 90 s deadline; the API provider keeps 25 s", () => {
+    expect(coachConfigFor("anthropic").timeoutMs).toBe(25_000);
+    expect(coachConfigFor("claude-cli").timeoutMs).toBe(90_000);
+    expect(coachConfigFor("claude-cli").model).toBe(coachConfig.model);
+  });
+  it("usageOf reports counts only, never the text", () => {
+    const out = result({
+      result: "SECRET TEXT",
+      duration_ms: 14200,
+      usage: {
+        output_tokens: 812,
+        output_tokens_details: { thinking_tokens: 0 },
+      },
+    });
+    expect(usageOf(out)).toBe(", 812 output tokens (0 thinking), CLI 14200 ms");
+    expect(usageOf("garbage")).toBe("");
   });
 });
