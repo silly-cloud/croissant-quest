@@ -12,7 +12,7 @@
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "test:unit": "pnpm --filter \"./packages/*\" test"
   },
   "devDependencies": {
