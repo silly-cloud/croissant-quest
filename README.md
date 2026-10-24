@@ -12,15 +12,12 @@ The game was written as a Claude artifact and expects two runtime capabilities: 
 (AI question generation and coaching). Without them it falls back to `localStorage` and the built-in question bank.
 Open the file in a browser, or publish it as an artifact with `db` and `sample` enabled.
 
-## Known issues (found by audit, not yet fixed)
+## Known issues
 
-This is v18. An audit found problems you should know about before relying on it for learning:
-
-- Some rule texts teach incorrect French (the negation rule is too broad: `le/la/les` do not become `de`;
-  "consonant before -re means masculine" is false; `jouer du piano` is not a partitive).
-- Pronunciation makes a liaison through an aspirate h (`les haricots`).
-- Save-state races between devices/tabs, and Quit does not cancel a running round.
-- Dark-theme contrast and keyboard navigation need work.
+This is v18 plus the first audit fixes (findings 1-10 of the audit, except 7's full mute-h word list and 10's
+build-tile variants). Still open from the audit: Claude output is not checked against the bank (so "new" can be a
+copy), accessibility (focus management, sheet as a dialog, live regions, tap-target size), the long results
+screen, light-theme contrast, unescaped db values at a few `innerHTML` sinks, and the smaller hygiene items.
 
 Issues and pull requests are welcome.
 
