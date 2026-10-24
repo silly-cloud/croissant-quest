@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { burst, burstPoint, buzz, floatXP, rain, Sfx, trackPointer } from "./fx";
-import { GameStore, SERVER_SNAPSHOT, type GameSnapshot } from "./game-store";
+import { GameStore, LS_KEY, SERVER_SNAPSHOT, type GameSnapshot } from "./game-store";
 import { HOST_SERVER, RoundHost, type HostSnapshot } from "./round-host";
 import { SETTINGS_SERVER, SettingsStore, type SettingsSnapshot } from "./settings";
 
@@ -52,13 +52,18 @@ export function GameProvider({ children, game }: { children: ReactNode; game?: G
   const [g] = useState<Game>(() => game ?? createGame());
   useEffect(() => {
     const off = trackPointer();
-    const resync = () => void g.store.sync();
+    const resync = () => void g.store.resume();
     addEventListener("online", resync);
+    const fromOtherTab = (e: StorageEvent) => {
+      if (e.key === LS_KEY) g.store.absorbStored();
+    };
+    addEventListener("storage", fromOtherTab);
     void g.store.loadBank();
     void g.store.sync();
     return () => {
       off();
       removeEventListener("online", resync);
+      removeEventListener("storage", fromOtherTab);
     };
   }, [g]);
   return <Ctx.Provider value={g}>{children}</Ctx.Provider>;

@@ -7,6 +7,7 @@ import { TAG, TAGNAME } from "@cq/content";
 import { weakTag } from "@cq/shared";
 import type { RoundMode } from "@/lib/engine";
 import { useGame, useGameSnapshot, useHostSnapshot } from "@/lib/game-context";
+import { EMPTY_NOTE } from "@/lib/round-host";
 import { Rich } from "@/lib/rich";
 import { RoundView } from "./RoundView";
 import { Sheet } from "./Sheet";
@@ -24,7 +25,19 @@ export function RoundScreen({ topic, mode }: { topic: number; mode: RoundMode })
   const hs = useHostSnapshot();
   const [stage, setStage] = useState<Stage>("init");
 
+  // start a local round; a topic-6 round with repeats may wait for the coach first
+  const startLocal = useCallback(
+    (m: "normal" | "weak", alive: () => boolean = () => true) => {
+      setStage("loading");
+      void host.startRound(topic, m).then((e) => {
+        if (alive()) setStage(e ? "playing" : "empty");
+      });
+    },
+    [host, topic],
+  );
+
   useEffect(() => {
+    let alive = true;
     const live = host.adopt(topic, mode);
     if (live) {
       setStage("playing");
@@ -33,16 +46,21 @@ export function RoundScreen({ topic, mode }: { topic: number; mode: RoundMode })
     } else if (mode === "ai") {
       setStage("loading");
       void host.fresh().then((r) => {
+        if (!alive) return; // the learner left while Claude was writing
         if (r === "ai" || r === "weak") {
           setStage("playing");
           if (r === "weak") router.replace("/round/6?mode=weak");
         } else if (r === "empty") setStage("empty");
       });
     } else {
-      setStage(host.startLocal(topic, mode === "weak" ? "weak" : "normal") ? "playing" : "empty");
+      startLocal(mode === "weak" ? "weak" : "normal", () => alive);
     }
-    return () => host.release();
-  }, [host, store, router, topic, mode]);
+    return () => {
+      alive = false;
+      host.cancelFresh(); // a coach answer for a page that is gone must change nothing
+      host.release();
+    };
+  }, [host, store, router, topic, mode, startLocal]);
 
   const quit = useCallback(() => {
     host.quit();
@@ -77,7 +95,7 @@ export function RoundScreen({ topic, mode }: { topic: number; mode: RoundMode })
                 type="button"
                 className="go"
                 data-autofocus
-                onClick={() => setStage(host.startLocal(topic, "normal") ? "playing" : "empty")}
+                onClick={() => startLocal("normal")}
               >
                 Allez ! Chasse au boss
               </button>
@@ -91,7 +109,7 @@ export function RoundScreen({ topic, mode }: { topic: number; mode: RoundMode })
   if (stage === "playing" && hs.engine) {
     return (
       <>
-        {hs.note && hs.engine.mode === "weak" && (
+        {hs.note && (
           <p className="syncbanner" role="status">
             {hs.note}
           </p>
@@ -111,13 +129,13 @@ export function RoundScreen({ topic, mode }: { topic: number; mode: RoundMode })
       <div className="card" role="status">
         {stage === "empty" ? (
           <>
-            <p>{hs.note ?? "You've used every question 3 times. Come back after a break."}</p>
+            <p>{hs.note ?? EMPTY_NOTE}</p>
             <Link href="/" className="go alt">
               Back to the map
             </Link>
           </>
         ) : stage === "loading" ? (
-          <p>Claude is writing 8 questions…</p>
+          <p>{hs.busy && hs.note ? hs.note : mode === "ai" ? "Claude is writing 8 questions…" : "Getting your round ready…"}</p>
         ) : (
           <p>Getting your round ready…</p>
         )}

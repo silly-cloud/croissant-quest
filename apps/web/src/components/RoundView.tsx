@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type RefObject } from "react";
 import { qid } from "@cq/content";
-import { xpFor } from "@cq/shared";
+import { SEEN_CAP, xpFor } from "@cq/shared";
 import { AUTO_MS, HEARTS, type AnswerRow, type RoundEngine } from "@/lib/engine";
 import { useSettings } from "@/lib/game-context";
 import { PronRows } from "./PronRows";
@@ -100,6 +100,11 @@ function QuestionPanel({ engine }: { engine: RoundEngine }) {
       <h2 className="qkind" tabIndex={-1} ref={head}>
         {KIND_LABEL[q.k]}
       </h2>
+      {engine.isRepeat(q) && (
+        <p className="repeat">
+          <span aria-hidden="true">↻ </span>Repeat: you have seen this one {SEEN_CAP} times
+        </p>
+      )}
       <QuestionBody
         q={q}
         view={view}

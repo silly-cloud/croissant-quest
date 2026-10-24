@@ -21,7 +21,17 @@ function FontLoader() {
   return null;
 }
 
-function Stat({ cls, icon, value, label }: { cls: string; icon: string; value: number; label: string }) {
+function Stat({
+  cls,
+  icon,
+  value,
+  label,
+}: {
+  cls: string;
+  icon: string;
+  value: number;
+  label: string;
+}) {
   const [bump, setBump] = useState(false);
   const first = useRef(true);
   useEffect(() => {
@@ -52,35 +62,50 @@ export function Hud() {
       <Stat cls="s-xp" icon="⭐" value={state.xp} label="XP" />
       <Stat cls="s-cr" icon="🥐" value={state.cro} label="croissants" />
       <div className="sp" />
-      <button
-        type="button"
-        className="ghost"
-        aria-label={s.pace === "study" ? "Pace: study. Switch to fast" : "Pace: fast. Switch to study"}
-        title={s.pace === "study" ? "Study pace: read the pronunciation, then tap Continue" : "Fast pace: moves on by itself"}
-        onClick={() => {
-          settings.setPace(s.pace === "study" ? "fast" : "study");
-          sfx.tap();
-        }}
-      >
-        <span aria-hidden="true">{s.pace === "study" ? "📖" : "🐇"}</span>
-      </button>
-      <button
-        type="button"
-        className="ghost"
-        aria-label={s.muted ? "Sound off. Turn on" : "Sound on. Turn off"}
-        onClick={() => {
-          settings.setMuted(!s.muted);
-          if (s.muted) sfx.tap();
-        }}
-      >
-        <span aria-hidden="true">{s.muted ? "🔇" : "🔊"}</span>
-      </button>
-      <button type="button" className="ghost" aria-label="Switch light or dark theme" onClick={() => settings.toggleTheme()}>
-        <span aria-hidden="true">◐</span>
-      </button>
-      <Link href="/settings" className="ghost" aria-label="Settings">
-        <span aria-hidden="true">⚙</span>
-      </Link>
+      <div className="tools">
+        <button
+          type="button"
+          className="ghost"
+          aria-label={
+            s.pace === "study"
+              ? "Pace: study. Switch to fast"
+              : "Pace: fast. Switch to study"
+          }
+          title={
+            s.pace === "study"
+              ? "Study pace: read the pronunciation, then tap Continue"
+              : "Fast pace: moves on by itself"
+          }
+          onClick={() => {
+            settings.setPace(s.pace === "study" ? "fast" : "study");
+            sfx.tap();
+          }}
+        >
+          <span aria-hidden="true">{s.pace === "study" ? "📖" : "🐇"}</span>
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          aria-label={s.muted ? "Sound off. Turn on" : "Sound on. Turn off"}
+          onClick={() => {
+            settings.setMuted(!s.muted);
+            if (s.muted) sfx.tap();
+          }}
+        >
+          <span aria-hidden="true">{s.muted ? "🔇" : "🔊"}</span>
+        </button>
+        <button
+          type="button"
+          className="ghost"
+          aria-label="Switch light or dark theme"
+          onClick={() => settings.toggleTheme()}
+        >
+          <span aria-hidden="true">◐</span>
+        </button>
+        <Link href="/settings" className="ghost" aria-label="Settings">
+          <span aria-hidden="true">⚙</span>
+        </Link>
+      </div>
     </header>
   );
 }
@@ -91,7 +116,10 @@ export function SyncBanner() {
   return (
     <div role="status" aria-live="polite">
       {sync === "error" && (
-        <p className="syncbanner">⚠ Not synced to the cloud. Your progress is safe on this device and will sync when the connection is back.</p>
+        <p className="syncbanner">
+          ⚠ Not synced to the cloud. Your progress is safe on this device and
+          will sync when the connection is back.
+        </p>
       )}
     </div>
   );

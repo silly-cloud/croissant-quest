@@ -10,11 +10,12 @@ const executablePath = process.env.PW_CHROMIUM ?? (fs.existsSync(preinstalled) ?
 export default defineConfig({
   testDir: "e2e",
   testMatch: /.*\.spec\.ts/,
+  testIgnore: /real\//, // real-API only: playwright.real.config.ts
   timeout: 60_000,
   expect: { timeout: 8_000 },
   fullyParallel: false,
   workers: 1, // one fake API, shared state
-  reporter: [["list"]],
+  reporter: [["list"], ["json", { outputFile: "test-results-fake.json" }]],
   use: {
     baseURL: `http://127.0.0.1:${WEB}`,
     launchOptions: executablePath ? { executablePath } : {},

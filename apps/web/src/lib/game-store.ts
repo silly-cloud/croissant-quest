@@ -27,6 +27,29 @@ export interface GameStoreDeps {
 }
 
 const MAX_PUT_TRIES = 5;
+/** After a failed sync, wait this long before the next try; doubles per failure up to RETRY_MAX_MS. */
+export const RETRY_BASE_MS = 2_000;
+export const RETRY_MAX_MS = 5 * 60_000;
+
+class SyncError extends Error {
+  constructor(
+    readonly status: number,
+    /** ms the server asked us to wait (429/503 Retry-After) */
+    readonly retryAfterMs: number | null,
+  ) {
+    super("progress sync " + status);
+  }
+}
+
+const retryAfter = (res: Response): number | null => {
+  if (res.status !== 429 && res.status !== 503) return null;
+  const v = res.headers.get("retry-after");
+  if (!v) return null;
+  const secs = Number(v);
+  if (Number.isFinite(secs)) return Math.max(0, secs) * 1000;
+  const at = Date.parse(v);
+  return Number.isFinite(at) ? Math.max(0, at - Date.now()) : null;
+};
 
 export const SERVER_SNAPSHOT: GameSnapshot = {
   state: emptyState(),
@@ -50,6 +73,8 @@ export class GameStore {
   private readonly now: () => number;
   private readonly timeoutMs: number;
   private known: Set<string>;
+  private failures = 0;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(deps: GameStoreDeps = {}) {
     this.fetchFn = deps.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
@@ -89,11 +114,33 @@ export class GameStore {
     return emptyState();
   }
 
-  private persist(s: State) {
+  /**
+   * Write to this device, merged with whatever is stored now: another tab may have written since we
+   * read it (AUD-09), and a plain overwrite would drop its progress. Returns what was written.
+   */
+  private persist(s: State): State {
+    let out = s;
     try {
-      this.storage?.setItem(LS_KEY, JSON.stringify(s));
+      const raw = this.storage?.getItem(LS_KEY);
+      if (raw) out = mergeStates(normState(JSON.parse(raw), this.known), s);
+    } catch {
+      /* a broken stored copy: ours replaces it */
+    }
+    try {
+      this.storage?.setItem(LS_KEY, JSON.stringify(out));
     } catch {
       /* storage full or blocked: the in-memory copy still plays */
+    }
+    return out;
+  }
+
+  /** Another tab wrote this device's copy (the `storage` event): take its progress in. Writes nothing, so tabs never ping-pong. */
+  absorbStored() {
+    try {
+      const raw = this.storage?.getItem(LS_KEY);
+      if (raw) this.set({ state: mergeStates(this.snap.state, normState(JSON.parse(raw), this.known)) });
+    } catch {
+      /* unreadable: keep ours */
     }
   }
 
@@ -107,17 +154,17 @@ export class GameStore {
     fn(draft);
     draft.ts = Math.max(this.now(), draft.ts + 1);
     if (draft.log.length > 500) draft.log = draft.log.slice(-500);
-    this.persist(draft);
-    this.set({ state: draft });
-    void this.sync();
-    return draft;
+    const saved = this.persist(draft);
+    this.set({ state: saved });
+    // after a failure, the one retry timer sends the latest copy: no new request per answer (E-web-4)
+    if (!this.retryTimer) void this.sync();
+    return saved;
   }
 
   /** Merge a copy from elsewhere (API, another tab) into ours. Counters only grow, so this never loses progress. */
   private absorb(remote: unknown) {
     const merged = mergeStates(this.snap.state, normState(remote, this.known));
-    this.persist(merged);
-    this.set({ state: merged });
+    this.set({ state: this.persist(merged) });
   }
 
   /* ---------- API ---------- */
@@ -169,11 +216,35 @@ export class GameStore {
       this.running = null;
       if (this.again) {
         this.again = false;
-        void this.sync();
+        // a failed run already scheduled the retry that will send this change
+        if (!this.retryTimer) void this.sync();
       }
     });
     this.running = run;
     return run;
+  }
+
+  /** Try now instead of waiting for the retry timer (the browser came back online). */
+  resume(): Promise<void> {
+    this.clearRetry();
+    return this.sync();
+  }
+
+  private clearRetry() {
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = null;
+  }
+
+  /** One timer at a time; the wait doubles per failure, and a server's Retry-After is honoured. */
+  private scheduleRetry(serverWaitMs: number | null) {
+    this.clearRetry();
+    this.failures++;
+    const backoff = Math.min(RETRY_MAX_MS, RETRY_BASE_MS * 2 ** (this.failures - 1));
+    const wait = Math.min(RETRY_MAX_MS, Math.max(backoff, serverWaitMs ?? 0));
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
+      void this.sync();
+    }, wait);
   }
 
   /** Resolves when no sync is running and none is queued (tests, and "leave the page" flows). */
@@ -187,7 +258,7 @@ export class GameStore {
       for (let attempt = 0; attempt < MAX_PUT_TRIES; attempt++) {
         if (this.version === null) {
           const res = await this.call("/progress", { headers: { accept: "application/json" } });
-          if (!res.ok) throw new Error("GET /progress " + res.status);
+          if (!res.ok) throw new SyncError(res.status, retryAfter(res));
           const body = ProgressResponse.parse(await res.json());
           this.version = body.version;
           this.absorb(body.state);
@@ -204,17 +275,20 @@ export class GameStore {
           this.absorb(body.state);
           continue;
         }
-        if (!res.ok) throw new Error("PUT /progress " + res.status);
+        if (!res.ok) throw new SyncError(res.status, retryAfter(res));
         const body = ProgressResponse.parse(await res.json());
         this.version = body.version;
         this.absorb(body.state);
+        this.failures = 0;
+        this.clearRetry();
         this.set({ sync: "ok" });
         return;
       }
       throw new Error("progress kept conflicting");
-    } catch {
+    } catch (e) {
       this.version = null; // next time start from a fresh read
       this.set({ sync: "error" });
+      this.scheduleRetry(e instanceof SyncError ? e.retryAfterMs : null);
     }
   }
 }
