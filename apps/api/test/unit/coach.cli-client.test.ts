@@ -561,7 +561,49 @@ describe("deadlines and timing log", () => {
         output_tokens_details: { thinking_tokens: 0 },
       },
     });
-    expect(usageOf(out)).toBe(", 812 output tokens (0 thinking), CLI 14200 ms");
-    expect(usageOf("garbage")).toBe("");
+    expect(usageOf(out)).toBe(
+      ", model unknown, 812 output tokens (0 thinking), CLI 14200 ms"
+    );
+    expect(usageOf(out)).not.toContain("SECRET");
+    expect(usageOf("garbage")).toBe(", model unknown");
+  });
+
+  it("usageOf logs the model the CLI reports in modelUsage, not the configured one", () => {
+    const u = {
+      output_tokens: 900,
+      output_tokens_details: { thinking_tokens: 12 },
+    };
+    const one = result({
+      duration_ms: 27000,
+      usage: u,
+      modelUsage: { "claude-sonnet-5-5": { outputTokens: 900 } },
+    });
+    expect(usageOf(one)).toBe(
+      ", model claude-sonnet-5-5, 900 output tokens (12 thinking), CLI 27000 ms"
+    );
+    const other = result({ usage: u, modelUsage: { "claude-haiku-5-5": {} } });
+    expect(usageOf(other)).toContain("model claude-haiku-5-5,"); // whatever actually ran, even if not configured
+    const two = result({
+      modelUsage: { "claude-sonnet-5-5": {}, "claude-haiku-5-5": {} },
+    });
+    expect(usageOf(two)).toBe(", model claude-sonnet-5-5+claude-haiku-5-5");
+  });
+
+  it("usageOf: missing or unexpected modelUsage gives model unknown", () => {
+    for (const modelUsage of [
+      undefined,
+      null,
+      {},
+      [],
+      "claude-sonnet-5-5",
+      42,
+      { "bad name\ninjected": {} },
+    ]) {
+      expect(usageOf(result({ modelUsage })), JSON.stringify(modelUsage)).toBe(
+        ", model unknown"
+      );
+    }
+    expect(usageOf("null")).toBe(", model unknown");
+    expect(usageOf("")).toBe(", model unknown");
   });
 });

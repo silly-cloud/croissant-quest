@@ -362,21 +362,34 @@ function killGroup(pid: number, sig: NodeJS.Signals): void {
   }
 }
 
-/** ", 812 output tokens (0 thinking), CLI 14200 ms" from the result's usage, or "" if absent. */
+/**
+ * ", model claude-sonnet-5-5, 812 output tokens (0 thinking), CLI 14200 ms": the model the CLI reports in
+ * `modelUsage` (not the one we asked for), or "unknown", plus token counts when present. Never any text.
+ */
 export function usageOf(stdout: string): string {
-  try {
-    const j = JSON.parse(stdout) as {
-      duration_ms?: unknown;
-      usage?: {
-        output_tokens?: unknown;
-        output_tokens_details?: { thinking_tokens?: unknown };
-      };
+  let j: {
+    duration_ms?: unknown;
+    modelUsage?: unknown;
+    usage?: {
+      output_tokens?: unknown;
+      output_tokens_details?: { thinking_tokens?: unknown };
     };
-    const out = j.usage?.output_tokens;
-    const think = j.usage?.output_tokens_details?.thinking_tokens;
-    if (typeof out !== "number") return "";
-    return `, ${out} output tokens (${typeof think === "number" ? think : "?"} thinking), CLI ${String(j.duration_ms ?? "?")} ms`;
+  };
+  try {
+    j = JSON.parse(stdout) as typeof j;
   } catch {
-    return "";
+    return ", model unknown";
   }
+  if (!j || typeof j !== "object") return ", model unknown";
+  const mu = j.modelUsage;
+  // model names only: anything that doesn't look like a model id is not logged
+  const names =
+    mu && typeof mu === "object" && !Array.isArray(mu)
+      ? Object.keys(mu).filter((k) => /^[A-Za-z0-9][\w.:@/[\]-]{0,99}$/.test(k))
+      : [];
+  const model = `, model ${names.length ? names.join("+") : "unknown"}`;
+  const out = j.usage?.output_tokens;
+  const think = j.usage?.output_tokens_details?.thinking_tokens;
+  if (typeof out !== "number") return model;
+  return `${model}, ${out} output tokens (${typeof think === "number" ? think : "?"} thinking), CLI ${String(j.duration_ms ?? "?")} ms`;
 }
