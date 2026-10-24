@@ -3,6 +3,7 @@ import { ENV } from "../../common/tokens.js";
 import type { Env } from "../../env.js";
 import { ProgressModule } from "../progress/progress.module.js";
 import { createCoachClient } from "./coach.client.js";
+import { ClaudeCliCoachClient } from "./coach.cli-client.js";
 import { coachConfig } from "./coach.config.js";
 import { CoachController } from "./coach.controller.js";
 import { CoachService } from "./coach.service.js";
@@ -14,7 +15,15 @@ import { CoachRateLimitGuard } from "./rate-limit.guard.js";
   controllers: [CoachController],
   providers: [
     { provide: COACH_CONFIG, useValue: coachConfig },
-    { provide: COACH_CLIENT, inject: [ENV], useFactory: (env: Env) => createCoachClient(env.ANTHROPIC_API_KEY) },
+    {
+      provide: COACH_CLIENT,
+      inject: [ENV],
+      // the provider is chosen explicitly; there is no fallback from one to the other (ADR 0011)
+      useFactory: (env: Env) =>
+        env.COACH_PROVIDER === "claude-cli"
+          ? new ClaudeCliCoachClient({ bin: env.CLAUDE_CLI_PATH })
+          : createCoachClient(env.ANTHROPIC_API_KEY),
+    },
     CoachService,
     CoachRateLimitGuard,
   ],

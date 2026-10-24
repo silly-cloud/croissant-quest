@@ -13,7 +13,14 @@ export class FakeApi {
   /** only GET /progress creates the device cookie; PUT without it is 401 */
   cookie = false;
   coach: CoachMode = "fallback";
-  calls: { method: string; path: string; ifMatch?: string | null; body?: unknown }[] = [];
+  /** the reason a "fallback" coach answers with */
+  fallbackReason = "no_key";
+  calls: {
+    method: string;
+    path: string;
+    ifMatch?: string | null;
+    body?: unknown;
+  }[] = [];
   /** run once, right before the next PUT is judged (to simulate another tab saving first) */
   beforePut: (() => void) | null = null;
 
@@ -23,7 +30,10 @@ export class FakeApi {
     this.version++;
   }
 
-  fetch = async (input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> => {
+  fetch = async (
+    input: RequestInfo | URL,
+    init: RequestInit = {}
+  ): Promise<Response> => {
     const path = String(input).replace(/^https?:\/\/[^/]+/, "");
     const method = (init.method ?? "GET").toUpperCase();
     const headers = new Headers(init.headers);
@@ -31,23 +41,32 @@ export class FakeApi {
     this.calls.push({ method, path, ifMatch: headers.get("if-match"), body });
     if (this.down) throw new TypeError("network down");
     const json = (status: number, data: unknown) =>
-      new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
+      new Response(JSON.stringify(data), {
+        status,
+        headers: { "content-type": "application/json" },
+      });
 
     if (path === "/v1/health") return json(200, { ok: true, db: true });
     if (path === "/v1/questions") return json(200, BANK);
-    if (path === "/v1/progress" && method === "GET" && (this.cookie = true)) return json(200, { state: this.state, version: this.version });
+    if (path === "/v1/progress" && method === "GET" && (this.cookie = true))
+      return json(200, { state: this.state, version: this.version });
     if (path === "/v1/progress" && method === "PUT") {
       if (!this.cookie) return json(401, { error: "no_device" });
       this.beforePut?.();
       this.beforePut = null;
-      if (headers.get("if-match") !== String(this.version)) return json(409, { state: this.state, version: this.version });
+      if (headers.get("if-match") !== String(this.version))
+        return json(409, { state: this.state, version: this.version });
       this.state = body.state;
       this.version++;
       return json(200, { state: this.state, version: this.version });
     }
     if (path === "/v1/coach/round") {
       if (this.coach === "hang")
-        return new Promise<Response>((_, reject) => init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
+        return new Promise<Response>((_, reject) =>
+          init.signal?.addEventListener("abort", () =>
+            reject(new DOMException("aborted", "AbortError"))
+          )
+        );
       if (this.coach === "limited") return json(429, { error: "rate_limited" });
       if (this.coach === "error") return json(500, {});
       if (this.coach === "questions") {
@@ -56,9 +75,10 @@ export class FakeApi {
           .map((q) => ({ ...q, _ai: true }));
         return json(200, { fallback: false, questions: qs });
       }
-      return json(200, { fallback: true, reason: "no_key" });
+      return json(200, { fallback: true, reason: this.fallbackReason });
     }
-    if (path === "/v1/coach/explain") return json(200, { fallback: true, reason: "no_key" });
+    if (path === "/v1/coach/explain")
+      return json(200, { fallback: true, reason: "no_key" });
     return json(404, {});
   };
 }

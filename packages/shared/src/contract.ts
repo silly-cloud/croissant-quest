@@ -25,6 +25,20 @@ export const CoachRoundBody = z.object({
 });
 export type CoachRoundBody = z.infer<typeof CoachRoundBody>;
 
+/**
+ * Why the coach answered with a fallback. login_required: the local Claude Code CLI is signed out or its
+ * login expired (run `claude`, then /login). rate_limited: the subscription's own usage limit was reached.
+ */
+export const CoachFallbackReason = z.enum([
+  "no_key",
+  "timeout",
+  "error",
+  "invalid",
+  "login_required",
+  "rate_limited",
+]);
+export type CoachFallbackReason = z.infer<typeof CoachFallbackReason>;
+
 export const CoachRoundResponse = z.discriminatedUnion("fallback", [
   z.object({
     fallback: z.literal(false),
@@ -32,7 +46,7 @@ export const CoachRoundResponse = z.discriminatedUnion("fallback", [
   }),
   z.object({
     fallback: z.literal(true),
-    reason: z.enum(["no_key", "timeout", "error", "invalid"]),
+    reason: CoachFallbackReason,
   }),
 ]);
 export type CoachRoundResponse = z.infer<typeof CoachRoundResponse>;
@@ -48,7 +62,7 @@ export const CoachExplainResponse = z.discriminatedUnion("fallback", [
   z.object({ fallback: z.literal(false), text: z.string() }),
   z.object({
     fallback: z.literal(true),
-    reason: z.enum(["no_key", "timeout", "error", "invalid"]),
+    reason: CoachFallbackReason,
   }),
 ]);
 export type CoachExplainResponse = z.infer<typeof CoachExplainResponse>;

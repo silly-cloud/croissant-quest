@@ -1,15 +1,24 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { BANK, qid } from "@cq/content";
-import type { CoachExplainBody, CoachExplainResponse, CoachRoundBody, CoachRoundResponse } from "@cq/shared";
+import type {
+  CoachExplainBody,
+  CoachExplainResponse,
+  CoachRoundBody,
+  CoachRoundResponse,
+} from "@cq/shared";
 import { normState } from "@cq/shared";
 import { ProgressService } from "../progress/progress.service.js";
-import type { CoachClient, CoachRequest } from "./coach.client.js";
+import {
+  CoachClientError,
+  type CoachClient,
+  type CoachRequest,
+} from "./coach.client.js";
 import type { CoachConfig } from "./coach.config.js";
 import { COACH_CLIENT, COACH_CONFIG } from "./coach.tokens.js";
 import { explainPrompt, roundPrompt } from "./coach.prompts.js";
 import { extractJsonArray, validateRound } from "./coach.validate.js";
 
-type Failure = "timeout" | "error";
+type Failure = "timeout" | CoachClientError["reason"];
 type Called = { ok: true; text: string } | { ok: false; reason: Failure };
 
 const BY_QID = new Map(BANK.map((q) => [qid(q), q]));
@@ -28,21 +37,29 @@ export class CoachService {
   constructor(
     @Inject(COACH_CLIENT) private readonly client: CoachClient | null,
     @Inject(COACH_CONFIG) private readonly cfg: CoachConfig,
-    @Inject(ProgressService) private readonly progress: Pick<ProgressService, "get">,
+    @Inject(ProgressService)
+    private readonly progress: Pick<ProgressService, "get">
   ) {}
 
-  async round(userId: string | undefined, body: CoachRoundBody): Promise<CoachRoundResponse> {
+  async round(
+    userId: string | undefined,
+    body: CoachRoundBody
+  ): Promise<CoachRoundResponse> {
     if (!this.client) return { fallback: true, reason: "no_key" };
     // an unknown (cookieless) caller has no record: the prompt falls back to the default focus
     const state = userId ? (await this.progress.get(userId)).state : {};
     const n = Math.max(MIN_VALID, body.n); // the response contract never carries fewer than 4
     const prompt = roundPrompt(normState(state), n, body.focus);
-    const res = await this.call({ prompt, maxTokens: this.cfg.maxTokens.round });
+    const res = await this.call({
+      prompt,
+      maxTokens: this.cfg.maxTokens.round,
+    });
     if (!res.ok) return { fallback: true, reason: res.reason };
 
     const rows = extractJsonArray(res.text);
     const questions = rows ? validateRound(rows, n) : [];
-    if (questions.length < MIN_VALID) return { fallback: true, reason: "invalid" };
+    if (questions.length < MIN_VALID)
+      return { fallback: true, reason: "invalid" };
     return { fallback: false, questions };
   }
 
@@ -50,12 +67,19 @@ export class CoachService {
     if (!this.client) return { fallback: true, reason: "no_key" };
     const q = BY_QID.get(body.qid);
     if (!q) return { fallback: true, reason: "invalid" };
-    const res = await this.call({ prompt: explainPrompt(q, body.gave), maxTokens: this.cfg.maxTokens.explain });
+    const res = await this.call({
+      prompt: explainPrompt(q, body.gave),
+      maxTokens: this.cfg.maxTokens.explain,
+    });
     if (!res.ok) return { fallback: true, reason: res.reason };
     // model output reaches the screen: any markup at all means we do not show it
     if (/[<>]/.test(res.text)) return { fallback: true, reason: "invalid" };
-    const text = Array.from(res.text.trim()).slice(0, EXPLAIN_MAX_CHARS).join("");
-    return text ? { fallback: false, text } : { fallback: true, reason: "invalid" };
+    const text = Array.from(res.text.trim())
+      .slice(0, EXPLAIN_MAX_CHARS)
+      .join("");
+    return text
+      ? { fallback: false, text }
+      : { fallback: true, reason: "invalid" };
   }
 
   /** One deadline (cfg.timeoutMs) covers every attempt; transient errors back off 2x each time. */
@@ -66,12 +90,29 @@ export class CoachService {
     try {
       for (let attempt = 0; ; attempt++) {
         try {
-          return { ok: true, text: await client.complete(req, { signal: ctrl.signal }) };
+          return {
+            ok: true,
+            text: await client.complete(req, { signal: ctrl.signal }),
+          };
         } catch (e) {
           if (ctrl.signal.aborted) return { ok: false, reason: "timeout" };
+          if (e instanceof CoachClientError) {
+            // already classified (Claude CLI): signed out, plan limit or bad output are never retried
+            this.log.warn(
+              `coach call failed (attempt ${attempt + 1}, ${e.reason})`
+            );
+            if (!e.retryable || attempt >= this.cfg.retries)
+              return { ok: false, reason: e.reason };
+            await sleep(this.cfg.backoffMs * 2 ** attempt, ctrl.signal);
+            if (ctrl.signal.aborted) return { ok: false, reason: "timeout" };
+            continue;
+          }
           // log the status only: SDK error messages are not ours to forward
-          this.log.warn(`coach call failed (attempt ${attempt + 1}, status ${String((e as { status?: unknown })?.status ?? "none")})`);
-          if (!retryable(e) || attempt >= this.cfg.retries) return { ok: false, reason: "error" };
+          this.log.warn(
+            `coach call failed (attempt ${attempt + 1}, status ${String((e as { status?: unknown })?.status ?? "none")})`
+          );
+          if (!retryable(e) || attempt >= this.cfg.retries)
+            return { ok: false, reason: "error" };
           await sleep(this.cfg.backoffMs * 2 ** attempt, ctrl.signal);
           if (ctrl.signal.aborted) return { ok: false, reason: "timeout" };
         }
