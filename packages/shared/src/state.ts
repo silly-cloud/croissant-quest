@@ -38,7 +38,24 @@ const plainMap = (x: unknown): Record<string, unknown> => {
     for (const k of Object.keys(x)) if (k !== "__proto__") r[k] = (x as Record<string, unknown>)[k];
   return r;
 };
-const num = (x: unknown) => (Number.isFinite(+(x as number)) ? +(x as number) : 0);
+/** A finite, non-negative number (counters never go below zero or past what a JSON number can hold safely). */
+const num = (x: unknown) => {
+  const n = +(x as number);
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), Number.MAX_SAFE_INTEGER) : 0;
+};
+const str = (x: unknown, max: number) => (typeof x === "string" ? x.slice(0, max) : "");
+const LOG_MAX = 500, FEELLOG_MAX = 20;
+/** Keep only the known fields of a log entry, with capped lengths: these reach the UI and the db. */
+const cleanLog = (e: unknown): LogEntry | null => {
+  if (!e || typeof e !== "object") return null;
+  const r = e as Record<string, unknown>;
+  return { q: str(r.q, 400), t: num(r.t), tag: str(r.tag, 24), gave: str(r.gave, 60), at: num(r.at) };
+};
+const cleanFeel = (e: unknown): FeelEntry | null => {
+  if (!e || typeof e !== "object") return null;
+  const r = e as Record<string, unknown>;
+  return { feel: Math.min(num(r.feel), 100), mine: Math.min(num(r.mine), 100), at: num(r.at), r: num(r.r) };
+};
 
 /**
  * Turn any saved shape (this device, the db, an old save) into a safe State:
@@ -61,9 +78,9 @@ export function normState(v: unknown, knownQids?: Set<string>): State {
     const e = h[t];
     if (Array.isArray(e) && Object.prototype.hasOwnProperty.call(TAG, t)) o.hist[t] = [num(e[0]), num(e[1])];
   }
-  o.log = Array.isArray(src.log) ? (src.log as LogEntry[]) : [];
-  o.feelLog = Array.isArray(src.feelLog) ? (src.feelLog as FeelEntry[]) : [];
-  o.feel = typeof src.feel === "number" ? src.feel : null;
+  o.log = (Array.isArray(src.log) ? src.log : []).slice(-LOG_MAX).map(cleanLog).filter((e): e is LogEntry => !!e);
+  o.feelLog = (Array.isArray(src.feelLog) ? src.feelLog : []).slice(-FEELLOG_MAX).map(cleanFeel).filter((e): e is FeelEntry => !!e);
+  o.feel = typeof src.feel === "number" && Number.isFinite(src.feel) ? Math.min(Math.max(src.feel, 0), 100) : null;
   o.calib = CALIBS.includes(src.calib as Calib) ? (src.calib as Calib) : "aligned";
   MASTERED.forEach((t) => { if (!o.crowns[t]) o.crowns[t] = 5; });
   if (knownQids) for (const k of Object.keys(o.wrong)) if (!knownQids.has(k)) delete o.wrong[k];

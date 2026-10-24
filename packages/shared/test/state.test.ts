@@ -27,6 +27,23 @@ describe("normState", () => {
     const n = normState({ wrong: { [real]: 2, "6|choice|gone|x": 1 } }, ids);
     expect(Object.keys(n.wrong)).toEqual([real]);
   });
+  it("keeps only known, length-capped log fields and caps list sizes", () => {
+    const big = "x".repeat(5000);
+    const n = normState({
+      xp: -5, cro: 1e308, feel: 900,
+      log: [{ q: big, gave: big, tag: big, at: 1, evil: "<img onerror=1>" }, "junk", null],
+      feelLog: Array.from({ length: 50 }, (_, i) => ({ feel: 999, mine: i, at: i, extra: 1 })),
+    });
+    expect(n.xp).toBe(0);
+    expect(n.cro).toBe(Number.MAX_SAFE_INTEGER);
+    expect(n.feel).toBe(100);
+    expect(n.log).toHaveLength(1);
+    expect(n.log[0]!.gave).toHaveLength(60);
+    expect(n.log[0]!.q).toHaveLength(400);
+    expect(Object.keys(n.log[0]!).sort()).toEqual(["at", "gave", "q", "t", "tag"]);
+    expect(n.feelLog).toHaveLength(20);
+    expect(n.feelLog[0]!.feel).toBe(100);
+  });
   it("accepts an old-style save (seen flag 1) as a count", () => {
     expect(normState({ seen: { a: 1 } }).seen.a).toBe(1);
   });
