@@ -52,3 +52,14 @@ export type HealthResponse = z.infer<typeof HealthResponse>;
 
 export const API_PREFIX = "/v1";
 export const DEVICE_COOKIE = "cq_device";
+
+/** GET /v1/questions: everything the web app needs from @cq/content. */
+export const QuestionsResponse = z.object({
+  questions: z.array(Question),
+  tags: z.record(z.string(), z.tuple([z.string(), z.string()])),
+  tagNames: z.record(z.string(), z.string()),
+  topics: z.array(z.tuple([z.number(), z.string()])),
+  rules: z.record(z.string(), z.string()),
+  pron: z.record(z.string(), z.tuple([z.string(), z.string(), z.string()])),
+});
+export type QuestionsResponse = z.infer<typeof QuestionsResponse>;
