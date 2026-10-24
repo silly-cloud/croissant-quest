@@ -31,9 +31,10 @@ export class CoachService {
     @Inject(ProgressService) private readonly progress: Pick<ProgressService, "get">,
   ) {}
 
-  async round(userId: string, body: CoachRoundBody): Promise<CoachRoundResponse> {
+  async round(userId: string | undefined, body: CoachRoundBody): Promise<CoachRoundResponse> {
     if (!this.client) return { fallback: true, reason: "no_key" };
-    const { state } = await this.progress.get(userId);
+    // an unknown (cookieless) caller has no record: the prompt falls back to the default focus
+    const state = userId ? (await this.progress.get(userId)).state : {};
     const n = Math.max(MIN_VALID, body.n); // the response contract never carries fewer than 4
     const prompt = roundPrompt(normState(state), n, body.focus);
     const res = await this.call({ prompt, maxTokens: this.cfg.maxTokens.round });
@@ -51,7 +52,9 @@ export class CoachService {
     if (!q) return { fallback: true, reason: "invalid" };
     const res = await this.call({ prompt: explainPrompt(q, body.gave), maxTokens: this.cfg.maxTokens.explain });
     if (!res.ok) return { fallback: true, reason: res.reason };
-    const text = res.text.trim().slice(0, EXPLAIN_MAX_CHARS);
+    // model output reaches the screen: any markup at all means we do not show it
+    if (/[<>]/.test(res.text)) return { fallback: true, reason: "invalid" };
+    const text = Array.from(res.text.trim()).slice(0, EXPLAIN_MAX_CHARS).join("");
     return text ? { fallback: false, text } : { fallback: true, reason: "invalid" };
   }
 

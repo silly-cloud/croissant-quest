@@ -34,7 +34,7 @@ export async function makeApp(
   if (opts.coachClient !== undefined) mb = mb.overrideProvider(COACH_CLIENT).useValue(opts.coachClient);
   const mod = await mb.compile();
   const app = mod.createNestApplication({ bodyParser: false });
-  setupApp(app, env.WEB_ORIGIN);
+  setupApp(app, env);
   await app.init();
   return { app, prisma: app.get(PrismaService), env, close: () => app.close() };
 }

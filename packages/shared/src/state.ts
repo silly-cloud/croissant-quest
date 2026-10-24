@@ -60,7 +60,9 @@ const countMap = (x: unknown, max: number, keep: (k: string) => boolean): Record
   }
   return r;
 };
-const str = (x: unknown, max: number) => (typeof x === "string" ? x.slice(0, max) : "");
+/** Truncate by characters (code points), so an emoji is never cut in half. */
+const str = (x: unknown, max: number) =>
+  typeof x !== "string" ? "" : x.length <= max ? x : Array.from(x).slice(0, max).join("");
 const LOG_MAX = 500, FEELLOG_MAX = 20;
 /** Keep only the known fields of a log entry, with capped lengths: these reach the UI and the db. */
 const cleanLog = (e: unknown): LogEntry | null => {

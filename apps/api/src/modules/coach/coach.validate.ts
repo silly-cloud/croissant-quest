@@ -15,9 +15,20 @@ const Row = z.object({
 });
 
 const BANK_QIDS = new Set(BANK.map(qid));
+/** Every sentence a bank question shows or answers with, whatever its kind: a model reply matching any is a copy. */
 const bankSentences = new Set(
-  BANK.flatMap((q) => [q.s, q.k === "choice" ? fullOf(q) : undefined]).flatMap((s) => (s ? [norm(s)] : [])),
+  BANK.flatMap((q) => [q.s, q.a, fullOf(q)]).flatMap((s) => (s ? [norm(s)] : [])),
 );
+
+/** The only answers a partitive-article choice question may have. */
+const CLOSED = new Set(["du", "de la", "de l'", "des", "de", "d'", "le", "la", "les", "l'"]);
+/** Which answers each rule tag allows. Tags not listed here (fix, gre) accept any of CLOSED; `sans` is dropped. */
+const ALLOWED: Record<string, string[]> = {
+  m: ["du"], f: ["de la"], v: ["de l'"], p: ["des"],
+  neg: ["de", "d'"], qty: ["de", "d'"], gen: ["le", "la", "les", "l'"],
+  sans: [],
+};
+const apos = (x: string) => x.trim().replace(/[’`´]/g, "'");
 /** No markup in anything that reaches a screen. */
 const hasMarkup = (...xs: (string | undefined)[]) => xs.some((x) => x !== undefined && /[<>]/.test(x));
 
@@ -51,10 +62,17 @@ export function validateRound(rows: unknown[], max = 8): Question[] {
     if (hasMarkup(r.s, r.a, r.en, r.pe, r.pg, r.ph, ...r.o)) continue;
     if (!Object.hasOwn(TAG, r.tag)) continue; // unknown rule: drop it, never default to "m"
 
-    const o = [...new Set(r.o.map((x) => x.trim()).filter(Boolean))];
-    const a = r.a.trim();
+    const seenOpt = new Set<string>();
+    const o = r.o.map(apos).filter((x) => {
+      const k = x.toLowerCase();
+      if (!x || seenOpt.has(k)) return false;
+      seenOpt.add(k);
+      return true;
+    });
+    const a = apos(r.a);
     const s = r.s.trim();
-    if (!s.includes("___") || o.length < 2 || o.length > 6 || !o.includes(a)) continue;
+    if (s.split("___").length !== 2 || o.length < 2 || o.length > 6 || !o.includes(a)) continue;
+    if (!CLOSED.has(a) || (ALLOWED[r.tag] && !ALLOWED[r.tag]!.includes(a))) continue;
 
     const draft = {
       t: 6, tier: 3, k: "choice" as const, _ai: true as const,

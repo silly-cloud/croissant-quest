@@ -62,6 +62,11 @@ describe("normState", () => {
     expect(Object.keys(n.seen)).toHaveLength(1000);
     expect(n.seen["k".repeat(401)]).toBeUndefined();
   });
+  it("truncates log text by characters, not UTF-16 units", () => {
+    const n = normState({ log: [{ q: "q", gave: "\u{1F950}".repeat(100), at: 1 }] });
+    expect(Array.from(n.log[0]!.gave)).toHaveLength(60);
+    expect(n.log[0]!.gave).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/);
+  });
   it("clamps counters to 1e9", () => {
     const n = normState({ xp: 1e12, cro: 2e9, rounds: Number.MAX_SAFE_INTEGER, streak: 5e9 });
     expect([n.xp, n.cro, n.rounds, n.streak]).toEqual([1e9, 1e9, 1e9, 1e9]);
