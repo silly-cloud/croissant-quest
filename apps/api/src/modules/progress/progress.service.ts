@@ -6,16 +6,21 @@ import type { Prisma } from "../../generated/prisma/client.js";
 
 const KNOWN_QIDS = new Set(BANK.map(qid));
 export const LOG_CAP = 120;
-export const FEEL_LOG_CAP = 20;
 const INT_MAX = 2_147_483_647;
 
 /** State has no index signature; the wire/JSON type is a loose object. */
 const asBody = (s: State) => s as unknown as ProgressResponse["state"];
 const clampInt = (n: number) => Math.max(0, Math.min(INT_MAX, Math.trunc(Number.isFinite(n) ? n : 0)));
 
-/** The copy that gets stored: capped logs, as the legacy client did. */
+/** The copy that gets stored: capped log, as the legacy client did (normState already caps feelLog at 20). */
 export function trimForStorage(s: State): State {
-  return { ...s, log: s.log.slice(-LOG_CAP), feelLog: s.feelLog.slice(-FEEL_LOG_CAP) };
+  return { ...s, log: s.log.slice(-LOG_CAP) };
+}
+
+export const TS_SKEW_MS = 5 * 60 * 1000;
+/** A client clock is not trusted: never more than 5 minutes ahead of the server; missing -> server time. */
+export function clampTs(ts: number, now: number): number {
+  return ts > 0 ? Math.min(ts, now + TS_SKEW_MS) : now;
 }
 
 @Injectable()
@@ -33,7 +38,9 @@ export class ProgressService {
    * same If-Match, Postgres lets one update the row, the other re-checks `version = n` after the
    * first commits, matches nothing, and gets the 409 with the server copy.
    */
-  async put(userId: string, ifMatch: number, incoming: unknown): Promise<ProgressResponse> {
+  async put(userId: string, ifMatch: number, incoming: unknown, now = Date.now()): Promise<ProgressResponse> {
+    const mine = normState(incoming, KNOWN_QIDS);
+    mine.ts = clampTs(mine.ts, now);
     const outcome = await this.prisma.$transaction(async (tx) => {
       await tx.progress.createMany({
         data: [{ userId, state: normState({}) as unknown as Prisma.InputJsonObject, version: 0 }],
@@ -42,7 +49,7 @@ export class ProgressService {
       const row = await tx.progress.findUniqueOrThrow({ where: { userId } });
       if (row.version !== ifMatch) return { ok: false as const, row };
 
-      const merged = trimForStorage(mergeStates(normState(row.state, KNOWN_QIDS), normState(incoming, KNOWN_QIDS)));
+      const merged = trimForStorage(mergeStates(normState(row.state, KNOWN_QIDS), mine));
       const { count } = await tx.progress.updateMany({
         where: { userId, version: row.version },
         data: {

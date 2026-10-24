@@ -1,4 +1,5 @@
 import request from "supertest";
+import { Logger } from "@nestjs/common";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BANK, qid } from "@cq/content";
 import { makeApp, type TestApp } from "./helpers.js";
@@ -47,6 +48,19 @@ describe("health, questions, cors", () => {
     expect(bad.headers["access-control-allow-origin"]).toBeUndefined();
   });
 
+  it("CORS exposes Retry-After and still answers when the body parser rejects (cors before parsers)", async () => {
+    const pre = await http().options("/v1/progress").set("Origin", "http://localhost:3000").set("Access-Control-Request-Method", "PUT");
+    expect(pre.headers["access-control-allow-origin"]).toBe("http://localhost:3000");
+    const r = await http()
+      .post("/v1/coach/round")
+      .set("Origin", "http://localhost:3000")
+      .set("Content-Type", "application/json")
+      .send("{nope")
+      .expect(400);
+    expect(r.headers["access-control-allow-origin"]).toBe("http://localhost:3000");
+    expect(String(r.headers["access-control-expose-headers"])).toContain("Retry-After");
+  });
+
   it("unknown route -> 404 json without stack", async () => {
     const r = await http().get("/v1/nope").expect(404);
     expect(JSON.stringify(r.body)).not.toMatch(/node_modules|\.ts:/);
@@ -61,19 +75,48 @@ describe("coach over HTTP", () => {
     { s: "Elle veut ___ eau fraiche.", a: "de l'", o: ["du", "de la", "de l'", "des"], tag: "v", en: "x" },
   ];
 
-  it("round: valid questions come back; the key is never in the response", async () => {
+  it("round: valid questions come back", async () => {
     const t = await makeApp({
       env: { ANTHROPIC_API_KEY: "sk-ant-secret-key" },
       coachClient: { complete: async () => JSON.stringify(goodRows) },
     });
     try {
-      const a = request.agent(t.app.getHttpServer());
-      const r = await a.post("/v1/coach/round").send({ n: 8 }).expect(200);
+      const r = await request(t.app.getHttpServer()).post("/v1/coach/round").send({ n: 8 }).expect(200);
       expect(r.body.fallback).toBe(false);
       expect(r.body.questions).toHaveLength(4);
       expect(r.body.questions[0]).toMatchObject({ _ai: true, t: 6, tier: 3, k: "choice" });
-      expect(JSON.stringify(r)).not.toContain("sk-ant");
     } finally {
+      await t.close();
+    }
+  });
+
+  it("a client error that contains the key reaches neither the response nor the logs", async () => {
+    const KEY = "sk-ant-api03-SUPERSECRET";
+    const lines: string[] = [];
+    const sink = (...a: unknown[]) => void lines.push(a.map(String).join(" "));
+    const t = await makeApp({
+      env: { ANTHROPIC_API_KEY: KEY },
+      coachClient: {
+        complete: async () => {
+          throw Object.assign(new Error(`401 invalid x-api-key ${KEY}`), { status: 500, headers: { "x-api-key": KEY } });
+        },
+      },
+    });
+    // after makeApp: compiling a testing module installs its own (silent) logger
+    Logger.overrideLogger({ log: sink, error: sink, warn: sink, debug: sink, verbose: sink, fatal: sink });
+    try {
+      const bodies = [
+        await request(t.app.getHttpServer()).post("/v1/coach/round").send({}),
+        await request(t.app.getHttpServer()).post("/v1/coach/explain").send({ qid: qid(BANK[0]!), gave: "x" }),
+      ];
+      for (const r of bodies) {
+        expect(r.status).toBe(200);
+        expect(JSON.stringify([r.body, r.headers, r.text])).not.toContain("SUPERSECRET");
+      }
+      expect(lines.length).toBeGreaterThan(0); // the failure was logged...
+      expect(lines.join("\n")).not.toContain("SUPERSECRET"); // ...without the key
+    } finally {
+      Logger.overrideLogger(["error", "warn", "log"]);
       await t.close();
     }
   });
@@ -119,22 +162,72 @@ describe("coach over HTTP", () => {
     }
   });
 
-  it("rate limit: per device, shared by round and explain, then 429 with Retry-After", async () => {
-    const t = await makeApp({
-      coachClient: null,
-      coach: { rateLimit: { limit: 3, windowMs: 60_000 } },
-    });
+  it("rate limit: per known device, shared by round and explain, then 429 with Retry-After", async () => {
+    const t = await makeApp({ coachClient: null, coach: { rateLimit: { limit: 3, windowMs: 60_000 } } });
     try {
       const a = request.agent(t.app.getHttpServer());
+      await a.get("/v1/progress").expect(200); // establishes the device
       await a.post("/v1/coach/round").send({}).expect(200);
       await a.post("/v1/coach/explain").send({ qid: "x", gave: "y" }).expect(200);
       await a.post("/v1/coach/round").send({}).expect(200);
       const limited = await a.post("/v1/coach/round").send({}).expect(429);
       expect(Number(limited.headers["retry-after"])).toBeGreaterThan(0);
-      // another device is unaffected
-      await request.agent(t.app.getHttpServer()).post("/v1/coach/round").send({}).expect(200);
     } finally {
       await t.close();
+    }
+  });
+
+  it("1000 cookieless calls cannot exceed the limit and create no users", async () => {
+    const t = await makeApp({ coachClient: null, coach: { rateLimit: { limit: 5, windowMs: 60_000 } } });
+    try {
+      const before = await t.prisma.user.count();
+      let ok = 0;
+      for (let i = 0; i < 1000; i += 50) {
+        const rs = await Promise.all(
+          Array.from({ length: 50 }, () => request(t.app.getHttpServer()).post("/v1/coach/round").send({})),
+        );
+        ok += rs.filter((r) => r.status === 200).length;
+        for (const r of rs) expect(r.headers["set-cookie"]).toBeUndefined();
+      }
+      expect(ok).toBe(5);
+      expect(await t.prisma.user.count()).toBe(before);
+    } finally {
+      await t.close();
+    }
+  });
+
+  it("a global per-minute ceiling holds across devices (COACH_GLOBAL_PER_MIN)", async () => {
+    const t = await makeApp({ coachClient: null, env: { COACH_GLOBAL_PER_MIN: "4" }, coach: { rateLimit: { limit: 100, windowMs: 60_000 } } });
+    try {
+      const codes: number[] = [];
+      for (let i = 0; i < 7; i++) {
+        const a = request.agent(t.app.getHttpServer());
+        await a.get("/v1/progress");
+        codes.push((await a.post("/v1/coach/round").send({})).status);
+      }
+      expect(codes.filter((c) => c === 200)).toHaveLength(4);
+      expect(codes.filter((c) => c === 429)).toHaveLength(3);
+    } finally {
+      await t.close();
+    }
+  });
+
+  it("client IP keys the limiter; X-Forwarded-For counts only with TRUST_PROXY_HOPS > 0", async () => {
+    const lim = { rateLimit: { limit: 2, windowMs: 60_000 } };
+    const direct = await makeApp({ coachClient: null, coach: lim });
+    const proxied = await makeApp({ coachClient: null, env: { TRUST_PROXY_HOPS: "1" }, coach: lim });
+    try {
+      const run = async (t: TestApp) => {
+        const codes: number[] = [];
+        for (let i = 0; i < 4; i++)
+          codes.push((await request(t.app.getHttpServer()).post("/v1/coach/round").set("X-Forwarded-For", `9.9.9.${i}`).send({})).status);
+        return codes;
+      };
+      expect(await run(direct)).toEqual([200, 200, 429, 429]); // spoofed header ignored
+      expect(await run(proxied)).toEqual([200, 200, 200, 200]); // each forwarded client has its own bucket
+    } finally {
+      await direct.close();
+      await proxied.close();
     }
   });
 });

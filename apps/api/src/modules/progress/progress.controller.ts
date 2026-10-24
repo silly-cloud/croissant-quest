@@ -13,7 +13,7 @@ import {
 } from "@nestjs/common";
 import { PutProgressBody, type ProgressResponse } from "@cq/shared";
 import { ZodPipe } from "../../common/zod.pipe.js";
-import { DeviceGuard, UserId } from "../device/device.guard.js";
+import { DeviceGuard, RequireDeviceGuard, UserId } from "../device/device.guard.js";
 import { ProgressService } from "./progress.service.js";
 
 /** `If-Match: 3`, `"3"` or `W/"3"` -> 3. */
@@ -31,17 +31,19 @@ export function parseIfMatch(raw: string | undefined): number {
 
 
 @Controller("progress")
-@UseGuards(DeviceGuard)
 export class ProgressController {
   constructor(@Inject(ProgressService) private readonly progress: ProgressService) {}
 
+  /** The only route that creates a user (and sets the cookie). */
   @Get()
+  @UseGuards(DeviceGuard)
   @Header("Cache-Control", "no-store")
   get(@UserId() userId: string): Promise<ProgressResponse> {
     return this.progress.get(userId);
   }
 
   @Put()
+  @UseGuards(RequireDeviceGuard)
   @HttpCode(200)
   @Header("Cache-Control", "no-store")
   put(

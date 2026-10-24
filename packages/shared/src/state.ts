@@ -1,4 +1,4 @@
-import { TAG } from "@cq/content";
+import { TAG, TOPICS } from "@cq/content";
 
 export type Calib = "harder" | "more" | "aligned" | "proof";
 export interface LogEntry { q: string; t: number; tag: string; gave: string; at: number }
@@ -38,12 +38,31 @@ const plainMap = (x: unknown): Record<string, unknown> => {
     for (const k of Object.keys(x)) if (k !== "__proto__") r[k] = (x as Record<string, unknown>)[k];
   return r;
 };
-/** A finite, non-negative number (counters never go below zero or past what a JSON number can hold safely). */
+/** A finite, non-negative number (never below zero or past what a JSON number can hold safely). */
 const num = (x: unknown) => {
   const n = +(x as number);
   return Number.isFinite(n) ? Math.min(Math.max(n, 0), Number.MAX_SAFE_INTEGER) : 0;
 };
-const str = (x: unknown, max: number) => (typeof x === "string" ? x.slice(0, max) : "");
+/** Counters (xp, cro, rounds, streak) stay far below int4 and below anything the UI can show. */
+export const COUNTER_MAX = 1_000_000_000;
+const counter = (x: unknown) => Math.min(num(x), COUNTER_MAX);
+const KEY_MAX = 400, MAP_MAX = 1000, CROWNS_MAX = 100;
+const TOPIC_IDS = new Set(TOPICS.map((t) => String(t[0])));
+/** Copy a count map: keys passing `keep`, at most KEY_MAX long, at most `max` of them. */
+const countMap = (x: unknown, max: number, keep: (k: string) => boolean): Record<string, number> => {
+  const src = plainMap(x), r: Record<string, number> = {};
+  let n = 0;
+  for (const k of Object.keys(src)) {
+    if (n >= max) break;
+    if (k.length > KEY_MAX || !keep(k)) continue;
+    r[k] = num(src[k]);
+    n++;
+  }
+  return r;
+};
+/** Truncate by characters (code points), so an emoji is never cut in half. */
+const str = (x: unknown, max: number) =>
+  typeof x !== "string" ? "" : x.length <= max ? x : Array.from(x).slice(0, max).join("");
 const LOG_MAX = 500, FEELLOG_MAX = 20;
 /** Keep only the known fields of a log entry, with capped lengths: these reach the UI and the db. */
 const cleanLog = (e: unknown): LogEntry | null => {
@@ -66,13 +85,13 @@ const cleanFeel = (e: unknown): FeelEntry | null => {
 export function normState(v: unknown, knownQids?: Set<string>): State {
   const src = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   const o = emptyState();
-  for (const k of COUNTERS) o[k] = num(src[k]);
+  for (const k of COUNTERS) o[k] = counter(src[k]);
   o.ts = num(src.ts);
   o.last = typeof src.last === "string" ? src.last : null;
-  const crowns = plainMap(src.crowns), wrong = plainMap(src.wrong), seen = plainMap(src.seen);
-  o.crowns = {}; for (const k in crowns) o.crowns[k] = num(crowns[k]);
-  o.wrong = {}; for (const k in wrong) o.wrong[k] = num(wrong[k]);
-  o.seen = {}; for (const k in seen) o.seen[k] = num(seen[k]);
+  const known = (k: string) => !knownQids || knownQids.has(k);
+  o.crowns = countMap(src.crowns, CROWNS_MAX, (k) => TOPIC_IDS.has(k));
+  o.wrong = countMap(src.wrong, MAP_MAX, known);
+  o.seen = countMap(src.seen, MAP_MAX, known);
   const h = plainMap(src.hist);
   for (const t of Object.keys(h)) {
     const e = h[t];
@@ -83,24 +102,38 @@ export function normState(v: unknown, knownQids?: Set<string>): State {
   o.feel = typeof src.feel === "number" && Number.isFinite(src.feel) ? Math.min(Math.max(src.feel, 0), 100) : null;
   o.calib = CALIBS.includes(src.calib as Calib) ? (src.calib as Calib) : "aligned";
   MASTERED.forEach((t) => { if (!o.crowns[t]) o.crowns[t] = 5; });
-  if (knownQids) for (const k of Object.keys(o.wrong)) if (!knownQids.has(k)) delete o.wrong[k];
   return o;
 }
 
 const topCounts = (a: Record<string, number>, b: Record<string, number>) => {
   const r: Record<string, number> = {};
-  for (const x of [a, b]) for (const i of Object.keys(x)) r[i] = Math.max(r[i] ?? 0, x[i] ?? 0);
+  for (const x of [a, b])
+    for (const i of Object.keys(x)) r[i] = Math.max(Object.hasOwn(r, i) ? r[i]! : 0, x[i] ?? 0);
   return r;
 };
 
+/** Union of two logs by (at, q), oldest first, newest `max` kept. */
+const unionLog = (a: LogEntry[], b: LogEntry[], max: number): LogEntry[] => {
+  const byKey = new Map<string, LogEntry>();
+  for (const e of [...a, ...b]) byKey.set(`${e.at}|${e.q}`, e);
+  return [...byKey.values()].sort((x, y) => x.at - y.at).slice(-max);
+};
+
 /**
- * Two copies of one save. Counters only grow, so the larger is right; wrong, log, feel, calib
- * and last come from whichever copy has the larger `ts`.
+ * Two copies of one save (ADR 0006). Counters only grow, so the larger is right. `streak` and `last`
+ * are one fact and come together from the copy with the later `last` (equal -> larger streak).
+ * `log` is the union by (at, q). wrong, feel, feelLog and calib come from the copy with the larger `ts`
+ * (wrong is NOT unioned: a cleared mistake must stay cleared).
  */
 export function mergeStates(a: State, b: State): State {
   const [lo, hi] = a.ts > b.ts ? [b, a] : [a, b];
   const m: State = { ...lo, ...hi };
   for (const k of COUNTERS) m[k] = Math.max(a[k], b[k]);
+  const al = a.last ?? "", bl = b.last ?? "";
+  const [, sh] = al > bl ? [b, a] : [a, b]; // sh has the later (or equal) last
+  m.last = sh.last;
+  m.streak = al === bl ? Math.max(a.streak, b.streak) : sh.streak;
+  m.log = unionLog(a.log, b.log, LOG_MAX);
   m.crowns = topCounts(a.crowns, b.crowns);
   m.seen = topCounts(a.seen, b.seen);
   m.hist = {};
