@@ -4,7 +4,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-cq}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in infra/.env}
       POSTGRES_DB: ${POSTGRES_DB:-cq}
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -14,14 +14,14 @@ services:
       timeout: 3s
       retries: 10
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"   # local tools only; never published on all interfaces
 
   api:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cq}:${POSTGRES_PASSWORD:-cq}@db:5432/${POSTGRES_DB:-cq}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cq}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in infra/.env}@db:5432/${POSTGRES_DB:-cq}
       PORT: 3001
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -29,6 +29,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    init: true
     ports:
       - "3001:3001"
 
@@ -41,7 +42,9 @@ services:
     environment:
       API_URL: http://api:3001
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    init: true
     ports:
       - "3000:3000"
 
