@@ -97,7 +97,20 @@ export interface EngineDeps {
   timers?: Timers;
   today?: () => string;
   fx?: Effects;
+  /** qids of questions already seen SEEN_CAP times: shown with a "Repeat" label */
+  repeats?: ReadonlySet<string>;
 }
+
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
+/**
+ * What the learner typed, as saved in the log and sent to the coach: at most `max` code points, never cut
+ * inside a character, lone surrogates replaced (Postgres jsonb refuses them, so one would fail every save).
+ */
+export const clipGave = (v: unknown, max = 60): string =>
+  Array.from(String(v ?? "").replace(LONE_SURROGATE, "\uFFFD"))
+    .slice(0, max)
+    .join("");
 
 /** The learner's local calendar day, not UTC (an evening in India must not read as tomorrow). */
 export const localToday = () => new Date().toLocaleDateString("en-CA");
@@ -119,6 +132,8 @@ export class RoundEngine {
   private readonly timers: Timers;
   private readonly rng: Rng;
   private readonly today: () => string;
+  /** questions in this round the learner has already seen SEEN_CAP times */
+  readonly repeats: ReadonlySet<string>;
   /** my honest rating of the round, computed once when the results show */
   mine: number | null = null;
 
@@ -131,6 +146,7 @@ export class RoundEngine {
     this.timers = deps.timers ?? windowTimers;
     this.rng = deps.rng ?? Math.random;
     this.today = deps.today ?? localToday;
+    this.repeats = deps.repeats ?? new Set();
     this.snap = {
       topic,
       mode,
@@ -164,6 +180,9 @@ export class RoundEngine {
 
   get cancelled() {
     return this.dead;
+  }
+  isRepeat(q: Question): boolean {
+    return !q._ai && this.repeats.has(qid(q));
   }
   get question(): Question {
     return this.snap.qs[this.snap.i]!;
@@ -222,7 +241,7 @@ export class RoundEngine {
     const q = this.question;
     const ok = judge(q, picked);
     const near = accentsOnly(q, picked, ok);
-    const gave = String(picked ?? "").slice(0, 60);
+    const gave = clipGave(picked);
     const full = fullOf(q);
     const row: AnswerRow = {
       tag: q.tag,
@@ -320,11 +339,21 @@ export class RoundEngine {
   private finish() {
     const s = this.snap;
     let outcome: RoundOutcome = { crowned: false, perfect: false };
-    this.deps.store.update((d) => {
-      outcome = scoreRound(d, { topic: s.topic, mode: s.mode, hearts: s.hearts, right: s.right, questions: s.qs }, this.today());
-    });
+    // the results screen must appear even if scoring or saving throws: a dead screen is never acceptable
+    try {
+      this.deps.store.update((d) => {
+        outcome = scoreRound(d, { topic: s.topic, mode: s.mode, hearts: s.hearts, right: s.right, questions: s.qs }, this.today());
+      });
+    } catch (e) {
+      console.error("[croissant-quest] scoring the round failed", e);
+      outcome = { crowned: false, perfect: false };
+    }
     this.set({ phase: "done", outcome });
-    if (outcome.crowned) this.deps.fx?.crown?.();
-    else if (s.hearts > 0) this.deps.fx?.finish?.(outcome.perfect);
+    try {
+      if (outcome.crowned) this.deps.fx?.crown?.();
+      else if (s.hearts > 0) this.deps.fx?.finish?.(outcome.perfect);
+    } catch {
+      /* sound or confetti failing changes nothing */
+    }
   }
 }

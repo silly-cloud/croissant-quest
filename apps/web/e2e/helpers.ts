@@ -17,6 +17,7 @@ interface BankQ {
 const raw = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), "../../packages/content/data/bank.json"), "utf8")) as BankQ[];
 export const qidOf = (q: BankQ) => q.t + "|" + q.k + "|" + (q.s || q.en || "") + "|" + q.a;
 const byId = new Map(raw.map((q) => [qidOf(q), q]));
+export const bankIds = () => [...byId.keys()];
 
 /** playwright.real.config.ts: the real NestJS API on Postgres, no coach key. */
 export const REAL = process.env.E2E_API === "real";

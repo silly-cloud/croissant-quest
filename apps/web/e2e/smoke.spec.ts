@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { answer, apiDown, currentQuestion, fakeReset, fakeSet, fakeState, playPerfectRound, qidOf, qwrap, REAL, serverProgress, startTopic6, studyPace } from "./helpers";
+import { answer, apiDown, bankIds, currentQuestion, fakeReset, fakeSet, fakeState, playPerfectRound, qidOf, qwrap, REAL, serverProgress, startTopic6, studyPace } from "./helpers";
 
 test.beforeEach(async ({ page, request }) => {
   await fakeReset(request);
@@ -191,3 +191,49 @@ test("settings: pace, sound and theme persist", async ({ page }) => {
   await expect(page.getByRole("radio", { name: "🔇 Off" })).toBeChecked();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
+
+test("every question already seen 3 times: the coach is asked for new ones, and on fallback each repeat is labelled", async ({ page }) => {
+  await studyPace(page);
+  const seen = Object.fromEntries(bankIds().map((id) => [id, 3]));
+  await page.addInitScript((s) => localStorage.setItem("croissant-quest-v1", JSON.stringify({ seen: s, ts: 1 })), seen);
+  await page.goto("/");
+  const coach = page.waitForRequest((r) => r.url().endsWith("/v1/coach/round") && r.method() === "POST");
+  await page.getByRole("button", { name: /^Partitive articles\. Stop 6/ }).click();
+  await page.getByRole("link", { name: "Play a round" }).click();
+  expect((await coach).postDataJSON()).toMatchObject({ n: expect.any(Number) });
+  await expect(qwrap(page)).toBeVisible();
+  await expect(page.locator(".repeat")).toContainText("Repeat");
+  await expect(page.getByText(/of these are repeats/)).toBeVisible();
+});
+
+// AUD-08: at phone widths the HUD clipped Settings (the only route to /settings) and the theme toggle
+for (const width of [320, 360, 390]) {
+  test(`the HUD fits ${width} px with big numbers: every control is on screen and reachable`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 640 });
+    const today = new Date().toLocaleDateString("en-CA");
+    await page.addInitScript(
+      (last) => localStorage.setItem("croissant-quest-v1", JSON.stringify({ xp: 12345, streak: 120, last, cro: 42, ts: 1 })),
+      today,
+    );
+    await page.goto("/");
+    await expect(page.locator(".s-xp")).toContainText("12345");
+    const m = await page.evaluate(() => {
+      const hud = document.getElementById("hud")!;
+      const items = [...hud.querySelectorAll<HTMLElement>("button, a, .stat")].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { name: el.getAttribute("aria-label") ?? el.textContent ?? "", control: !el.matches(".stat"), left: r.left, right: r.right, w: r.width, h: r.height };
+      });
+      return { inner: innerWidth, scroll: document.documentElement.scrollWidth, hudScroll: hud.scrollWidth, hudClient: hud.clientWidth, items };
+    });
+    expect(m.scroll, "page scrolls sideways").toBeLessThanOrEqual(m.inner);
+    expect(m.hudScroll, "HUD overflows").toBeLessThanOrEqual(m.hudClient);
+    expect(m.items).toHaveLength(7);
+    for (const it of m.items) {
+      expect(it.left, it.name).toBeGreaterThanOrEqual(0);
+      expect(it.right, it.name).toBeLessThanOrEqual(m.inner);
+      if (it.control) expect(Math.min(it.w, it.h), it.name).toBeGreaterThanOrEqual(43.5);
+    }
+    await page.getByRole("link", { name: "Settings" }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+  });
+}

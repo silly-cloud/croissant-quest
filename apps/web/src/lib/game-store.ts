@@ -27,6 +27,29 @@ export interface GameStoreDeps {
 }
 
 const MAX_PUT_TRIES = 5;
+/** After a failed sync, wait this long before the next try; doubles per failure up to RETRY_MAX_MS. */
+export const RETRY_BASE_MS = 2_000;
+export const RETRY_MAX_MS = 5 * 60_000;
+
+class SyncError extends Error {
+  constructor(
+    readonly status: number,
+    /** ms the server asked us to wait (429/503 Retry-After) */
+    readonly retryAfterMs: number | null,
+  ) {
+    super("progress sync " + status);
+  }
+}
+
+const retryAfter = (res: Response): number | null => {
+  if (res.status !== 429 && res.status !== 503) return null;
+  const v = res.headers.get("retry-after");
+  if (!v) return null;
+  const secs = Number(v);
+  if (Number.isFinite(secs)) return Math.max(0, secs) * 1000;
+  const at = Date.parse(v);
+  return Number.isFinite(at) ? Math.max(0, at - Date.now()) : null;
+};
 
 export const SERVER_SNAPSHOT: GameSnapshot = {
   state: emptyState(),
@@ -50,6 +73,8 @@ export class GameStore {
   private readonly now: () => number;
   private readonly timeoutMs: number;
   private known: Set<string>;
+  private failures = 0;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(deps: GameStoreDeps = {}) {
     this.fetchFn = deps.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
@@ -109,7 +134,8 @@ export class GameStore {
     if (draft.log.length > 500) draft.log = draft.log.slice(-500);
     this.persist(draft);
     this.set({ state: draft });
-    void this.sync();
+    // after a failure, the one retry timer sends the latest copy: no new request per answer (E-web-4)
+    if (!this.retryTimer) void this.sync();
     return draft;
   }
 
@@ -169,11 +195,35 @@ export class GameStore {
       this.running = null;
       if (this.again) {
         this.again = false;
-        void this.sync();
+        // a failed run already scheduled the retry that will send this change
+        if (!this.retryTimer) void this.sync();
       }
     });
     this.running = run;
     return run;
+  }
+
+  /** Try now instead of waiting for the retry timer (the browser came back online). */
+  resume(): Promise<void> {
+    this.clearRetry();
+    return this.sync();
+  }
+
+  private clearRetry() {
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = null;
+  }
+
+  /** One timer at a time; the wait doubles per failure, and a server's Retry-After is honoured. */
+  private scheduleRetry(serverWaitMs: number | null) {
+    this.clearRetry();
+    this.failures++;
+    const backoff = Math.min(RETRY_MAX_MS, RETRY_BASE_MS * 2 ** (this.failures - 1));
+    const wait = Math.min(RETRY_MAX_MS, Math.max(backoff, serverWaitMs ?? 0));
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
+      void this.sync();
+    }, wait);
   }
 
   /** Resolves when no sync is running and none is queued (tests, and "leave the page" flows). */
@@ -187,7 +237,7 @@ export class GameStore {
       for (let attempt = 0; attempt < MAX_PUT_TRIES; attempt++) {
         if (this.version === null) {
           const res = await this.call("/progress", { headers: { accept: "application/json" } });
-          if (!res.ok) throw new Error("GET /progress " + res.status);
+          if (!res.ok) throw new SyncError(res.status, retryAfter(res));
           const body = ProgressResponse.parse(await res.json());
           this.version = body.version;
           this.absorb(body.state);
@@ -204,17 +254,20 @@ export class GameStore {
           this.absorb(body.state);
           continue;
         }
-        if (!res.ok) throw new Error("PUT /progress " + res.status);
+        if (!res.ok) throw new SyncError(res.status, retryAfter(res));
         const body = ProgressResponse.parse(await res.json());
         this.version = body.version;
         this.absorb(body.state);
+        this.failures = 0;
+        this.clearRetry();
         this.set({ sync: "ok" });
         return;
       }
       throw new Error("progress kept conflicting");
-    } catch {
+    } catch (e) {
       this.version = null; // next time start from a fresh read
       this.set({ sync: "error" });
+      this.scheduleRetry(e instanceof SyncError ? e.retryAfterMs : null);
     }
   }
 }

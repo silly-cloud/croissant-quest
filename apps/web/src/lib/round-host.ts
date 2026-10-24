@@ -1,5 +1,5 @@
-import { TAGNAME } from "@cq/content";
-import { pickQuestions, tagStats, type Rng } from "@cq/shared";
+import { qid, TAGNAME, type Question } from "@cq/content";
+import { pickQuestions, retired, SEEN_CAP, tagStats, type Rng } from "@cq/shared";
 import { requestCoachRound, COACH_TIMEOUT_MS } from "./coach";
 import { RoundEngine, type Effects, type Pace, type RoundMode, type Timers } from "./engine";
 import type { GameStore } from "./game-store";
@@ -31,6 +31,14 @@ export type FreshResult = "ai" | "weak" | "empty" | "busy" | "stale";
 
 export const EMPTY_NOTE = "You've used every question 3 times. Come back after a break.";
 export const FALLBACK_NOTE = "Claude couldn't write them this time, so this drill comes from your own mistakes.";
+export const freshenNote = (n: number) =>
+  `You've seen ${n === 1 ? "one of these" : n + " of these"} ${SEEN_CAP} times. Claude is writing new ones…`;
+export const repeatNote = (n: number) =>
+  n === 1
+    ? "1 of these is a repeat: Claude couldn't write a new one this time."
+    : `${n} of these are repeats: Claude couldn't write new ones this time.`;
+/** The coach answers with at least 4 valid questions or falls back (CoachRoundResponse), so never ask for fewer. */
+const COACH_MIN = 4;
 
 /**
  * Owns the one live round. Every way a round can start or end goes through here, and each
@@ -66,10 +74,11 @@ export class RoundHost {
   }
 
   /** Start a round with these questions. Whatever was running is cancelled first. */
-  begin(topic: number, mode: RoundMode, qs: ReturnType<typeof pickQuestions>): RoundEngine {
+  begin(topic: number, mode: RoundMode, qs: Question[]): RoundEngine {
     this.invalidate();
     this.endCurrent();
     const engine = new RoundEngine(topic, mode, qs, {
+      repeats: new Set(retired(this.store.state, qs.filter((q) => !q._ai)).map(qid)),
       store: this.store,
       getPace: this.deps.getPace,
       fx: this.deps.fx,
@@ -85,13 +94,46 @@ export class RoundHost {
   }
 
   /** A round built from the learner's own record. null (and a note) when every question is used up. */
-  startLocal(topic: number, mode: "normal" | "weak"): RoundEngine | null {
-    const qs = pickQuestions(this.store.bank, this.store.state, topic, mode, this.deps.rng);
+  startLocal(topic: number, mode: "normal" | "weak", picked?: Question[]): RoundEngine | null {
+    const qs = picked ?? pickQuestions(this.store.bank, this.store.state, topic, mode, this.deps.rng);
     if (!qs.length) {
       this.set({ note: EMPTY_NOTE });
       return null;
     }
     return this.begin(topic, mode, qs);
+  }
+
+  /**
+   * The round page's entry point. Like startLocal, but a topic-6 round holding questions already seen
+   * SEEN_CAP times first asks the coach for that many new ones and swaps them in (legacy freshenRound).
+   * If the coach falls back, the repeats stay and each is labelled. null: no questions, or the learner left.
+   */
+  async startRound(topic: number, mode: "normal" | "weak"): Promise<RoundEngine | null> {
+    const qs = pickQuestions(this.store.bank, this.store.state, topic, mode, this.deps.rng);
+    const stale = topic === 6 ? retired(this.store.state, qs.filter((q) => !q._ai)) : [];
+    if (!qs.length || !stale.length) return this.startLocal(topic, mode, qs);
+    if (this.snap.busy) return null;
+    const g = ++this.gen;
+    const ctl = new AbortController();
+    this.abort = ctl;
+    this.set({ busy: true, note: freshenNote(stale.length) });
+    const made =
+      (await requestCoachRound(this.deps.fetch ?? ((...a) => fetch(...a)), {
+        n: Math.min(8, Math.max(COACH_MIN, stale.length)),
+        focus: [...new Set(stale.map((q) => q.tag))],
+        signal: ctl.signal,
+        timeoutMs: this.deps.coachTimeoutMs ?? COACH_TIMEOUT_MS,
+      })) ?? [];
+    if (g !== this.gen) return null; // left the page, quit, or another round started
+    this.abort = null;
+    this.set({ busy: false });
+    const out = qs.slice();
+    stale.forEach((q, i) => {
+      if (made[i]) out[out.indexOf(q)] = made[i]!;
+    });
+    const engine = this.begin(topic, mode, out);
+    if (engine.repeats.size) this.set({ note: repeatNote(engine.repeats.size) });
+    return engine;
   }
 
   private endCurrent() {

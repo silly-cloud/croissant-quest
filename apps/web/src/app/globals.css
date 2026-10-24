@@ -64,16 +64,18 @@ main:focus { outline: none; }
 /* ---------- HUD ---------- */
 #hud {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 12px 6px 16px; background: var(--bg); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap; row-gap: 2px;
+  padding: 4px 8px 4px 12px; background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.stat { display: flex; align-items: center; gap: 5px; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; min-height: 44px; }
+/* AUD-08: the HUD must fit 320 px with big numbers; stats shrink first, then the buttons wrap to a second row */
+.stat { display: flex; align-items: center; gap: 3px; min-width: 0; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; min-height: 44px; }
 .stat i { font-style: normal; font-size: 17px; line-height: 1; }
 .stat.s-streak { color: var(--rouge); } .stat.s-xp { color: var(--gold); } .stat.s-cr { color: var(--grn); }
-#hud .sp { flex: 1; }
-.stat + .stat { margin-left: 6px; }
+#hud .sp { flex: 1 1 0; min-width: 0; }
+#hud .tools { display: flex; gap: 4px; margin-left: auto; }
+.stat + .stat { margin-left: 4px; }
 .ghost {
-  min-width: 44px; min-height: 44px; padding: 7px 12px; border-radius: 999px;
+  min-width: 44px; min-height: 44px; padding: 7px 10px; border-radius: 999px;
   border: 1.5px solid var(--ui); background: var(--surf);
   font-size: 15px; font-weight: 600; color: var(--soft);
   display: inline-grid; place-items: center; text-decoration: none; line-height: 1;
@@ -155,6 +157,10 @@ main:focus { outline: none; }
 .qwrap { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
 .qkind { margin: 0; font-size: 11.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--faint); }
 .qkind:focus { outline: none; }
+.repeat {
+  display: inline-block; margin: 6px 0 0; padding: 2px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; background: var(--goldsoft); color: var(--ink); border: 1px solid var(--gold);
+}
 .card { background: var(--surf); border: 1.5px solid var(--line); border-radius: var(--r); padding: 20px 18px; box-shadow: 0 3px 10px -8px var(--shade); }
 .fr { font-family: Lora, Georgia, serif; font-size: 23px; line-height: 1.55; font-weight: 600; letter-spacing: -0.1px; word-break: break-word; }
 .fr.plain { font-family: inherit; font-size: 20px; }

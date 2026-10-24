@@ -1,5 +1,6 @@
 import type { Question } from "@cq/content";
 import { API_PREFIX, CoachExplainResponse, CoachRoundResponse } from "@cq/shared";
+import { clipGave } from "./engine";
 
 export const COACH_TIMEOUT_MS = 30_000;
 
@@ -55,7 +56,7 @@ export async function requestCoachRound(
 /** "Why yours missed" for typed answers. null = nothing to show. */
 export async function requestExplain(fetchFn: Fetch, qid: string, gave: string, timeoutMs = 12_000): Promise<string | null> {
   try {
-    const json = await withTimeout(timeoutMs, undefined, (s) => post(fetchFn, "/coach/explain", { qid, gave: gave.slice(0, 60) }, s));
+    const json = await withTimeout(timeoutMs, undefined, (s) => post(fetchFn, "/coach/explain", { qid, gave: clipGave(gave) }, s));
     const r = CoachExplainResponse.safeParse(json);
     return r.success && !r.data.fallback && r.data.text.trim() ? r.data.text : null;
   } catch {

@@ -52,7 +52,7 @@ export function GameProvider({ children, game }: { children: ReactNode; game?: G
   const [g] = useState<Game>(() => game ?? createGame());
   useEffect(() => {
     const off = trackPointer();
-    const resync = () => void g.store.sync();
+    const resync = () => void g.store.resume();
     addEventListener("online", resync);
     void g.store.loadBank();
     void g.store.sync();
