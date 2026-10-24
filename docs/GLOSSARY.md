@@ -1,0 +1,14 @@
+# Glossary
+- **Partitive article**: du / de la / de l' / des, "some" of an uncountable thing.
+- **Tag**: the rule a question tests (m, f, v, p, neg, qty, gen, ah, sans, twin, cnt, fix, gre, t1-t5). Has a rule card and a trick in `TAG`.
+- **Topic**: a stop on the map (44 listed, only 1-6 have questions; 1-5 start mastered).
+- **Tier**: question difficulty 1-5 inside a topic; a crown raises the tier a round draws from.
+- **Crown**: progress mark for a topic (0-5). Needs a round with at least half the topic's own questions, n-1 right (all right from crown 3), hearts left.
+- **Round**: up to 8 questions, 5 hearts, combo and XP.
+- **Retired question**: shown `SEEN_CAP` (3) times and not outstanding in `wrong`; only used as a last resort.
+- **Outstanding miss**: a question in `wrong` with a count above 0; stays drillable until answered right.
+- **Boss card**: shown before a normal round when one rule is under 60% after 3+ attempts (`weakTag`).
+- **Feel meter / calibration**: the learner rates themselves; the gap to `myRate` sets the next drill: proof, harder, more, aligned.
+- **qid**: stable question identity `t|k|s-or-en|a`; progress is keyed on it.
+- **Save / State / version**: one JSON progress document per device; `version` guards concurrent writes; counters merge by max.
+- **Coach**: server-side Anthropic call that writes fresh questions and explains near-misses; always has a local fallback.

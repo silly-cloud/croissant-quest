@@ -5,3 +5,5 @@ coverage
 .env
 *.tsbuildinfo
 graphify-out
+.claude/worktrees
+.superpowers
