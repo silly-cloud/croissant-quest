@@ -176,6 +176,11 @@ export class GameStore {
     return run;
   }
 
+  /** Resolves when no sync is running and none is queued (tests, and "leave the page" flows). */
+  async settled(): Promise<void> {
+    while (this.running) await this.running;
+  }
+
   private async runSync(): Promise<void> {
     this.set({ sync: "syncing" });
     try {

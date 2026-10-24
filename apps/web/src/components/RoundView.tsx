@@ -179,12 +179,12 @@ export function RoundView({ engine, onQuit, onDone }: { engine: RoundEngine; onQ
         </div>
       </div>
       <ComboLine combo={snap.combo} />
-      <QuestionPanel key={snap.i} engine={engine} />
+      <QuestionPanel key={"q-" + snap.i} engine={engine} />
       <div className="sr-only" role="status" aria-live="polite">
         {announce(snap)}
       </div>
       {snap.phase === "why" && (
-        <WhyCard key={snap.i} q={q} picked={snap.picked} accentsOnly={snap.accentsOnly} onDone={() => engine.next()} />
+        <WhyCard key={"why-" + snap.i} q={q} picked={snap.picked} accentsOnly={snap.accentsOnly} onDone={() => engine.next()} />
       )}
     </section>
   );

@@ -104,9 +104,9 @@ export function MapScreen() {
                 aria-label={`${name}. Stop ${id}. ${st === "done" ? "Cleared." : st === "locked" ? "Locked." : st === "soon" ? "Coming soon." : "Open."} ${crowns} of 5 crowns.`}
                 onClick={() => setOpen({ id, name, st })}
               >
-                <span className="disc" aria-hidden="true">
-                  {st === "done" ? "✓" : st === "locked" ? "🔒" : st === "soon" ? "🚧" : "🥐"}
-                  <span className="num">{id}</span>
+                {/* icon and number are drawn by CSS from data-*, so the button's visible text is just the stop name */}
+                <span className="disc" aria-hidden="true" data-icon={st === "done" ? "✓" : st === "locked" ? "🔒" : st === "soon" ? "🚧" : "🥐"}>
+                  <span className="num" data-num={id} />
                 </span>
                 <span className="crowns" aria-hidden="true">
                   {[0, 1, 2, 3, 4].map((k) => (
@@ -115,9 +115,7 @@ export function MapScreen() {
                     </span>
                   ))}
                 </span>
-                <span className="nodelabel" aria-hidden="true">
-                  {name}
-                </span>
+                <span className="nodelabel">{name}</span>
               </button>
             </li>
           );

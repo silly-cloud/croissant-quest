@@ -47,6 +47,23 @@ export function Sheet({ label, onClose, children }: SheetProps) {
       ref={ref}
       className="sheet"
       aria-label={label}
+      onKeyDown={(e) => {
+        // keep Tab inside the sheet: the native modal hides the page behind, this stops focus
+        // from walking out to the browser's own controls
+        if (e.key !== "Tab") return;
+        const items = [...e.currentTarget.querySelectorAll<HTMLElement>("a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex='-1'])")];
+        if (!items.length) return;
+        const first = items[0]!;
+        const last = items[items.length - 1]!;
+        const at = document.activeElement;
+        if (e.shiftKey && at === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && at === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }}
       onClick={(e) => {
         // a tap on the dim area lands on the dialog element itself
         if (e.target === ref.current) ref.current?.close();

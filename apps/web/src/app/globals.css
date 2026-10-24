@@ -122,6 +122,8 @@ main:focus { outline: none; }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @media (prefers-reduced-motion: reduce) { .node[data-st="active"] .disc { animation: none; } }
 .node[data-st="soon"] .disc { border-style: dashed; }
+.disc::before { content: attr(data-icon); }
+.num::before { content: attr(data-num); }
 .crowns { display: flex; gap: 2px; height: 13px; font-size: 11px; line-height: 1; }
 .crowns span { opacity: 0.22; } .crowns span.on { opacity: 1; }
 .nodelabel { font-size: 12.5px; font-weight: 600; text-align: center; color: var(--soft); line-height: 1.25; }
