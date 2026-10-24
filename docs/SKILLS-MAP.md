@@ -38,6 +38,9 @@ equivalents (ponytail-review, mattpocock-code-review via agents, superpowers-req
 | superpowers-subagent-driven-development | C | invoked; adapted: two write agents ran in parallel in separate worktrees on disjoint folders (the skill advises against parallel implementers; the brief asked for it). Ledger and per-task reviewers were NOT run; one reviewer per lane instead |
 | ponytail-review | C | Lane 1 reviewed: `docs/reviews/lane1-ponytail-review.md` (one fix applied) |
 
+| mattpocock-git-guardrails-claude-code | C | invoked via background agent that read its SKILL.md; `.claude/hooks/block-dangerous-git.sh` (force-push, reset --hard, clean -f, branch -D, checkout ., restore . blocked; plain push allowed); 23-case test passes; ADR 0007 |
+| mattpocock-setup-pre-commit | C | invoked via background agent that read its SKILL.md; Husky + lint-staged + typecheck on commit, unit tests on push; verified in a temp repo; not yet enabled in this clone (enabled after the lanes merge) |
+
 Not yet used: superpowers tdd/verification-before-completion/finishing-a-development-branch, mattpocock-pr/code-review/domain-modeling, caveman-review. Entries are added when they are really invoked.
 
 ## Exact installed pstack names (58; only `pstack-setup-pstack` is invocable by me, the other 57 are slash-only)
