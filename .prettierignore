@@ -1,0 +1,8 @@
+packages/content/data/
+pnpm-lock.yaml
+croissant-quest.html
+tests-legacy/
+node_modules/
+dist/
+.next/
+coverage/

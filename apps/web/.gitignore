@@ -1,0 +1,8 @@
+.next
+next-env.d.ts
+playwright-report
+test-results
+*.tsbuildinfo
+.next-real
+.e2e-real
+test-results-*.json

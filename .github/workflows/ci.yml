@@ -1,0 +1,72 @@
+name: ci
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cq
+          POSTGRES_PASSWORD: cq
+          POSTGRES_DB: cq_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U cq -d cq_test" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+    env:
+      # admin URL: the role may create databases. API e2e uses cq_test; the web real-API e2e creates and drops cq_web_e2e.
+      DATABASE_URL: postgresql://cq:cq@localhost:5432/cq_test
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 (v4.4.0)
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4 (v4.3.0)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (v4.4.0)
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - name: Unit tests and question-bank validation (packages, api)
+        run: pnpm -r --filter "!@cq/web" test
+      - name: Legacy suite and parity gate (69 legacy tests mapped)
+        run: |
+          node tests-legacy/C-behave.js
+          node tests-legacy/fixes.js
+          node scripts/parity-report.mjs
+      - name: Guardrail hook tests
+        run: bash .claude/hooks/test-guardrails.sh
+      - name: Web unit tests
+        run: pnpm --filter @cq/web --fail-if-no-match test
+      - name: API end-to-end (real Postgres)
+        run: pnpm --filter @cq/api --fail-if-no-match test:e2e
+      - name: Build
+        run: pnpm build
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @cq/web --fail-if-no-match exec playwright install --with-deps chromium
+      - name: Web end-to-end and accessibility (fake API)
+        run: pnpm --filter @cq/web --fail-if-no-match test:e2e
+      - name: Web end-to-end against the real API (Postgres)
+        run: pnpm --filter @cq/web --fail-if-no-match test:e2e:real
+      - name: Fail if no Playwright test ran
+        if: ${{ !cancelled() }}
+        working-directory: apps/web
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            for (const f of ["test-results-fake.json", "test-results-real.json"]) {
+              if (!fs.existsSync(f)) { console.error(f + " missing: Playwright did not run"); process.exit(1); }
+              const s = JSON.parse(fs.readFileSync(f, "utf8")).stats;
+              console.log(f, JSON.stringify(s));
+              if (!(s.expected > 0)) { console.error(f + ": zero Playwright tests passed"); process.exit(1); }
+            }'

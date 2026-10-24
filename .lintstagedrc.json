@@ -1,0 +1,4 @@
+{
+  "*.{ts,tsx,mjs}": "eslint --fix --no-warn-ignored --flag v10_config_lookup_from_file",
+  "*.{ts,tsx,json,md,css}": "prettier --ignore-unknown --write"
+}
