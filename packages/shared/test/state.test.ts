@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BANK, qid } from "@cq/content";
+import { BANK, TOPICS, qid } from "@cq/content";
 import { MASTERED, emptyState, mergeStates, noteAnswer, normState, tagStats } from "../src/index.js";
 
 const ids = new Set(BANK.map(qid));
@@ -35,7 +35,7 @@ describe("normState", () => {
       feelLog: Array.from({ length: 50 }, (_, i) => ({ feel: 999, mine: i, at: i, extra: 1 })),
     });
     expect(n.xp).toBe(0);
-    expect(n.cro).toBe(Number.MAX_SAFE_INTEGER);
+    expect(n.cro).toBe(1_000_000_000);
     expect(n.feel).toBe(100);
     expect(n.log).toHaveLength(1);
     expect(n.log[0]!.gave).toHaveLength(60);
@@ -43,6 +43,28 @@ describe("normState", () => {
     expect(Object.keys(n.log[0]!).sort()).toEqual(["at", "gave", "q", "t", "tag"]);
     expect(n.feelLog).toHaveLength(20);
     expect(n.feelLog[0]!.feel).toBe(100);
+  });
+  it("bounds growth: unknown crowns/seen keys dropped, key length and counts capped", () => {
+    const real = [...ids][0]!;
+    const topic = String(TOPICS[0]![0]);
+    const seen: Record<string, number> = { [real]: 2 };
+    for (let i = 0; i < 12_000; i++) seen[`6|choice|${Math.random().toString(36)}${i}|x`] = 1;
+    const n = normState({ seen, crowns: { [topic]: 2, nope: 9, "<b>": 1 }, wrong: { ["k".repeat(401)]: 1 } }, ids);
+    expect(Object.keys(n.seen)).toEqual([real]);
+    expect(n.crowns[topic]).toBe(2);
+    expect(n.crowns.nope).toBeUndefined();
+    expect(Object.keys(n.wrong)).toEqual([]);
+  });
+  it("caps counts and key length even without knownQids", () => {
+    const seen: Record<string, number> = { ["k".repeat(401)]: 1 };
+    for (let i = 0; i < 5000; i++) seen["k" + i] = 1;
+    const n = normState({ seen });
+    expect(Object.keys(n.seen)).toHaveLength(1000);
+    expect(n.seen["k".repeat(401)]).toBeUndefined();
+  });
+  it("clamps counters to 1e9", () => {
+    const n = normState({ xp: 1e12, cro: 2e9, rounds: Number.MAX_SAFE_INTEGER, streak: 5e9 });
+    expect([n.xp, n.cro, n.rounds, n.streak]).toEqual([1e9, 1e9, 1e9, 1e9]);
   });
   it("accepts an old-style save (seen flag 1) as a count", () => {
     expect(normState({ seen: { a: 1 } }).seen.a).toBe(1);
@@ -65,6 +87,32 @@ describe("mergeStates", () => {
       expect(m.feel).toBe(80);
       expect(m.calib).toBe("harder");
     }
+  });
+  it("streak and last travel together from the copy with the later last", () => {
+    const a = N({ streak: 9, last: "2026-01-01", ts: 9 }), b = N({ streak: 2, last: "2026-01-05", ts: 1 });
+    for (const m of [mergeStates(a, b), mergeStates(b, a)]) expect([m.streak, m.last]).toEqual([2, "2026-01-05"]);
+    const c = N({ streak: 3, last: "2026-01-05" });
+    expect(mergeStates(b, c).streak).toBe(3); // equal last -> max
+    expect(mergeStates(N({ streak: 7 }), b)).toMatchObject({ streak: 2, last: "2026-01-05" }); // null last loses
+  });
+  it("log is the union by (at,q), sorted by at, capped at 500; wrong stays newer-wins", () => {
+    const e = (q: string, at: number) => ({ q, t: 6, tag: "m", gave: "du", at });
+    const a = N({ ts: 1, wrong: { x: 1 }, log: [e("a", 1), e("b", 3)] });
+    const b = N({ ts: 2, wrong: {}, log: [e("b", 3), e("c", 2)] });
+    const m = mergeStates(a, b);
+    expect(m.log.map((x) => x.q)).toEqual(["a", "c", "b"]);
+    expect(m.wrong).toEqual({});
+    const big = N({ log: Array.from({ length: 500 }, (_, i) => e("q" + i, i)) });
+    const big2 = N({ log: Array.from({ length: 500 }, (_, i) => e("r" + i, 1000 + i)) });
+    const mm = mergeStates(big, big2);
+    expect(mm.log).toHaveLength(500);
+    expect(mm.log[0]!.q).toBe("r0");
+  });
+  it("prototype-named keys do not read from Object.prototype", () => {
+    const m = mergeStates(normState({ crowns: { constructor: 5 } }), normState({}));
+    expect(Object.hasOwn(m.crowns, "constructor")).toBe(false);
+    const m2 = mergeStates(normState({ seen: { constructor: 5 } }, new Set(["constructor"])), normState({}));
+    expect(m2.seen.constructor).toBe(5);
   });
   it("is symmetric on counters and idempotent", () => {
     const a = N({ xp: 5, ts: 1, crowns: { 6: 2 } }), b = N({ xp: 9, ts: 2, crowns: { 6: 1 } });
