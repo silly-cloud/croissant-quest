@@ -114,11 +114,33 @@ export class GameStore {
     return emptyState();
   }
 
-  private persist(s: State) {
+  /**
+   * Write to this device, merged with whatever is stored now: another tab may have written since we
+   * read it (AUD-09), and a plain overwrite would drop its progress. Returns what was written.
+   */
+  private persist(s: State): State {
+    let out = s;
     try {
-      this.storage?.setItem(LS_KEY, JSON.stringify(s));
+      const raw = this.storage?.getItem(LS_KEY);
+      if (raw) out = mergeStates(normState(JSON.parse(raw), this.known), s);
+    } catch {
+      /* a broken stored copy: ours replaces it */
+    }
+    try {
+      this.storage?.setItem(LS_KEY, JSON.stringify(out));
     } catch {
       /* storage full or blocked: the in-memory copy still plays */
+    }
+    return out;
+  }
+
+  /** Another tab wrote this device's copy (the `storage` event): take its progress in. Writes nothing, so tabs never ping-pong. */
+  absorbStored() {
+    try {
+      const raw = this.storage?.getItem(LS_KEY);
+      if (raw) this.set({ state: mergeStates(this.snap.state, normState(JSON.parse(raw), this.known)) });
+    } catch {
+      /* unreadable: keep ours */
     }
   }
 
@@ -132,18 +154,17 @@ export class GameStore {
     fn(draft);
     draft.ts = Math.max(this.now(), draft.ts + 1);
     if (draft.log.length > 500) draft.log = draft.log.slice(-500);
-    this.persist(draft);
-    this.set({ state: draft });
+    const saved = this.persist(draft);
+    this.set({ state: saved });
     // after a failure, the one retry timer sends the latest copy: no new request per answer (E-web-4)
     if (!this.retryTimer) void this.sync();
-    return draft;
+    return saved;
   }
 
   /** Merge a copy from elsewhere (API, another tab) into ours. Counters only grow, so this never loses progress. */
   private absorb(remote: unknown) {
     const merged = mergeStates(this.snap.state, normState(remote, this.known));
-    this.persist(merged);
-    this.set({ state: merged });
+    this.set({ state: this.persist(merged) });
   }
 
   /* ---------- API ---------- */

@@ -191,6 +191,35 @@ describe("E-web-4: a failing sync backs off instead of re-reading on every answe
   });
 });
 
+describe("AUD-09: two offline tabs on one device", () => {
+  const [q1, q2] = BANK.filter((q) => q.t === 6);
+  const offline = (storage: ReturnType<typeof memStorage>) => new GameStore({ storage, fetch: () => Promise.reject(new TypeError("offline")) });
+
+  it("a write never drops what the other tab stored meanwhile", () => {
+    const storage = memStorage();
+    const a = offline(storage);
+    const b = offline(storage); // both read the empty copy
+    a.update((d) => void ((d.seen[qid(q1!)] = 1), (d.xp += 10)));
+    b.update((d) => void (d.seen[qid(q2!)] = 1));
+    const stored = JSON.parse(storage.raw.get("croissant-quest-v1")!) as { seen: Record<string, number>; xp: number };
+    expect(stored.seen[qid(q1!)]).toBe(1);
+    expect(stored.seen[qid(q2!)]).toBe(1);
+    expect(stored.xp).toBe(10);
+    // a fresh tab after A closes still has A's answer
+    expect(offline(storage).state.seen[qid(q1!)]).toBe(1);
+  });
+
+  it("the storage event brings the other tab's progress onto this screen", () => {
+    const storage = memStorage();
+    const a = offline(storage);
+    const b = offline(storage);
+    a.update((d) => void (d.xp = 25));
+    expect(b.state.xp).toBe(0);
+    b.absorbStored();
+    expect(b.state.xp).toBe(25);
+  });
+});
+
 describe("AUD-20: retired repeats in a topic-6 round", () => {
   const retireAll = (store: GameStore) =>
     store.update((d) => {
