@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { answer, currentQuestion, fakeReset, fakeSet, fakeState, playPerfectRound, qidOf, qwrap, startTopic6, studyPace } from "./helpers";
+import { answer, apiDown, currentQuestion, fakeReset, fakeSet, fakeState, playPerfectRound, qidOf, qwrap, REAL, serverProgress, startTopic6, studyPace } from "./helpers";
 
 test.beforeEach(async ({ page, request }) => {
   await fakeReset(request);
@@ -37,10 +37,11 @@ test("play a full round answering everything correctly, then see short results",
   await expect(page.getByRole("button", { name: /Drill my weak spots/ })).toBeInViewport();
 
   // progress reached the API with an If-Match
-  await expect.poll(async () => (await fakeState(request)).version).toBeGreaterThan(0);
-  const st = await fakeState(request);
+  // (the real API answers 428 to a PUT without If-Match, so a saved version proves it there)
+  await expect.poll(async () => (await serverProgress(page, request)).version).toBeGreaterThan(0);
+  const st = await serverProgress(page, request);
   expect((st.state as { xp: number }).xp).toBeGreaterThan(0);
-  expect(st.calls.some((c) => c.method === "PUT" && c.ifMatch !== null)).toBe(true);
+  if (!REAL) expect((await fakeState(request)).calls.some((c) => c.method === "PUT" && c.ifMatch !== null)).toBe(true);
 
   // the say-list shows three readings per sentence
   await page.getByText("Say it out loud").click();
@@ -152,6 +153,7 @@ test("coach unavailable: Fresh questions and Weak Spots still start a round", as
 });
 
 test("coach questions start an AI round", async ({ page, request }) => {
+  test.skip(REAL, "the real API runs without a coach key, so it never returns questions");
   await fakeSet(request, { coach: "questions" });
   await page.goto("/");
   await page.getByRole("button", { name: /Fresh questions from Claude/ }).click();
@@ -160,7 +162,7 @@ test("coach questions start an AI round", async ({ page, request }) => {
 });
 
 test("the API down: a banner says so, the round still plays, progress stays on the device", async ({ page, request }) => {
-  await fakeSet(request, { down: true });
+  await apiDown(page, request, true);
   await studyPace(page);
   await page.goto("/");
   const banner = page.getByRole("status").filter({ hasText: /Not synced/ });
@@ -172,10 +174,10 @@ test("the API down: a banner says so, the round still plays, progress stays on t
   await expect(page.locator(".s-xp")).toContainText("10");
   await expect(banner).toBeVisible();
   // the API comes back: the next save syncs and the banner clears
-  await fakeSet(request, { down: false });
+  await apiDown(page, request, false);
   await page.evaluate(() => dispatchEvent(new Event("online")));
   await expect(banner).toBeHidden();
-  await expect.poll(async () => ((await fakeState(request)).state as { xp?: number }).xp).toBe(10);
+  await expect.poll(async () => ((await serverProgress(page, request)).state as { xp?: number }).xp).toBe(10);
 });
 
 test("settings: pace, sound and theme persist", async ({ page }) => {

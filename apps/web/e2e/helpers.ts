@@ -10,6 +10,7 @@ interface BankQ {
   s?: string;
   en?: string;
   a: string;
+  tag: string;
   o?: string[];
   bad?: string;
 }
@@ -17,11 +18,40 @@ const raw = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), "../../packag
 export const qidOf = (q: BankQ) => q.t + "|" + q.k + "|" + (q.s || q.en || "") + "|" + q.a;
 const byId = new Map(raw.map((q) => [qidOf(q), q]));
 
+/** playwright.real.config.ts: the real NestJS API on Postgres, no coach key. */
+export const REAL = process.env.E2E_API === "real";
+
+/** Fake API: forget everything. Real API: nothing to do, every test's browser context is a new device. */
 export async function fakeReset(request: import("@playwright/test").APIRequestContext) {
+  if (REAL) return;
   await request.post(`${FAKE}/__fake/reset`);
 }
 export async function fakeSet(request: import("@playwright/test").APIRequestContext, patch: Record<string, unknown>) {
+  if (REAL) {
+    // the real API has no key, so the coach always falls back; anything else needs the fake
+    if (Object.keys(patch).every((k) => k === "coach") && patch.coach === "fallback") return;
+    throw new Error("fakeSet needs the fake API: " + JSON.stringify(patch));
+  }
   await request.post(`${FAKE}/__fake/set`, { data: patch });
+}
+
+/** Take the API away from the browser (fake: answers 503; real: requests to /v1 fail at the network). */
+export async function apiDown(page: Page, request: import("@playwright/test").APIRequestContext, down: boolean) {
+  if (!REAL) return fakeSet(request, { down });
+  if (down) await page.route("**/v1/**", (r) => r.abort("connectionrefused"));
+  else await page.unroute("**/v1/**");
+}
+
+/** What the server has saved for this browser's device. */
+export async function serverProgress(page: Page, request: import("@playwright/test").APIRequestContext) {
+  if (!REAL) {
+    const s = await fakeState(request);
+    return { version: s.version, state: s.state };
+  }
+  // page.request shares the browser context's cookies, so this reads the same device
+  const res = await page.request.get("/v1/progress");
+  expect(res.status()).toBe(200);
+  return (await res.json()) as { version: number; state: Record<string, unknown> };
 }
 export async function fakeState(request: import("@playwright/test").APIRequestContext) {
   return (await (await request.get(`${FAKE}/__fake/state`)).json()) as {
