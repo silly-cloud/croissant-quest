@@ -1,0 +1,2449 @@
+<title>Croissant Quest</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  --bg:#EDF1EA; --surf:#FFFFFF; --surf2:#E2E9DF; --sunk:#D9E1D6;
+  --ink:#152219; --soft:#5B6D61; --faint:#5F6E65;
+  --line:#CFD9CB; --grn:#0E5B43; --grn2:#15805F; --grnsoft:#DCEFE5;
+  --gold:#96701A; --gold2:#E4BA55; --goldsoft:#F7ECCF;
+  --rouge:#C21B33; --rougesoft:#FBE2E5;
+  --lock:#A6B2A8; --shade:rgba(16,50,36,.13);
+  --r:16px;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#0E1512; --surf:#18211C; --surf2:#212C25; --sunk:#131B16;
+  --ink:#E9F1EB; --soft:#9CADA2; --faint:#8B9D92;
+  --line:#2B3830; --grn:#31AF84; --grn2:#3FC79A; --grnsoft:#143229;
+  --gold:#E0B551; --gold2:#F0CC79; --goldsoft:#33290F;
+  --rouge:#F4697F; --rougesoft:#3A1820;
+  --lock:#46564C; --shade:rgba(0,0,0,.45);
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1512; --surf:#18211C; --surf2:#212C25; --sunk:#131B16;
+  --ink:#E9F1EB; --soft:#9CADA2; --faint:#8B9D92;
+  --line:#2B3830; --grn:#31AF84; --grn2:#3FC79A; --grnsoft:#143229;
+  --gold:#E0B551; --gold2:#F0CC79; --goldsoft:#33290F;
+  --rouge:#F4697F; --rougesoft:#3A1820;
+  --lock:#46564C; --shade:rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:Fredoka,"Segoe UI",system-ui,sans-serif;
+  font-size:16px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+
+#app{max-width:470px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  background:var(--bg);position:relative}
+
+/* ---------- HUD ---------- */
+#hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.stat{display:flex;align-items:center;gap:5px;font-weight:600;font-size:15px;
+  font-variant-numeric:tabular-nums}
+.stat i{font-style:normal;font-size:17px;line-height:1}
+.stat.s-streak{color:var(--rouge)} .stat.s-xp{color:var(--gold)} .stat.s-cr{color:var(--grn)}
+#hud .sp{flex:1}
+.ghost{padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);
+  background:var(--surf);font-size:13px;font-weight:600;color:var(--soft)}
+.ghost:hover{border-color:var(--grn);color:var(--grn)}
+
+/* ---------- MAP ---------- */
+#scr-map{padding:0 16px 40px}
+.banner{margin:18px 0 6px;padding:18px 20px;border-radius:22px;
+  background:linear-gradient(150deg,var(--grn) 0%,var(--grn2) 100%);
+  color:#F4FBF7;box-shadow:0 8px 22px -12px var(--shade);position:relative;overflow:hidden}
+.banner h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.4px}
+.banner p{margin:4px 0 0;font-size:14px;opacity:.86;font-weight:400}
+.banner .croiss{position:absolute;right:-6px;top:-10px;font-size:76px;opacity:.16;transform:rotate(-14deg)}
+
+.weak{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;text-align:left;
+  margin:14px 0 4px;padding:13px 16px;border-radius:var(--r);
+  background:var(--surf);border:1.5px solid var(--line)}
+.weak:hover{border-color:var(--gold)}
+.weak i{font-style:normal;font-size:22px}
+.weak b{display:block;font-size:15px;font-weight:600}
+.weak span{font-size:12.5px;color:var(--soft);font-weight:400}
+
+.path{position:relative;padding:26px 0 10px}
+.path::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:0;
+  border-left:3px dashed var(--line);transform:translateX(-50%)}
+.node{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;
+  margin:0 auto 22px;width:132px;transform:translateX(var(--off,0))}
+.disc{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;
+  font-size:26px;font-weight:700;position:relative;
+  background:var(--surf2);color:var(--lock);
+  border:3px solid var(--line);box-shadow:0 5px 0 0 var(--line)}
+.node[data-st="done"] .disc{background:var(--grn);color:#fff;border-color:var(--grn);
+  box-shadow:0 5px 0 0 color-mix(in srgb,var(--grn) 70%,#000)}
+.node[data-st="active"] .disc{background:var(--gold2);color:#3A2B06;border-color:var(--gold);
+  box-shadow:0 5px 0 0 var(--gold);animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.node[data-st="active"] .disc{animation:none}}
+.node[data-st="soon"] .disc{border-style:dashed}
+.crowns{display:flex;gap:2px;height:13px;font-size:11px;line-height:1}
+.crowns span{opacity:.22}
+.crowns span.on{opacity:1}
+.node label{font-size:12.5px;font-weight:600;text-align:center;color:var(--soft);
+  line-height:1.25;cursor:pointer}
+.node[data-st="active"] label{color:var(--ink)}
+.node .num{position:absolute;top:-4px;left:-4px;background:var(--surf);color:var(--faint);
+  border:2px solid var(--line);border-radius:999px;font-size:10px;font-weight:700;
+  width:22px;height:22px;display:grid;place-items:center}
+.node[data-st="locked"]{opacity:.62}
+.fade{text-align:center;font-size:12.5px;color:var(--faint);padding:6px 0 0}
+
+/* ---------- ROUND ---------- */
+#scr-round{display:flex;flex-direction:column;flex:1;padding:0 16px 20px}
+.rbar{display:flex;align-items:center;gap:12px;padding:12px 0 4px}
+.quit{font-size:22px;color:var(--soft);line-height:1;padding:10px 13px}
+.track{flex:1;height:13px;border-radius:999px;background:var(--sunk);overflow:hidden}
+.fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--grn),var(--grn2));
+  transition:width .35s cubic-bezier(.3,1.3,.5,1)}
+.hearts{display:flex;gap:1px;font-size:15px;line-height:1}
+.hearts span{transition:opacity .2s,transform .2s}
+.hearts span.gone{opacity:.2;transform:scale(.8)}
+
+.combo{height:20px;text-align:center;font-size:13px;font-weight:600;color:var(--gold);
+  opacity:0;transition:opacity .2s}
+.combo.on{opacity:1}
+
+.qwrap{flex:1;display:flex;flex-direction:column;gap:16px;padding-top:8px}
+.qkind{font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint)}
+.card{background:var(--surf);border:1.5px solid var(--line);border-radius:var(--r);
+  padding:20px 18px;box-shadow:0 3px 10px -8px var(--shade)}
+.fr{font-family:Lora,Georgia,serif;font-size:23px;line-height:1.55;font-weight:600;
+  letter-spacing:-.1px;word-break:break-word}
+.fr .bl{display:inline-block;min-width:62px;border-bottom:3px solid var(--gold);
+  vertical-align:-3px;height:1.1em}
+.gloss{margin-top:10px;font-size:14px;color:var(--soft);font-weight:400;font-style:italic}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{padding:15px 10px;border-radius:14px;background:var(--surf);
+  border:2px solid var(--line);box-shadow:0 3px 0 0 var(--line);
+  font-family:Lora,Georgia,serif;font-size:18px;font-weight:600;
+  transition:transform .08s}
+.opt:active{transform:translateY(2px)}
+.opt.sel{border-color:var(--grn);background:var(--grnsoft);box-shadow:0 3px 0 0 var(--grn)}
+.opt.long{grid-column:1/-1;font-size:16px}
+.opt[disabled]{cursor:default}
+
+.tiles{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:8px;
+  border-radius:12px;background:var(--sunk);border:1.5px dashed var(--line);align-content:flex-start}
+.tile{padding:12px 14px;border-radius:10px;background:var(--surf);border:2px solid var(--line);
+  box-shadow:0 2px 0 0 var(--line);font-family:Lora,Georgia,serif;font-size:16px;font-weight:600}
+.tiles.bank{background:transparent;border:0;padding:0;min-height:0}
+.tile.used{opacity:.25;pointer-events:none}
+
+.wordline{display:flex;flex-wrap:wrap;gap:6px}
+.wd{padding:11px 10px;border-radius:9px;border:2px solid transparent;
+  font-family:Lora,Georgia,serif;font-size:19px;font-weight:600}
+.wd:hover{border-color:var(--gold)}
+.wd.picked{border-color:var(--rouge);background:var(--rougesoft)}
+
+.typebox{width:100%;padding:14px 14px;border-radius:14px;border:2px solid var(--line);
+  background:var(--surf);color:var(--ink);font-family:Lora,Georgia,serif;font-size:19px;
+  font-weight:600}
+.typebox:focus{outline:none;border-color:var(--grn)}
+.accents{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.acc{width:38px;height:44px;border-radius:9px;background:var(--surf2);border:1.5px solid var(--line);
+  font-family:Lora,Georgia,serif;font-size:17px;font-weight:600}
+
+.go{width:100%;padding:16px;border-radius:15px;font-size:16px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;
+  background:var(--grn);color:#fff;box-shadow:0 4px 0 0 color-mix(in srgb,var(--grn) 68%,#000);
+  transition:transform .08s}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 0 color-mix(in srgb,var(--grn) 68%,#000)}
+.go[disabled]{background:var(--surf2);color:var(--faint);box-shadow:0 4px 0 0 var(--line);cursor:default}
+
+/* ---------- SHEET ---------- */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(10,24,18,.45);
+  display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{width:100%;max-width:470px;background:var(--surf);
+  border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));
+  max-height:86vh;overflow-y:auto;animation:up .24s cubic-bezier(.3,1.1,.5,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.sheet,.scrim{animation:none}}
+.verdict{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:700;margin-bottom:12px}
+.verdict.ok{color:var(--grn)} .verdict.no{color:var(--rouge)}
+.answerline{font-family:Lora,Georgia,serif;font-size:21px;font-weight:600;line-height:1.5;
+  padding:13px 15px;border-radius:13px;background:var(--grnsoft);color:var(--ink);
+  margin-bottom:14px;word-break:break-word}
+.answerline em{font-style:normal;color:var(--grn);text-decoration:underline;
+  text-decoration-thickness:3px;text-underline-offset:4px}
+.yourline{font-size:13.5px;color:var(--soft);margin:-8px 0 14px}
+.yourline s{color:var(--rouge);text-decoration-color:var(--rouge)}
+.rule{display:flex;gap:10px;font-size:14.5px;line-height:1.5;margin-bottom:10px;font-weight:400}
+.rule i{font-style:normal;font-size:17px;flex:none;line-height:1.3}
+.rule b{font-weight:600}
+.pron{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.pron h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);font-weight:600}
+.pron dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:15px}
+.pron dt{font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;
+  letter-spacing:.06em;padding-top:3px}
+.pron dd{margin:0;font-weight:500}
+.pron .note{margin:10px 0 0;font-size:11.5px;color:var(--faint);font-weight:400}
+
+.sheet h3{margin:0 0 4px;font-size:21px;font-weight:700}
+.sheet .sub{margin:0 0 16px;font-size:13.5px;color:var(--soft);font-weight:400}
+.sheet .rules{font-size:14.5px;line-height:1.6;font-weight:400}
+.sheet .rules h5{margin:16px 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--grn);font-weight:700}
+.sheet .rules p{margin:0 0 8px}
+.sheet .rules code{font-family:Lora,Georgia,serif;font-weight:600;font-size:15.5px;
+  background:var(--surf2);padding:1px 6px;border-radius:6px}
+.sheet .rules .tip{background:var(--goldsoft);border-radius:12px;padding:11px 13px;margin:10px 0;
+  font-size:14px}
+.row2{display:flex;gap:10px;margin-top:16px}
+.row2 .go{flex:1}
+.go.alt{background:var(--surf);color:var(--ink);border:2px solid var(--line);
+  box-shadow:0 4px 0 0 var(--line)}
+
+/* ---------- RESULTS ---------- */
+#scr-done{flex:1;display:flex;flex-direction:column;justify-content:flex-start;
+  gap:18px;padding:30px 16px 40px;text-align:center}
+.trophy{font-size:72px;line-height:1}
+#scr-done h2{margin:0;font-size:27px;font-weight:700}
+#scr-done .sub{margin:0;color:var(--soft);font-size:14.5px;font-weight:400}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0}
+.sc{background:var(--surf);border:1.5px solid var(--line);border-radius:14px;padding:13px 6px}
+.sc b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.sc span{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.crownwin{background:var(--goldsoft);border-radius:15px;padding:14px;font-size:14.5px;font-weight:600}
+
+/* ---------- SAY-IT STRIP (shown on a CORRECT answer) ---------- */
+.okstrip{border:2px solid var(--grn);background:var(--grnsoft);border-radius:14px;
+  padding:13px 15px;animation:up2 .22s cubic-bezier(.3,1.1,.5,1)}
+@keyframes up2{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.okstrip .say{font-family:Lora,Georgia,serif;font-size:19px;font-weight:600;
+  line-height:1.45;margin-bottom:9px;word-break:break-word}
+.okstrip dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 11px;font-size:14.5px}
+.okstrip dt{font-size:10.5px;font-weight:700;color:var(--grn);text-transform:uppercase;
+  letter-spacing:.06em;padding-top:3px}
+.okstrip dd{margin:0;font-weight:500}
+.okstrip .tapon{margin-top:10px;font-size:12px;color:var(--soft);font-weight:500}
+.okstrip{cursor:pointer}
+.okstrip .cd{height:5px;border-radius:99px;background:color-mix(in srgb,var(--grn) 22%,transparent);
+  margin-top:11px;overflow:hidden}
+.okstrip .cd i{display:block;height:100%;background:var(--grn);border-radius:99px;
+  transform-origin:left center;animation:cdrun var(--cd,3400ms) linear forwards}
+@keyframes cdrun{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.okstrip.held .cd{display:none}
+.okstrip .hold{margin-top:9px;font-size:12px;color:var(--grn);font-weight:600}
+
+/* ---------- END-OF-ROUND PRONUNCIATION LIST ---------- */
+.saylist{text-align:left;background:var(--surf);border:1.5px solid var(--line);
+  border-radius:var(--r);padding:16px 15px}
+.saylist h4{margin:0 0 4px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);font-weight:600}
+.saylist>p{margin:0 0 12px;font-size:12.5px;color:var(--soft);font-weight:400}
+.sayrow{border-top:1px solid var(--line);padding:11px 0}
+.sayrow:first-of-type{border-top:0}
+.sayrow .fr2{font-family:Lora,Georgia,serif;font-size:17px;font-weight:600;line-height:1.4;
+  display:flex;gap:7px;align-items:baseline}
+.sayrow .fr2 .mk{font-size:12px;flex:none}
+.sayrow dl{margin:7px 0 0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13.5px}
+.sayrow dt{font-size:10px;font-weight:700;color:var(--faint);text-transform:uppercase;
+  letter-spacing:.05em;padding-top:2px}
+.sayrow dd{margin:0;font-weight:500}
+
+/* ---------- REPORT + COACH ---------- */
+.report{text-align:left;background:var(--surf);border:1.5px solid var(--line);
+  border-radius:var(--r);padding:16px 15px}
+.report h4{margin:0 0 12px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);font-weight:600}
+.bar{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin-bottom:11px}
+.bar .nm{font-size:13.5px;font-weight:500}
+.bar .sc2{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--soft)}
+.bar .meter{grid-column:1/-1;height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar .meter i{display:block;height:100%;border-radius:99px}
+.bar.ok .meter i{background:var(--grn)} .bar.ok .sc2{color:var(--grn)}
+.bar.mid .meter i{background:var(--gold)} .bar.mid .sc2{color:var(--gold)}
+.bar.low .meter i{background:var(--rouge)} .bar.low .sc2{color:var(--rouge)}
+.coach{margin-top:6px;border-top:1px solid var(--line);padding-top:13px}
+.coach-h{display:flex;align-items:center;gap:7px;font-size:12.5px;margin-bottom:7px;color:var(--faint)}
+.coach-h i{font-style:normal;font-size:15px}
+.coach-h b{font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:11.5px}
+.coach-body{font-size:14.5px;line-height:1.6;font-weight:400;white-space:pre-wrap}
+.coach-body.wait{color:var(--faint);font-style:italic}
+.tierline{margin-top:9px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);font-weight:600}
+/* ---------- FEEL METER — you rate yourself before I show my number ---------- */
+.feel{text-align:left;background:var(--surf);border:1.5px solid var(--line);
+  border-radius:var(--r);padding:17px 15px 15px}
+.feel h4{margin:0 0 3px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);font-weight:600}
+.feel .fq{margin:0 0 13px;font-size:14.5px;font-weight:500;line-height:1.45}
+.owned{margin:0 0 15px;padding:11px 12px;border-radius:13px;background:var(--grnsoft)}
+.owned b{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--grn);margin-bottom:7px}
+.ownpill{display:inline-block;background:var(--surf);border:1.5px solid var(--grn);
+  border-radius:999px;padding:3px 10px;margin:0 5px 5px 0;font-size:12.5px;font-weight:600}
+.ownpill i{font-style:normal;font-weight:700;color:var(--grn);font-variant-numeric:tabular-nums}
+.feelhead{display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:5px}
+.feelface{font-size:42px;line-height:1}
+.feelpct{font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.feelword{text-align:center;font-size:14px;font-weight:600;color:var(--grn);margin-bottom:11px}
+.feel input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;
+  background:transparent;margin:0;display:block;cursor:pointer}
+.feel input[type=range]::-webkit-slider-runnable-track{height:12px;border-radius:99px;
+  background:linear-gradient(90deg,var(--rouge),var(--gold) 55%,var(--grn));border:none}
+.feel input[type=range]::-moz-range-track{height:12px;border-radius:99px;
+  background:linear-gradient(90deg,var(--rouge),var(--gold) 55%,var(--grn));border:none}
+.feel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:34px;height:34px;margin-top:-11px;border-radius:50%;background:var(--surf);
+  border:4px solid var(--grn);box-shadow:0 2px 7px rgba(0,0,0,.22)}
+.feel input[type=range]::-moz-range-thumb{width:34px;height:34px;border-radius:50%;
+  background:var(--surf);border:4px solid var(--grn);box-shadow:0 2px 7px rgba(0,0,0,.22)}
+.feel input[type=range]:focus-visible{outline:none}
+.feel input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--goldsoft)}
+.feelticks{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);
+  font-weight:600;margin:-2px 0 14px}
+.feel .go{margin:0}
+.fverdict{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.vrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.vcell{background:var(--sunk);border-radius:13px;padding:11px 6px;text-align:center}
+.vcell b{display:block;font-size:25px;font-weight:700;font-variant-numeric:tabular-nums}
+.vcell span{font-size:10.5px;color:var(--faint);text-transform:uppercase;
+  letter-spacing:.07em;font-weight:600}
+.vcell.mineu b{color:var(--grn)}
+.vtitle{font-size:15.5px;font-weight:700;margin-bottom:5px}
+.vbody{font-size:14px;line-height:1.6;font-weight:400}
+.vbody b{font-weight:700}
+.fverdict.hard .vtitle{color:var(--gold)}
+.fverdict.more .vtitle{color:var(--rouge)}
+.fverdict.same .vtitle{color:var(--grn)}
+.accord{margin-top:12px;background:var(--grnsoft);border-radius:12px;padding:11px 12px;
+  font-size:13.5px;font-weight:500;line-height:1.55}
+.bar .acc{font-size:11px;font-weight:700;color:var(--grn);margin-left:6px}
+.exbar{display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-size:12.5px;color:var(--soft)}
+.exbar .meter{flex:1;height:7px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.exbar .meter i{display:block;height:100%;background:var(--grn);border-radius:99px}
+
+/* ---------- JUICE ---------- */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:90}
+.floatxp{position:fixed;z-index:95;pointer-events:none;font-weight:700;font-size:26px;
+  color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.18);
+  animation:flt .9s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes flt{0%{transform:translate(-50%,0) scale(.6);opacity:0}
+  25%{transform:translate(-50%,-14px) scale(1.25);opacity:1}
+  100%{transform:translate(-50%,-70px) scale(1);opacity:0}}
+.opt.good{border-color:var(--grn)!important;background:var(--grnsoft)!important;
+  box-shadow:0 3px 0 0 var(--grn)!important;animation:pop .32s cubic-bezier(.3,1.6,.5,1)}
+.opt.bad{border-color:var(--rouge)!important;background:var(--rougesoft)!important;
+  box-shadow:0 3px 0 0 var(--rouge)!important;animation:shake .36s}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}
+  40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+#app.hit{animation:shake .3s}
+.combo{height:26px;font-size:14px;transition:opacity .2s,transform .2s}
+.combo.on{opacity:1;animation:popc .3s cubic-bezier(.3,1.7,.5,1)}
+@keyframes popc{0%{transform:scale(.7)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+.combo.hot{color:var(--rouge);font-size:17px;font-weight:700;letter-spacing:.02em}
+.combo.blaze{color:var(--rouge);font-size:19px;font-weight:700;
+  text-shadow:0 0 18px color-mix(in srgb,var(--rouge) 55%,transparent)}
+#scr-round.glow{background:radial-gradient(circle at 50% 22%,
+  color-mix(in srgb,var(--gold) 16%,transparent) 0%, transparent 62%)}
+.fill{box-shadow:0 0 12px -2px color-mix(in srgb,var(--grn2) 80%,transparent)}
+.trophy{animation:drop .6s cubic-bezier(.2,1.5,.4,1)}
+@keyframes drop{0%{transform:scale(0) rotate(-25deg)}70%{transform:scale(1.18) rotate(6deg)}
+  100%{transform:scale(1) rotate(0)}}
+.sc b{transition:transform .2s}
+.stat.bump i{animation:popc .4s}
+@media (prefers-reduced-motion:reduce){
+  .floatxp,.opt.good,.opt.bad,#app.hit,.combo.on,.trophy,.stat.bump i{animation:none}
+}
+</style>
+
+<div id="app">
+  <header id="hud">
+    <div class="stat s-streak"><i>🔥</i><span id="h-streak">0</span></div>
+    <div class="stat s-xp"><i>⭐</i><span id="h-xp">0</span></div>
+    <div class="stat s-cr"><i>🥐</i><span id="h-cro">0</span></div>
+    <div class="sp"></div>
+    <button class="ghost" id="h-pace" aria-label="Pace">🐇</button>
+    <button class="ghost" id="h-mute" aria-label="Sound on or off">🔊</button>
+    <button class="ghost" id="h-theme" aria-label="Switch theme">◐</button>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column">
+    <section id="scr-map">
+      <div class="banner">
+        <div class="croiss">🥐</div>
+        <h1>Croissant Quest</h1>
+        <p id="ban-sub">Le voyage continue…</p>
+      </div>
+      <button class="weak" id="btn-weak">
+        <i>⚡</i>
+        <b>Weak Spots</b>
+        <span id="weak-sub">Nothing to fix yet — play a round first</span>
+      </button>
+      <button class="weak" id="btn-ai" hidden>
+        <i>✨</i>
+        <b>Fresh questions from Claude</b>
+        <span id="ai-sub">Never-before-seen exercises aimed at your weak spots</span>
+      </button>
+      <div class="path" id="path"></div>
+      <p class="fade">More stops open as you go 🚇</p>
+    </section>
+
+    <section id="scr-round" hidden>
+      <div class="rbar">
+        <button class="quit" id="btn-quit" aria-label="Leave round">✕</button>
+        <div class="track"><div class="fill" id="fill"></div></div>
+        <div class="hearts" id="hearts"></div>
+      </div>
+      <div class="combo" id="combo"></div>
+      <div class="qwrap" id="qwrap"></div>
+      <button class="go" id="btn-check" disabled>Check</button>
+    </section>
+
+    <section id="scr-done" hidden>
+      <div class="trophy" id="d-icon">🥐</div>
+      <h2 id="d-title">Round complete</h2>
+      <p class="sub" id="d-sub"></p>
+      <div class="scores">
+        <div class="sc"><b id="d-xp">0</b><span>XP</span></div>
+        <div class="sc"><b id="d-acc">0/8</b><span>Correct</span></div>
+        <div class="sc"><b id="d-combo">0</b><span>Best combo</span></div>
+      </div>
+      <div class="crownwin" id="d-crown" hidden></div>
+
+      <div class="feel" id="feel">
+        <h4>Your call first</h4>
+        <p class="fq">How well do you feel you understood that? Drag it — I won't show my number until you lock yours.</p>
+        <div class="owned" id="feel-own" hidden></div>
+        <div class="feelhead"><span class="feelface" id="feel-face">🤔</span><span class="feelpct" id="feel-pct">50%</span></div>
+        <div class="feelword" id="feel-word">Half there</div>
+        <input type="range" id="feel-range" min="0" max="100" step="5" value="50"
+               aria-label="How well you feel you understood that round, in percent">
+        <div class="feelticks"><span>No idea</span><span>Shaky</span><span>Solid</span><span>Automatic</span></div>
+        <button class="go" id="feel-lock">Lock it in</button>
+        <div class="fverdict" id="feel-verdict" hidden></div>
+      </div>
+
+      <div class="report" id="report">
+        <h4>What that round says about you</h4>
+        <div id="rep-bars"></div>
+        <div class="coach" id="coach">
+          <div class="coach-h"><i>🧑‍🏫</i><b>Claude's read</b></div>
+          <div class="coach-body" id="coach-body">Thinking…</div>
+        </div>
+      </div>
+
+      <div class="saylist" id="saylist"></div>
+
+      <div class="row2" style="flex-direction:column">
+        <button class="go" id="btn-drill" hidden>⚡ Drill my weak spots</button>
+        <button class="go alt" id="btn-copy">📋 Copy progress for Claude</button>
+        <button class="go alt" id="btn-back">Back to the map</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="sheetroot"></div>
+<canvas id="fx"></canvas>
+
+<script>
+"use strict";
+
+/* ============================================================
+   PRONUNCIATION — word dictionary + sentence composer.
+   [english phonetic, gujarati, hindi] — all approximations.
+   ============================================================ */
+const W = {
+"je":["zhuh","જ઼","झ़"],"j'ai":["zhay","જ઼ે","झ़े"],"j'aime":["zhem","જ઼ૅમ","झ़ेम"],
+"j'achète":["zha-SHET","જ઼અશૅત","झ़अशेत"],"j'adore":["zha-DOR","જ઼અદોર","झ़अदोर"],
+"j'ai":["zhay","જ઼ે","झ़े"],"tu":["tü","ત્યૂ","त्यू"],"il":["eel","ઈલ","ईल"],
+"elle":["el","ઍલ","एल"],"on":["oñ","ઑં","ऑं"],"nous":["noo","નૂ","नू"],
+"vous":["voo","વૂ","वू"],"ils":["eel","ઈલ","ईल"],"elles":["el","ઍલ","एल"],
+"ne":["nuh","ન","न"],"n'ai":["nay","ને","ने"],"n'aime":["nem","નૅમ","नेम"],
+"n'achète":["na-SHET","નઅશૅત","नअशेत"],"n'a":["na","ના","ना"],"n'est":["neh","નૅ","ने"],
+"pas":["pah","પા","पा"],"c'est":["say","સૅ","से"],"ce":["suh","સ","स"],
+"est":["eh","ઍ","ए"],"sont":["son","સોં","सों"],"y":["ee","ઈ","ई"],
+"a":["ah","આ","आ"],"as":["ah","આ","आ"],"ai":["ay","એ","ए"],
+"avons":["a-VON","અવોં","अवों"],"avez":["a-VAY","અવે","अवे"],"ont":["on","ઓં","ओं"],
+"mange":["mahnzh","માઁઝ઼","माँझ़"],"manges":["mahnzh","માઁઝ઼","माँझ़"],
+"mangez":["mahn-ZHAY","માઁઝ઼ે","माँझ़े"],"mangeons":["mahn-ZHON","માઁઝ઼ોં","माँझ़ों"],
+"mangent":["mahnzh","માઁઝ઼","माँझ़"],
+"bois":["bwah","બ્વા","ब्वा"],"boit":["bwah","બ્વા","ब्वा"],
+"buvons":["bü-VON","બ્યૂવોં","ब्यूवों"],"buvez":["bü-VAY","બ્યૂવે","ब्यूवे"],
+"boivent":["bwahv","બ્વાવ","ब्वाव"],
+"achète":["a-SHET","અશૅત","अशेत"],"achètes":["a-SHET","અશૅત","अशेत"],
+"achetons":["ash-TON","અશ્તોં","अश्तों"],"achetez":["ash-TAY","અશ્તે","अश्ते"],"achètent":["a-SHET","અશૅત","अशेत"],
+"prends":["prahn","પ્રાઁ","प्राँ"],"prend":["prahn","પ્રાઁ","प्राँ"],
+"prenons":["pruh-NON","પ્રનોં","प्रनों"],"prenez":["pruh-NAY","પ્રને","प्रने"],
+"veux":["vuh","વ","व"],"veut":["vuh","વ","व"],"voulons":["voo-LON","વૂલોં","वूलों"],
+"voulez":["voo-LAY","વૂલે","वूले"],
+"fais":["feh","ફૅ","फ़े"],"fait":["feh","ફૅ","फ़े"],
+"faisons":["fuh-ZON","ફઝ઼ોં","फ़झ़ों"],"faites":["fet","ફૅત","फ़ेत"],"font":["fon","ફોં","फ़ों"],
+"joue":["zhoo","જ઼ૂ","झ़ू"],"joues":["zhoo","જ઼ૂ","झ़ू"],"jouons":["zhoo-ON","જ઼ૂઓં","झ़ूओं"],
+"jouent":["zhoo","જ઼ૂ","झ़ू"],
+"aime":["em","ઍમ","एम"],"aimes":["em","ઍમ","एम"],"aimons":["e-MON","ઍમોં","एमों"],
+"aiment":["em","ઍમ","एम"],"adore":["a-DOR","અદોર","अदोर"],"adorent":["a-DOR","અદોર","अदोर"],
+"déteste":["day-TEST","દેતૅસ્ત","देतेस्त"],"détestes":["day-TEST","દેતૅસ્ત","देतेस्त"],
+"préfère":["pray-FAIR","પ્રેફૅર","प्रेफ़ेर"],"préfèrent":["pray-FAIR","પ્રેફૅર","प्रेफ़ेर"],
+"cherche":["shairsh","શૅર્શ","शेर्श"],"commande":["ko-MAHND","કોમાઁદ","कोमाँद"],
+"apporte":["a-PORT","અપોર્ત","अपोर्त"],"donne":["don","દોન","दोन"],
+"goûte":["goot","ગૂત","गूत"],"parle":["parl","પાર્લ","पार्ल"],
+"parlons":["par-LON","પાર્લોં","पार्लों"],"regarde":["ruh-GARD","રગાર્દ","रगार्द"],
+"habite":["a-BEET","અબીત","अबीत"],"chante":["shahnt","શાઁત","शाँत"],
+"danse":["dahns","દાઁસ","दाँस"],"étudie":["ay-tü-DEE","એત્યૂદી","एत्यूदी"],
+"vend":["vahn","વાઁ","वाँ"],"vendent":["vahnd","વાઁદ","वाँद"],
+"du":["dü","દ્યૂ","द्यू"],"de":["duh","દ","द"],"des":["day","દે","दे"],
+"le":["luh","લ","ल"],"la":["lah","લા","ला"],"les":["lay","લે","ले"],
+"un":["uhn","અઁ","अँ"],"une":["ün","યૂન","यून"],
+"l'eau":["loh","લો","लो"],"d'eau":["doh","દો","दो"],
+"l'argent":["lar-ZHAHN","લાર્ઝ઼ાઁ","लार्झ़ाँ"],"d'argent":["dar-ZHAHN","દાર્ઝ઼ાઁ","दार्झ़ाँ"],
+"l'huile":["lweel","લ્વીલ","ल्वील"],"d'huile":["dweel","દ્વીલ","द्वील"],
+"l'ami":["la-MEE","લામી","लामी"],"d'amis":["da-MEE","દામી","दामी"],
+"l'école":["lay-KOL","લેકોલ","लेकोल"],"l'homme":["lom","લોમ","लोम"],
+"l'hôtel":["lo-TEL","લોતૅલ","लोतेल"],"l'orange":["lo-RAHNZH","લોરાઁઝ઼","लोराँझ़"],
+"d'orange":["do-RAHNZH","દોરાઁઝ઼","दोराँझ़"],
+"pain":["pan","પૅં","पैं"],"eau":["oh","ઓ","ओ"],"viande":["vyahnd","વ્યાઁદ","व्याँद"],
+"lait":["leh","લૅ","ले"],"sucre":["sükr","સ્યૂક્ર","स्यूक्र"],"café":["ka-FAY","કાફે","काफ़े"],
+"thé":["tay","તે","ते"],"fromage":["fro-MAHZH","ફ્રોમાઝ઼","फ़्रोमाझ़"],
+"gâteau":["ga-TOH","ગાતો","गातो"],"chocolat":["sho-ko-LA","શોકોલા","शोकोला"],
+"soupe":["soop","સૂપ","सूप"],"salade":["sa-LAD","સાલાદ","सालाद"],"riz":["ree","રી","री"],
+"beurre":["burr","બર","बर"],"confiture":["kon-fee-TÜR","કોંફીત્યૂર","कोंफ़ीत्यूर"],
+"jus":["zhü","જ઼્યૂ","झ़्यू"],"vin":["van","વૅં","वें"],"bière":["byair","બ્યૅર","ब्येर"],
+"argent":["ar-ZHAHN","આર્ઝ઼ાઁ","आर्झ़ाँ"],"musique":["mü-ZEEK","મ્યૂઝ઼ીક","म्यूझ़ीक"],
+"sport":["spor","સ્પોર","स्पोर"],"natation":["na-ta-SYON","નાતાસ્યોં","नातास्यों"],
+"piano":["pya-NO","પ્યાનો","प्यानो"],"guitare":["gee-TAR","ગીતાર","गीतार"],
+"courage":["koo-RAHZH","કૂરાઝ઼","कूराझ़"],"chance":["shahns","શાઁસ","शाँस"],
+"patience":["pa-SYAHNS","પાસ્યાઁસ","पास्याँस"],"temps":["tahn","તાઁ","ताँ"],
+"vent":["vahn","વાઁ","वाँ"],"soleil":["so-LAY","સોલૅય","सोलेय"],
+"pluie":["plwee","પ્લ્વી","प्ल्वी"],"neige":["nezh","નૅઝ઼","नेझ़"],
+"haricots":["a-ree-KO","અરીકો","अरीको"],"fraises":["frez","ફ્રૅઝ઼","फ़्रेझ़"],
+"pommes":["pom","પોમ","पोम"],"œufs":["uh","અ","अ"],"glace":["glas","ગ્લાસ","ग्लास"],
+"alcool":["al-KOL","અલ્કોલ","अल्कोल"],"l'alcool":["lal-KOL","લાલ્કોલ","लाल्कोल"],
+"d'alcool":["dal-KOL","દાલ્કોલ","दाल्कोल"],
+"oignons":["o-NYOHN","ઓન્યોં","ओन्यों"],"d'oignons":["do-NYOHN","દોન્યોં","दोन्यों"],
+"oranges":["o-RAHNZH","ઓરાઁઝ઼","ओराँझ़"],"d'oranges":["do-RAHNZH","દોરાઁઝ઼","दोराँझ़"],
+"film":["feelm","ફિલ્મ","फ़िल्म"],
+"homard":["o-MAR","ઓમાર","ओमार"],
+"carottes":["ka-ROT","કારોત","कारोत"],"tomates":["to-MAT","તોમાત","तोमात"],
+"bananes":["ba-NAN","બાનાન","बानान"],"détestez":["day-tes-TAY","દેતૅસ્તે","देतेस्ते"],"pomme":["pom","પોમ","पोम"],
+"croissant":["krwa-SAHN","ક્ર્વાસાઁ","क्र्वासाँ"],
+"sandwich":["sahnd-WEECH","સાઁદ્વિચ","साँद्विच"],
+"commande":["ko-MAHND","કોમાઁદ","कोमाँद"],
+"crème":["krem","ક્રૅમ","क्रेम"],"poulet":["poo-LEH","પૂલૅ","पूले"],
+"poisson":["pwa-SON","પ્વાસોં","प्वासों"],"pâtes":["paht","પાત","पात"],
+"fruits":["frwee","ફ્ર્વી","फ़्र्वी"],"légumes":["lay-GÜM","લેગ્યૂમ","लेग्यूम"],
+"farine":["fa-REEN","ફારીન","फ़ारीन"],"sel":["sel","સૅલ","सेल"],
+"poivre":["pwavr","પ્વાવ્ર","प्वाव्र"],"miel":["myel","મ્યૅલ","म्येल"],
+"soda":["so-DA","સોદા","सोदा"],"limonade":["lee-mo-NAD","લીમોનાદ","लीमोनाद"],
+"chien":["shyan","શ્યૅં","श्यें"],"chat":["sha","શા","शा"],"livre":["leevr","લીવ્ર","लीव्र"],
+"voiture":["vwa-TÜR","વ્વાત્યૂર","व्वात्यूर"],"maison":["meh-ZON","મૅઝ઼ોં","मेझ़ों"],
+"table":["tabl","તાબ્લ","ताब्ल"],"fille":["fee","ફી","फ़ी"],
+"garçon":["gar-SON","ગાર્સોં","गार्सों"],"amis":["a-MEE","અમી","अमी"],
+"village":["vee-LAHZH","વીલાઝ઼","वीलाझ़"],"journaux":["zhoor-NO","જ઼ૂર્નો","झ़ूर्नो"],
+"journal":["zhoor-NAL","જ઼ૂર્નાલ","झ़ूर्नाल"],"bateaux":["ba-TOH","બાતો","बातो"],
+"bateau":["ba-TOH","બાતો","बातो"],"yeux":["yuh","ય","य"],
+"bijoux":["bee-ZHOO","બીજ઼ૂ","बीझ़ू"],"bijou":["bee-ZHOO","બીજ઼ૂ","बीझ़ू"],
+"télévision":["tay-lay-vee-ZYON","તેલેવીઝ઼્યોં","तेलेवीझ़्यों"],
+"plage":["plahzh","પ્લાઝ઼","प्लाझ़"],"hôtel":["o-TEL","ઓતૅલ","ओतेल"],
+"homme":["om","ઓમ","ओम"],"héros":["ay-RO","એરો","एरो"],"hibou":["ee-BOO","ઈબૂ","ईबू"],
+"orange":["o-RAHNZH","ઓરાઁઝ઼","ओराँझ़"],"tarte":["tart","તાર્ત","तार्त"],
+"beaucoup":["bo-KOO","બોકૂ","बोकू"],"peu":["puh","પ","प"],"trop":["tro","ત્રો","त्रो"],
+"assez":["a-SAY","અસે","असे"],"kilo":["kee-LO","કીલો","कीलो"],
+"bouteille":["boo-TAY","બૂતૅય","बूतेय"],"verre":["vair","વૅર","वेर"],
+"tasse":["tass","તાસ","तास"],"morceau":["mor-SO","મોર્સો","मोर्सो"],
+"sans":["sahn","સાઁ","साँ"],"avec":["a-VEK","અવૅક","अवेक"],
+"à":["ah","આ","आ"],"au":["oh","ઓ","ओ"],"aux":["oh","ઓ","ओ"],
+"très":["treh","ત્રૅ","त्रे"],"toujours":["too-ZHOOR","તૂજ઼ૂર","तूझ़ूर"],
+"souvent":["soo-VAHN","સૂવાઁ","सूवाँ"],"matin":["ma-TAN","માતૅં","मातें"],
+"soir":["swar","સ્વાર","स्वार"],"midi":["mee-DEE","મીદી","मीदी"],
+"pour":["poor","પૂર","पूर"],"dans":["dahn","દાઁ","दाँ"],"et":["ay","એ","ए"],
+"aujourd'hui":["o-zhoor-DWEE","ઓજ઼ૂર્દ્વી","ओझ़ूर्द्वी"],
+"huile":["weel","વીલ","वील"],"école":["ay-KOL","એકોલ","एकोल"],
+"liberté":["lee-bair-TAY","લીબૅર્તે","लीबेर्ते"],"œil":["uhy","અય","अय"],
+"préférons":["pray-fay-RON","પ્રેફેરોં","प्रेफ़ेरों"],"veulent":["vuhl","વલ","वल"],
+"détestent":["day-TEST","દેતૅસ્ત","देतेस्त"],"adores":["a-DOR","અદોર","अदोर"],
+"chantent":["shahnt","શાઁત","शाँत"],"parlez":["par-LAY","પાર્લે","पार्ले"],
+"parles":["parl","પાર્લ","पार्ल"],"français":["frahn-SEH","ફ્રાઁસૅ","फ़्राँसे"],
+"marie":["ma-REE","મારી","मारी"],"paul":["pol","પોલ","पोल"],
+"anne":["an","આન","आन"],"sophie":["so-FEE","સોફી","सोफ़ी"],
+"page":["pahzh","પાઝ઼","पाझ़"],"cage":["kahzh","કાઝ઼","काझ़"],"nage":["nahzh","નાઝ઼","नाझ़"],
+"voyage":["vwa-YAHZH","વ્વાયાઝ઼","व्वायाझ़"],"garage":["ga-RAHZH","ગારાઝ઼","गाराझ़"],
+"nation":["na-SYON","નાસ્યોં","नास्यों"],"image":["ee-MAHZH","ઈમાઝ઼","ईमाझ़"],
+"cheval":["shuh-VAL","શવાલ","शवाल"],"chevaux":["shuh-VO","શવો","शवो"],
+"animal":["a-nee-MAL","અનીમાલ","अनीमाल"],"animaux":["a-nee-MO","અનીમો","अनीमो"],
+"festival":["fes-tee-VAL","ફૅસ્તીવાલ","फ़ेस्तीवाल"],"festivals":["fes-tee-VAL","ફૅસ્તીવાલ","फ़ेस्तीवाल"],
+"cheveu":["shuh-VUH","શવ","शव"],"cheveux":["shuh-VUH","શવ","शव"],
+"genou":["zhuh-NOO","જ઼નૂ","झ़नू"],"genoux":["zhuh-NOO","જ઼નૂ","झ़नू"],
+"chou":["shoo","શૂ","शू"],"choux":["shoo","શૂ","शू"],
+"trou":["troo","ત્રૂ","त्रू"],"trous":["troo","ત્રૂ","त्रू"],
+"prix":["pree","પ્રી","प्री"],"hôpital":["o-pee-TAL","ઓપીતાલ","ओपीताल"],
+"hôpitaux":["o-pee-TO","ઓપીતો","ओपीतो"]
+};
+
+const VOW = "aàâeéèêiîoôuûyhœ";
+function pron(sentence){
+  const raw = sentence.replace(/[.?!,]/g,"").trim().split(/\s+/);
+  const out = [[],[],[]];
+  for(let i=0;i<raw.length;i++){
+    const key = raw[i].toLowerCase().replace(/’/g,"'");
+    const e = W[key];
+    const cur = e ? e.slice() : [raw[i],raw[i],raw[i]];
+    // liaison: word ending in s/x/z before a vowel-initial word
+    const nk = raw[i+1] ? raw[i+1].toLowerCase().replace(/’/g,"'") : null;
+    const linksFrom = /[sxz]$/.test(key) && W[key];
+    const linksTo = nk && VOW.includes(nk[0]) && W[nk];
+    if(linksFrom && linksTo){
+      const nx = W[nk];
+      out[0].push(cur[0]+"-z"+nx[0]); out[1].push(cur[1]+"ઝ઼"+nx[1]); out[2].push(cur[2]+"ज़"+nx[2]);
+      i++; continue;
+    }
+    out[0].push(cur[0]); out[1].push(cur[1]); out[2].push(cur[2]);
+  }
+  const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+  return { e: cap(out[0].join(" ")), g: out[1].join(" "), h: out[2].join(" ") };
+}
+
+/* ============================================================
+   WHY CARDS — one rule + one trick per tag.
+   ============================================================ */
+const TAG = {
+ m:   ["Masculine + uncountable → the <code>de + le</code> pair merges into one word.",
+       "LE gets EATEN. de + le is never written out."],
+ f:   ["Feminine + uncountable → <code>de</code> and <code>la</code> stay apart. Nothing merges.",
+       "LA ESCAPES. It never gets swallowed."],
+ v:   ["The noun starts with a vowel or a mute h, so <code>la</code>/<code>le</code> shrinks to <code>l'</code> — gender stops mattering.",
+       "Vowel ahead → the article gets out of the way."],
+ p:   ["Plural, so there is only one form. <b>du</b> and <b>de la</b> are singular words — they can "+
+       "never sit in front of a plural noun. Plural leaves you only <b>des</b> (some) or <b>les</b> (in general).",
+       "See an -S on the noun? DU is dead. Only DES or LES survive."],
+ neg: ["After a negative verb every article flattens. Before a vowel or mute h it elides.",
+       "After PAS, it all collapses to DE."],
+ qty: ["A word that already says HOW MUCH kills the partitive — only bare <code>de</code> survives.",
+       "You already measured it → DE alone."],
+ gen: ["<b>aimer, adorer, détester, préférer</b> talk about the thing in general, so they take the definite article, never a partitive.",
+       "LIKE IT → LE. TAKE IT → DU."],
+ ah:  ["This h is <b>aspirate</b> — an invisible wall. Nothing elides in front of it.",
+       "Aspirate H blocks the apostrophe."],
+ sans:["<code>sans</code> already means 'without any', so no article follows it at all.",
+       "SANS takes NOTHING."],
+ twin:["This <code>du</code> is not a partitive — it is <code>de + le</code> meaning 'of the / about the'.",
+       "Same spelling, two jobs. Read the verb."],
+ cnt: ["You can count this one, so it takes an indefinite article, not a partitive.",
+       "Countable → un / une / des."],
+ fix: ["A fixed expression. French treats this activity or quality as an uncountable substance.",
+       "faire du · jouer de la · avoir de la — mug them up."],
+ gre: ["Gender trap. A CONSONANT before the final <code>-re</code> means masculine — le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b>. A VOWEL before it (<code>-ure</code>) means feminine — la confit<b>ure</b>, la voit<b>ure</b>.",
+       "Consonant before -RE → masculine. Vowel before -RE → feminine."],
+ t1:  ["Subject pronoun agreement.","One man in the group and ILS wins."],
+ t2:  ["Noun gender follows the ending.","-tion / -té / -ette are feminine. -age / -eau / -isme are masculine."],
+ t3:  ["Plural formation.","-eau/-eu take X. -al becomes AUX."],
+ t4:  ["Definite article — 'the', or a thing in general.","le · la · l' · les"],
+ t5:  ["Indefinite article — one countable thing.","un · une · des, and after PAS they all become DE."]
+};
+
+const TAGNAME = {
+ m:"du — masculine", f:"de la — feminine", v:"de l' — vowel or mute h", p:"des — plural",
+ neg:"negation → de / d'", qty:"quantity word → de", gen:"aimer / adorer → le / la / les",
+ ah:"aspirate h blocks elision", sans:"sans + no article", twin:"du = 'of the'",
+ gre:"gender trap: -re vs -ure",
+ cnt:"countable → un / une", fix:"fixed expressions",
+ t1:"subject pronouns", t2:"noun gender", t3:"plurals",
+ t4:"definite articles", t5:"indefinite articles"
+};
+
+/* ============================================================
+   QUESTION BANK
+   kinds: choice | type | build | fix | fr2en
+   ============================================================ */
+const A4 = ['du','de la',"de l'",'des'];
+const A6 = ['du','de la',"de l'",'des','de',"d'"];
+const AL = ['du','de la',"de l'",'le','la',"l'"];
+
+function mk(t,tier,k,o){ return Object.assign({t,tier,k},o); }
+
+const BANK = [];
+/* r[4], when present, is [rule, trick] for a question that IS an exception to
+   its tag's general rule — otherwise the why-card teaches the opposite of the
+   answer it just marked correct. */
+function choice(t,tier,opts,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'choice',{s:r[0],a:r[1],en:r[2],tag:r[3],o:opts,why:r[4]}))); }
+function typed(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'type',{s:r[0],a:r[1],en:r[2],tag:r[3]}))); }
+function en2fr(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'en2fr',{en:r[0],a:r[1],tag:r[2]}))); }
+function build(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'build',{en:r[0],a:r[1],tag:r[2]}))); }
+function fix(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'fix',{s:r[0],bad:r[1],a:r[2],en:r[3],tag:r[4]}))); }
+function fr2en(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'fr2en',{s:r[0],a:r[1],o:r[2],tag:r[3]}))); }
+
+/* ---- TOPIC 6 · TIER 1 — recognition ---- */
+choice(6,1,A4,[
+ ["Il mange ___ chocolat.","du","He eats some chocolate.","m"],
+ ["Je bois ___ eau.","de l'","I drink some water.","v"],
+ ["Tu manges ___ viande.","de la","You eat some meat.","f"],
+ ["Elle achète ___ fraises.","des","She buys some strawberries.","p"],
+ ["Nous buvons ___ lait.","du","We drink some milk.","m"],
+ ["Il achète ___ confiture.","de la","He buys some jam.","f"],
+ ["Je prends ___ argent.","de l'","I take some money.","v"],
+ ["Vous mangez ___ riz.","du","You eat some rice.","m"],
+ ["Elle boit ___ limonade.","de la","She drinks some lemonade.","f"],
+ ["Ils mangent ___ pâtes.","des","They eat some pasta.","p"],
+ ["Tu prends ___ sucre.","du","You take some sugar.","m"],
+ ["Je mange ___ salade.","de la","I eat some salad.","f"],
+ ["Il boit ___ jus.","du","He drinks some juice.","m"],
+ ["Nous achetons ___ huile.","de l'","We buy some oil.","v"],
+ ["Elle mange ___ glace.","de la","She eats some ice cream.","f"],
+ ["Vous buvez ___ vin.","du","You drink some wine.","m"],
+ ["Je mange ___ légumes.","des","I eat some vegetables.","p"],
+ ["Tu bois ___ bière.","de la","You drink some beer.","f"],
+ ["Il prend ___ beurre.","du","He takes some butter.","m"],
+ ["Nous mangeons ___ poisson.","du","We eat some fish.","m"],
+ ["Elle achète ___ farine.","de la","She buys some flour.","f"],
+ ["Je bois ___ soda.","du","I drink some soda.","m"],
+ ["Ils achètent ___ pommes.","des","They buy some apples.","p"],
+ ["Tu manges ___ soupe.","de la","You eat some soup.","f"],
+ ["Vous prenez ___ miel.","du","You take some honey.","m"]
+]);
+
+/* ---- TOPIC 6 · TIER 2 — harder options: de / d' / le / la enter ---- */
+choice(6,2,A6,[
+ ["Je ne mange pas ___ pain.","de","I don't eat bread.","neg"],
+ ["Il boit beaucoup ___ café.","de","He drinks a lot of coffee.","qty"],
+ ["Elle ne boit pas ___ eau.","d'","She doesn't drink water.","neg"],
+ ["Nous mangeons ___ poulet.","du","We eat some chicken.","m"],
+ ["Tu prends un peu ___ sel.","de","You take a little salt.","qty"],
+ ["Il n'achète pas ___ viande.","de","He doesn't buy meat.","neg"],
+ ["Je bois ___ thé.","du","I drink some tea.","m"],
+ ["Vous mangez trop ___ sucre.","de","You eat too much sugar.","qty"],
+ ["Elle achète un kilo ___ fraises.","de","She buys a kilo of strawberries.","qty"],
+ ["Ils ne mangent pas ___ haricots.","de","They don't eat beans.","neg"],
+ ["Je prends ___ crème.","de la","I take some cream.","f"],
+ ["Tu ne prends pas ___ argent.","d'","You don't take money.","neg"],
+ ["Nous buvons une bouteille ___ vin.","de","We drink a bottle of wine.","qty"],
+ ["Il mange ___ œufs.","des","He eats some eggs.","p"],
+ ["Elle veut un verre ___ eau.","d'","She wants a glass of water.","qty"],
+ ["Je ne veux pas ___ soupe.","de","I don't want soup.","neg"],
+ ["Tu achètes ___ huile.","de l'","You buy some oil.","v"],
+ ["Vous prenez assez ___ légumes.","de","You take enough vegetables.","qty"],
+ ["Il ne boit pas ___ bière.","de","He doesn't drink beer.","neg"],
+ ["Nous mangeons ___ tarte.","de la","We eat some tart.","f"]
+]);
+/* de or d'? — the article is already dead, the only call left is elision */
+choice(6,2,['de',"d'"],[
+ ["Je ne mange pas ___ pommes.","de","I don't eat apples.","neg"],
+ ["Il ne boit pas ___ alcool.","d'","He doesn't drink alcohol.","neg"],
+ ["Nous n'avons pas ___ argent.","d'","We don't have money.","neg"],
+ ["Elle ne veut pas ___ huile.","d'","She doesn't want oil.","neg"],
+ ["Elle ne mange pas ___ oignons.","d'","She doesn't eat onions.","neg"],
+ ["Tu ne prends pas ___ fromage.","de","You don't take cheese.","neg"],
+ ["Tu ne manges pas ___ gâteau.","de","You don't eat cake.","neg"],
+ ["Ils ne boivent pas ___ lait.","de","They don't drink milk.","neg"],
+ ["Je ne veux pas ___ confiture.","de","I don't want jam.","neg"],
+ ["Il n'achète pas ___ poisson.","de","He doesn't buy fish.","neg"],
+ ["Je bois beaucoup ___ eau.","d'","I drink a lot of water.","qty"],
+ ["Il mange trop ___ oranges.","d'","He eats too many oranges.","qty"],
+ ["Elle prend un peu ___ huile.","d'","She takes a little oil.","qty"],
+ ["Tu manges trop ___ fromage.","de","You eat too much cheese.","qty"],
+ ["Nous avons assez ___ argent.","d'","We have enough money.","qty"],
+ ["Il veut un peu ___ confiture.","de","He wants a little jam.","qty"],
+ ["Elle achète beaucoup ___ légumes.","de","She buys a lot of vegetables.","qty"],
+ ["Je prends une tasse ___ café.","de","I take a cup of coffee.","qty"],
+ ["Tu bois trop ___ alcool.","d'","You drink too much alcohol.","qty"],
+ ["Vous mangez assez ___ poisson.","de","You eat enough fish.","qty"],
+ ["Il achète un kilo ___ oignons.","d'","He buys a kilo of onions.","qty"],
+ ["Elle veut un morceau ___ tarte.","de","She wants a piece of tart.","qty"]
+]);
+/* which quantity WORD? the article is already de — the English decides the rest */
+choice(6,2,['trop','beaucoup','un peu','assez'],[
+ ["Il mange ___ de chocolat.","trop","He eats TOO MUCH chocolate.","qty"],
+ ["Elle boit ___ de café.","beaucoup","She drinks A LOT OF coffee.","qty"],
+ ["Je prends ___ de sel.","un peu","I take A LITTLE salt.","qty"],
+ ["Nous avons ___ de pain.","assez","We have ENOUGH bread.","qty"],
+ ["Tu bois ___ de vin.","trop","You drink TOO MUCH wine.","qty"],
+ ["Vous mangez ___ de légumes.","beaucoup","You eat A LOT OF vegetables.","qty"],
+ ["Il veut ___ de confiture.","un peu","He wants A LITTLE jam.","qty"],
+ ["Elle achète ___ de poisson.","assez","She buys ENOUGH fish.","qty"]
+]);
+/* the same noun twice: article alive, then killed by pas */
+choice(6,2,A6,[
+ ["Je prends ___ fromage.","du","I take some cheese.","m"],
+ ["Je ne prends pas ___ fromage.","de","I don't take cheese.","neg"],
+ ["Elle boit ___ alcool.","de l'","She drinks some alcohol.","v"],
+ ["Elle ne boit pas ___ alcool.","d'","She doesn't drink alcohol.","neg"],
+ ["Nous achetons ___ oranges.","des","We buy some oranges.","p"],
+ ["Nous n'achetons pas ___ oranges.","d'","We don't buy oranges.","neg"],
+ ["Il veut ___ huile.","de l'","He wants some oil.","v"],
+ ["Il ne veut pas ___ huile.","d'","He doesn't want oil.","neg"],
+ ["Vous mangez ___ gâteau.","du","You eat some cake.","m"],
+ ["Vous ne mangez pas ___ gâteau.","de","You don't eat cake.","neg"]
+]);
+/* Aspirate h — the one rule in TAG that had no questions at all. The pair that
+   teaches it: huile (mute h, elides) against homard (aspirate h, blocks). */
+choice(6,2,A6,[
+ ["Nous achetons ___ homard.","du","We buy some lobster.","ah"],
+ ["Il commande ___ homard.","du","He orders some lobster.","ah"],
+ ["Je ne mange pas ___ haricots.","de","I don't eat beans.","ah"],
+ ["Elle ne veut pas ___ homard.","de","She doesn't want lobster.","ah"]
+]);
+/* Countable → un / une, never a partitive. The English article decides. */
+choice(6,2,['un','une','du','de la'],[
+ ["Elle mange ___ pomme.","une","She eats AN apple.","cnt"],
+ ["Il veut ___ croissant.","un","He wants A croissant.","cnt"],
+ ["Je prends ___ sandwich.","un","I take A sandwich.","cnt"],
+ ["Tu achètes ___ tarte.","une","You buy A tart.","cnt"]
+]);
+/* Questions Claude generated for him that he got wrong. They were good, and
+   an AI question is not in BANK, so his mistake log could never clear them. */
+choice(6,2,A6,[
+ ["Il boit un peu ___ café.","de","He drinks a little coffee.","qty"],
+ ["Nous n'achetons pas ___ pain.","de","We don't buy bread.","neg"],
+ ["Vous achetez un kilo ___ pommes.","de","You buy a kilo of apples.","qty"]
+]);
+choice(6,2,['les','des','le','du'],[
+ ["Ils aiment ___ fraises.","les","They like strawberries.","gen"]
+]);
+choice(6,2,A6,[
+ ["Nous buvons une bouteille ___ eau.","d'","We drink a bottle of water.","qty"],
+ ["Je ne mange pas ___ beurre.","de","I don't eat butter.","neg"],
+ ["Vous achetez un kilo ___ sucre.","de","You buy a kilo of sugar.","qty"]
+]);
+choice(6,2,AL,[
+ ["Elle adore ___ confiture de fraises.","la","She loves strawberry jam.","gen"]
+]);
+choice(6,2,['du','de la',"de l'",'de'],[
+ ["Ils ont ___ chance aujourd'hui.","de la","They are lucky today.","fix"]
+]);
+/* du / de la are SINGULAR. A plural noun kills both — he answered "du légumes"
+   twice in one round, so the option list keeps du in front of him to reject. */
+choice(6,2,['des','les','du','de la'],[
+ ["Je mange ___ carottes.","des","I eat some carrots.","p"],
+ ["Tu aimes ___ carottes.","les","You like carrots (in general).","gen"],
+ ["Elle achète ___ tomates.","des","She buys some tomatoes.","p"],
+ ["Elle adore ___ tomates.","les","She loves tomatoes (in general).","gen"],
+ ["Nous mangeons ___ pâtes.","des","We eat some pasta.","p"],
+ ["Nous préférons ___ pâtes.","les","We prefer pasta (in general).","gen"],
+ ["Vous prenez ___ œufs.","des","You take some eggs.","p"],
+ ["Vous détestez ___ œufs.","les","You hate eggs (in general).","gen"],
+ ["Ils achètent ___ bananes.","des","They buy some bananas.","p"],
+ ["Ils aiment ___ bananes.","les","They like bananas (in general).","gen"]
+]);
+/* "like it" vs "take it" — singular pairs */
+choice(6,2,AL,[
+ ["J'aime ___ café.","le","I like coffee.","gen"],
+ ["Je bois ___ café.","du","I drink some coffee.","m"],
+ ["Elle adore ___ chocolat.","le","She loves chocolate.","gen"],
+ ["Elle mange ___ chocolat.","du","She eats some chocolate.","m"],
+ ["Il déteste ___ viande.","la","He hates meat.","gen"],
+ ["Il achète ___ viande.","de la","He buys some meat.","f"],
+ ["Nous préférons ___ eau.","l'","We prefer water.","gen"],
+ ["Nous buvons ___ eau.","de l'","We drink some water.","v"]
+]);
+/* the same contrast in the plural — needs its own option set */
+choice(6,2,['les','des','le','du'],[
+ ["Tu aimes ___ légumes.","les","You like vegetables.","gen"],
+ ["Tu manges ___ légumes.","des","You eat some vegetables.","p"],
+ ["J'adore ___ fraises.","les","I love strawberries.","gen"],
+ ["J'achète ___ fraises.","des","I buy some strawberries.","p"],
+ ["Il déteste ___ haricots.","les","He hates beans.","gen"],
+ ["Il mange ___ haricots.","des","He eats some beans.","p"]
+]);
+/* the -re / -ure gender trap — a final -e does NOT mean feminine */
+choice(6,2,A4,[
+ ["Je prends ___ sucre.","du","I take some sugar.","gre"],
+ ["Elle commande ___ confiture.","de la","She orders some jam.","gre"],
+ ["Nous achetons ___ beurre.","du","We buy some butter.","gre"],
+ ["Il goûte ___ confiture.","de la","He tastes some jam.","gre"],
+ ["Vous voulez ___ poivre.","du","You want some pepper.","gre"],
+ ["Elle apporte ___ farine.","de la","She brings some flour.","gre"],
+ ["Je cherche ___ beurre.","du","I'm looking for some butter.","gre"],
+ ["Tu veux ___ sucre.","du","You want some sugar.","gre"],
+ ["Il donne ___ farine.","de la","He gives some flour.","gre"],
+ ["Nous voulons ___ poivre.","du","We want some pepper.","gre"]
+]);
+
+/* ---- TOPIC 6 · TIER 3 — sentence completion, typed & built ---- */
+typed(6,3,[
+ ["Je mange ___ fromage.","Je mange du fromage.","I eat some cheese.","m"],
+ ["Elle boit ___ lait.","Elle boit du lait.","She drinks some milk.","m"],
+ ["Il achète ___ glace.","Il achète de la glace.","He buys some ice cream.","f"],
+ ["Nous buvons ___ eau.","Nous buvons de l'eau.","We drink some water.","v"],
+ ["Tu manges ___ fruits.","Tu manges des fruits.","You eat some fruit.","p"],
+ ["Je ne bois pas ___ vin.","Je ne bois pas de vin.","I don't drink wine.","neg"],
+ ["Vous mangez beaucoup ___ pain.","Vous mangez beaucoup de pain.","You eat a lot of bread.","qty"],
+ ["Elle prend ___ confiture.","Elle prend de la confiture.","She takes some jam.","f"],
+ ["Il veut ___ argent.","Il veut de l'argent.","He wants some money.","v"],
+ ["Nous achetons ___ poivre.","Nous achetons du poivre.","We buy some pepper.","m"]
+]);
+build(6,3,[
+ ["I eat some bread.","Je mange du pain.","m"],
+ ["She drinks some water.","Elle boit de l'eau.","v"],
+ ["He buys some meat.","Il achète de la viande.","f"],
+ ["We eat some apples.","Nous mangeons des pommes.","p"],
+ ["You don't eat sugar.","Tu ne manges pas de sucre.","neg"],
+ ["I drink a lot of tea.","Je bois beaucoup de thé.","qty"],
+ ["She takes some cream.","Elle prend de la crème.","f"],
+ ["They want some money.","Ils veulent de l'argent.","v"],
+ ["I like coffee.","J'aime le café.","gen"],
+ ["He does sport.","Il fait du sport.","fix"]
+]);
+
+/* ---- TOPIC 6 · TIER 4 — translation both ways ---- */
+en2fr(6,4,[
+ ["I eat some cheese.","Je mange du fromage.","m"],
+ ["She drinks some milk.","Elle boit du lait.","m"],
+ ["We buy some meat.","Nous achetons de la viande.","f"],
+ ["He wants some water.","Il veut de l'eau.","v"],
+ ["You eat some vegetables.","Tu manges des légumes.","p"],
+ ["I don't eat meat.","Je ne mange pas de viande.","neg"],
+ ["She doesn't drink water.","Elle ne boit pas d'eau.","neg"],
+ ["He eats too much chocolate.","Il mange trop de chocolat.","qty"],
+ ["I love chocolate.","J'adore le chocolat.","gen"],
+ ["She plays the guitar.","Elle joue de la guitare.","fix"],
+ ["We do swimming.","Nous faisons de la natation.","fix"],
+ ["He has courage.","Il a du courage.","fix"],
+ ["A coffee without sugar.","Un café sans sucre.","sans"],
+ ["I take a glass of water.","Je prends un verre d'eau.","qty"],
+ ["You are lucky.","Tu as de la chance.","fix"]
+]);
+fr2en(6,4,[
+ ["Je parle du film.","I'm talking about the film.",
+  ["I'm talking about the film.","I'm eating some film.","I like the film.","I'm watching a film."],"twin"],
+ ["Elle mange du poulet.","She eats some chicken.",
+  ["She eats some chicken.","She likes chicken.","She eats the chicken.","She doesn't eat chicken."],"m"],
+ ["Il n'y a pas de pain.","There isn't any bread.",
+  ["There isn't any bread.","There is some bread.","He doesn't like bread.","There is a bread."],"neg"],
+ ["J'aime le thé.","I like tea.",
+  ["I like tea.","I drink some tea.","I want a tea.","I have tea."],"gen"],
+ ["Il fait du soleil.","It's sunny.",
+  ["It's sunny.","He makes a sun.","He does the sun.","It's windy."],"fix"]
+]);
+
+/* ---- TOPIC 6 · TIER 5 — error correction & no-clue recall ---- */
+fix(6,5,[
+ ["Je mange de le pain.","de le","Je mange du pain.","I eat some bread.","m"],
+ ["Elle boit du eau.","du","Elle boit de l'eau.","She drinks some water.","v"],
+ ["Il achète du viande.","du","Il achète de la viande.","He buys some meat.","f"],
+ ["Nous ne mangeons pas du pain.","du","Nous ne mangeons pas de pain.","We don't eat bread.","neg"],
+ ["Tu bois beaucoup du café.","du","Tu bois beaucoup de café.","You drink a lot of coffee.","qty"],
+ ["J'aime du chocolat.","du","J'aime le chocolat.","I like chocolate.","gen"],
+ ["Elle mange de les fruits.","de les","Elle mange des fruits.","She eats some fruit.","p"],
+ ["Il prend un café sans du sucre.","du","Il prend un café sans sucre.","He takes a coffee without sugar.","sans"],
+ ["Je fais de le sport.","de le","Je fais du sport.","I do sport.","fix"],
+ ["Elle n'a pas du chance.","du","Elle n'a pas de chance.","She isn't lucky.","neg"]
+]);
+en2fr(6,5,[
+ ["He eats some fish.","Il mange du poisson.","m"],
+ ["I don't want any beer.","Je ne veux pas de bière.","neg"],
+ ["She buys a kilo of apples.","Elle achète un kilo de pommes.","qty"],
+ ["We drink some orange juice.","Nous buvons du jus d'orange.","m"],
+ ["You play the piano.","Tu joues du piano.","fix"],
+ ["They hate soup.","Ils détestent la soupe.","gen"],
+ ["I eat some strawberries.","Je mange des fraises.","p"],
+ ["He takes a little honey.","Il prend un peu de miel.","qty"],
+ ["She has patience.","Elle a de la patience.","fix"],
+ ["There is some wind.","Il y a du vent.","fix"]
+]);
+typed(6,5,[
+ ["Il ne prend pas ___ sucre.","Il ne prend pas de sucre.","He doesn't take sugar.","neg"],
+ ["Nous mangeons ___ haricots.","Nous mangeons des haricots.","We eat some beans.","p"],
+ ["Tu adores ___ fromage.","Tu adores le fromage.","You love cheese.","gen"],
+ ["Elle veut une tasse ___ thé.","Elle veut une tasse de thé.","She wants a cup of tea.","qty"],
+ ["Je mange un morceau ___ gâteau.","Je mange un morceau de gâteau.","I eat a piece of cake.","qty"]
+]);
+
+/* ---- TOPICS 1–5 · spaced review ---- */
+choice(1,1,['il','elle','ils','elles'],[
+ ["Marie et Paul ? ___ mangent.","ils","Marie and Paul? They eat.","t1"],
+ ["Anne et Sophie ? ___ chantent.","elles","Anne and Sophie? They sing.","t1"],
+ ["Le garçon ? ___ danse.","il","The boy? He dances.","t1"],
+ ["La fille ? ___ chante.","elle","The girl? She sings.","t1"]
+]);
+choice(1,1,['tu','vous','nous','on'],[
+ ["___ parlez français.","vous","You speak French. — said to your boss","t1"],
+ ["___ parles français.","tu","You speak French. — said to one friend","t1"],
+ ["___ mange à midi.","on","We eat at noon. — the informal 'we'","t1"]
+]);
+choice(2,1,['le','la'],[
+ ["___ télévision","la","the television","t2"],
+ ["___ fromage","le","the cheese","t2"],
+ ["___ liberté","la","the freedom","t2"],
+ ["___ village","le","the village","t2"],
+ ["___ plage","la","the beach","t2",
+  ["<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."]],
+ ["___ bateau","le","the boat","t2"],
+ /* -age is masculine — except for this handful */
+ ["___ page","la","the page","t2",
+  ["<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."]],
+ ["___ cage","la","the cage","t2",
+  ["<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."]],
+ ["___ nage","la","the swimming","t2",
+  ["<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."]],
+ ["___ voyage","le","the journey","t2"],
+ ["___ garage","le","the garage","t2"],
+ ["___ nation","la","the nation","t2"],
+ ["___ farine","la","the flour","t2"],
+ ["___ sucre","le","the sugar","t2"],
+ ["___ beurre","le","the butter","t2"],
+ ["___ confiture","la","the jam","t2"]
+]);
+choice(3,1,['journaux','journals','journales','journeaux'],[
+ ["un journal → des ___","journaux","one newspaper → some newspapers","t3"]
+]);
+choice(3,1,['bateaux','bateaus','bateax','bateux'],[
+ ["un bateau → des ___","bateaux","one boat → some boats","t3"]
+]);
+choice(3,1,['bijoux','bijous','bijoues','bijeaux'],[
+ ["un bijou → des ___","bijoux","one jewel → some jewels","t3"]
+]);
+choice(3,1,['yeux','œils','oeuils','yeuxs'],[
+ ["un œil → des ___","yeux","one eye → some eyes","t3"]
+]);
+choice(3,1,['chevaux','chevals','chevaus','chevales'],[
+ ["un cheval → des ___","chevaux","one horse → some horses","t3"]
+]);
+choice(3,1,['animaux','animals','animales','animaus'],[
+ ["un animal → des ___","animaux","one animal → some animals","t3"]
+]);
+choice(3,1,['hôpitaux','hôpitals','hôpitales','hôpitaus'],[
+ ["un hôpital → des ___","hôpitaux","one hospital → some hospitals","t3"]
+]);
+/* the four -al words that just take -s */
+choice(3,1,['festivals','festivaux','festivales','festivaus'],[
+ ["un festival → des ___","festivals","one festival → some festivals","t3",
+  ["<b>-al</b> normally becomes <b>-aux</b> (journal → journaux), but FOUR words refuse and just take <b>-s</b>.",
+   "le bal · le carnaval · le festival · le récital — the party four take -S."]]
+]);
+choice(3,1,['cheveux','cheveus','cheveaux','cheves'],[
+ ["un cheveu → des ___","cheveux","one hair → some hairs","t3"]
+]);
+/* -ou normally takes -s, but these seven take -x */
+choice(3,1,['genoux','genous','genoues','geneaux'],[
+ ["un genou → des ___","genoux","one knee → some knees","t3"]
+]);
+choice(3,1,['choux','chous','choues','cheaux'],[
+ ["un chou → des ___","choux","one cabbage → some cabbages","t3"]
+]);
+choice(3,1,['trous','troux','troues','trouds'],[
+ ["un trou → des ___","trous","one hole → some holes","t3",
+  ["Most <b>-ou</b> words take a plain <b>-s</b>. Only seven take -x, and trou is NOT one of them.",
+   "bijou · caillou · chou · genou · hibou · joujou · pou take -X. Every other -ou takes -S."]]
+]);
+choice(3,1,['prix','prixs','prixes','pris'],[
+ ["le prix → les ___","prix","the price → the prices","t3",
+  ["A noun that already ends in <b>-s</b>, <b>-x</b> or <b>-z</b> does not change at all. Only the article shows the plural.",
+   "Already ends in S/X/Z? Add nothing. le prix → les prix."]]
+]);
+choice(4,1,["l'","le","la","les"],[
+ ["___ homme","l'","the man","t4"],
+ ["___ école","l'","the school","t4"],
+ ["___ amis","les","the friends","t4"],
+ ["___ hibou","le","the owl","t4"]
+]);
+choice(5,1,['un','une','des','de'],[
+ ["Il a ___ chien.","un","He has a dog.","t5"],
+ ["Elle a ___ voiture.","une","She has a car.","t5"],
+ ["J'ai ___ amis.","des","I have friends.","t5"],
+ ["Je n'ai pas ___ chien.","de","I don't have a dog.","t5"],
+ ["Il n'a pas ___ maison.","de","He doesn't have a house.","t5"]
+]);
+
+/* ============================================================
+   TOPIC MAP
+   ============================================================ */
+const TOPICS = [
+ [1,"Subject pronouns"],[2,"Gender of nouns"],[3,"Singular & plural"],[4,"Definite articles"],
+ [5,"Indefinite articles"],[6,"Partitive articles"],[7,"Elision & liaison"],[8,"À / de contractions"],
+ [9,"Être"],[10,"Avoir"],[11,"-ER verbs"],[12,"-IR verbs"],[13,"-RE verbs"],[14,"Aller"],
+ [15,"Faire"],[16,"Venir"],[17,"Pouvoir"],[18,"Vouloir"],[19,"Devoir"],[20,"Adjective agreement"],
+ [21,"Adjective placement"],[22,"Negation"],[23,"Yes/no questions"],[24,"Est-ce que"],
+ [25,"Inversion"],[26,"Question words"],[27,"Possessive adjectives"],[28,"Demonstratives"],
+ [29,"Prepositions of place"],[30,"Countries & cities"],[31,"Il y a"],[32,"C'est vs il est"],
+ [33,"Numbers"],[34,"Dates & months"],[35,"Telling time"],[36,"Frequency adverbs"],
+ [37,"Direct object pronouns"],[38,"Indirect object pronouns"],[39,"Comparatives"],
+ [40,"Futur proche"],[41,"Passé récent"],[42,"Passé composé"],[43,"Imperative"],
+ [44,"Word order"]
+];
+
+const RULES = {
+1:`<h5>The nine</h5><p><code>je</code> I · <code>tu</code> you (1 friend) · <code>il</code> he · <code>elle</code> she · <code>on</code> we (informal) · <code>nous</code> we · <code>vous</code> you (formal or many) · <code>ils</code> they (m / mixed) · <code>elles</code> they (all f)</p>
+<div class="tip">One man in the group and <b>ils</b> wins — 99 women + 1 man = ils.</div>
+<p><code>on</code> means "we" but takes the <i>il</i> verb form: <code>On mange.</code></p>`,
+2:`<h5>Feminine endings</h5><p>-tion · -sion · -té · -ette · -ance · -ence · -ure · -ie · -elle</p>
+<h5>Masculine endings</h5><p>-age · -eau · -isme · -phone · -ment · -ier</p>
+<div class="tip">-age traps: <b>la page, la plage, l'image, la cage, la nage, la rage</b> are feminine.</div>
+<p>Mute h lets the article shrink: <code>l'homme</code>. Aspirate h blocks it: <code>le héros</code>.</p>`,
+3:`<h5>Plural</h5><p>default <b>+s</b> · -eau/-eu <b>+x</b> · -al → <b>-aux</b> · -s/-x/-z <b>no change</b></p>
+<div class="tip">The 7 -ou words that take X: bijou, caillou, chou, genou, hibou, joujou, pou.</div>
+<p>Irregular: <code>œil → yeux</code>, <code>monsieur → messieurs</code>, <code>madame → mesdames</code>.</p>
+<p>The plural -s is <b>silent</b>. In speech the article carries the plural, not the noun.</p>`,
+4:`<h5>THE</h5><p><code>le</code> m · <code>la</code> f · <code>l'</code> before vowel / mute h · <code>les</code> plural</p>
+<p>Also used for things <b>in general</b>: <code>J'aime le café.</code> — English drops the article here, French never does.</p>
+<div class="tip">A French noun is never naked.</div>`,
+5:`<h5>A / AN</h5><p><code>un</code> m · <code>une</code> f · <code>des</code> plural. <code>un</code> and <code>une</code> never elide.</p>
+<h5>After PAS</h5><p>un / une / des all become <code>de</code> (or <code>d'</code> before a vowel).</p>
+<div class="tip">But <b>être is immune</b>: <code>Ce n'est pas un chien.</code></div>`,
+6:`<h5>The one question</h5><p><b>Can I count it?</b> Yes → un / une / des. No → du / de la / de l'.</p>
+<h5>Forms</h5><p><code>du</code> m · <code>de la</code> f · <code>de l'</code> vowel or mute h · <code>des</code> plural</p>
+<div class="tip">LE and LES get <b>eaten</b> (de+le = du, de+les = des). LA and L' <b>escape</b>.</div>
+<h5>What kills the partitive</h5>
+<p>After <b>pas</b> → <code>de</code> / <code>d'</code><br>
+After a quantity word (beaucoup, un peu, trop, assez, un kilo) → <code>de</code><br>
+After <b>sans</b> → nothing at all<br>
+With <b>aimer / adorer / détester / préférer</b> → <code>le</code> / <code>la</code> / <code>les</code></p>
+<div class="tip">LIKE IT → LE. TAKE IT → DU.</div>
+<h5>The gender trap: a final -e is NOT feminine</h5>
+<p>Listen to what comes before the final <code>-re</code>.<br>
+A <b>consonant</b> before it → masculine → <code>du</code>: le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b>, le li<b>vre</b>.<br>
+A <b>vowel</b> before it (<code>-ure</code>) → feminine → <code>de la</code>: la confit<b>ure</b>, la voit<b>ure</b>.</p>
+<div class="tip">Consonant before -RE → masculine. Vowel before -RE → feminine.</div>
+<h5>The twin</h5><p><code>Je mange du pain</code> = some bread. <code>Je parle du film</code> = <i>about the</i> film. Same word, two jobs.</p>
+<h5>Fixed</h5><p>faire du sport · faire de la natation · jouer du piano · jouer de la guitare · avoir du courage · avoir de la chance · il y a du vent · il fait du soleil</p>`
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const MASTERED = [1,2,3,4,5];
+// His local calendar day, not UTC: an evening session in India must not read
+// as the next day (toISOString rolls over at 05:30 IST).
+const TODAY = () => new Date().toLocaleDateString("en-CA");
+const LS = "croissant-quest-v1";
+
+let S = { xp:0, cro:0, streak:0, last:null, crowns:{}, wrong:{}, log:[], rounds:0,
+          hist:{}, seen:{}, feel:null, calib:"aligned", feelLog:[] };
+MASTERED.forEach(t=>S.crowns[t]=5);
+
+let DB=null, SAVEDOC=null, SAMPLE=null;
+
+/* tag-level mastery, lifetime */
+function tagStats(){
+  const out=[];
+  for(const k in S.hist){
+    const [r,w]=S.hist[k]; const n=r+w;
+    if(!n) continue;
+    out.push({tag:k, name:TAGNAME[k]||k, right:r, total:n, pct:Math.round(r/n*100)});
+  }
+  return out.sort((a,b)=>a.pct-b.pct);
+}
+function noteAnswer(tag,ok){
+  if(!tag) return;
+  const h=S.hist[tag]||[0,0];
+  h[ok?0:1]++; S.hist[tag]=h;
+}
+
+function loadLocal(){
+  try{ const r=localStorage.getItem(LS); if(r) S=Object.assign(S,JSON.parse(r)); }catch(e){}
+}
+function saveAll(){
+  try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){}
+  // a failed save must never take the screen down with it
+  try{
+    if(SAVEDOC){
+      const body={xp:S.xp,cro:S.cro,streak:S.streak,last:S.last,crowns:S.crowns||{},
+        wrong:S.wrong||{},log:(S.log||[]).slice(-120),rounds:S.rounds,
+        hist:S.hist||{},seen:S.seen||{},
+        feel:(typeof S.feel==="number"?S.feel:null),calib:S.calib||"aligned",
+        feelLog:(S.feelLog||[]).slice(-20)};
+      const p=SAVEDOC.set(body);
+      if(p&&p.catch) p.catch(()=>{});
+    }
+  }catch(e){}
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const el = (tag,cls,txt)=>{ const n=document.createElement(tag); if(cls)n.className=cls;
+  if(txt!=null)n.textContent=txt; return n; };
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;
+  [a[i],a[j]]=[a[j],a[i]];} return a; }
+function norm(s){
+  return s.toLowerCase().replace(/[’`´]/g,"'").replace(/\s+/g," ").trim()
+          .replace(/[.!?]+$/,"").replace(/\s*'\s*/g,"'");
+}
+function deaccent(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g,""); }
+function qid(q){ return q.t+"|"+q.k+"|"+(q.s||q.en||"")+"|"+q.a; }
+// an elided answer (l' d' de l') must close up against its noun: "l' homme" -> "l'homme"
+function knit(s){ return s.replace(/'\s+/g,"'"); }
+function fullOf(q){
+  // Only 'choice' answers a single word into the blank. For type/en2fr/build/fix
+  // the answer IS the finished sentence, so splicing it into q.s duplicated it.
+  if(q.k==='choice') return knit(q.s.replace("___",q.a));
+  if(q.k==='fr2en') return q.s;
+  return q.a;
+}
+
+/* ============================================================
+   JUICE — sound, confetti, haptics, floating numbers
+   ============================================================ */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let AC=null, muted=false, PACE="fast";
+function ac(){
+  if(muted) return null;
+  try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+       if(AC.state==="suspended") AC.resume(); return AC; }catch(e){ return null; }
+}
+function tone(freq,dur,type,vol,delay){
+  const c=ac(); if(!c) return;
+  const t0=c.currentTime+(delay||0);
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||"sine"; o.frequency.setValueAtTime(freq,t0);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.16,t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+dur+0.02);
+}
+function sweep(f1,f2,dur,vol){
+  const c=ac(); if(!c) return;
+  const t0=c.currentTime;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type="sawtooth"; o.frequency.setValueAtTime(f1,t0);
+  o.frequency.exponentialRampToValueAtTime(f2,t0+dur);
+  g.gain.setValueAtTime(vol||0.1,t0);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+dur+0.02);
+}
+const SFX = {
+  right(combo){
+    const step=Math.min(7,combo-1);
+    const base=523.25*Math.pow(2,step/12);
+    tone(base,0.13,"triangle",0.17,0);
+    tone(base*1.5,0.16,"triangle",0.12,0.055);
+  },
+  wrong(){ sweep(220,90,0.22,0.12); },
+  crown(){ [523,659,784,1047].forEach((f,i)=>tone(f,0.28,"triangle",0.16,i*0.09)); },
+  finish(){ [440,554,659].forEach((f,i)=>tone(f,0.24,"sine",0.14,i*0.08)); },
+  tap(){ tone(660,0.05,"square",0.05,0); }
+};
+function buzz(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+
+const cv=document.getElementById("fx"); const cx=cv.getContext("2d");
+let bits=[], raf=null;
+function sizeCv(){ cv.width=innerWidth*devicePixelRatio; cv.height=innerHeight*devicePixelRatio;
+  cv.style.width=innerWidth+"px"; cv.style.height=innerHeight+"px";
+  cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+sizeCv(); addEventListener("resize",sizeCv);
+
+const CONF=["#E4BA55","#15805F","#C21B33","#F0CC79","#3FC79A","#FFFFFF"];
+function burst(x,y,n){
+  if(REDUCED) return;
+  for(let i=0;i<(n||26);i++){
+    const a=Math.random()*Math.PI*2, sp=3+Math.random()*7;
+    bits.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-4,
+      w:4+Math.random()*7,h:4+Math.random()*9,
+      c:CONF[(Math.random()*CONF.length)|0],
+      r:Math.random()*6, vr:(Math.random()-.5)*.4, life:1});
+  }
+  if(!raf) raf=requestAnimationFrame(tick);
+}
+function rain(){
+  if(REDUCED) return;
+  for(let i=0;i<70;i++){
+    bits.push({x:Math.random()*innerWidth, y:-20-Math.random()*220,
+      vx:(Math.random()-.5)*2, vy:2+Math.random()*4,
+      w:5+Math.random()*7, h:6+Math.random()*10,
+      c:CONF[(Math.random()*CONF.length)|0],
+      r:Math.random()*6, vr:(Math.random()-.5)*.3, life:1});
+  }
+  if(!raf) raf=requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  bits=bits.filter(b=>b.life>0 && b.y<innerHeight+40);
+  bits.forEach(b=>{
+    b.vy+=0.28; b.x+=b.vx; b.y+=b.vy; b.r+=b.vr; b.life-=0.006;
+    cx.save(); cx.translate(b.x,b.y); cx.rotate(b.r);
+    cx.globalAlpha=Math.max(0,Math.min(1,b.life*1.6));
+    cx.fillStyle=b.c; cx.fillRect(-b.w/2,-b.h/2,b.w,b.h); cx.restore();
+  });
+  if(bits.length) raf=requestAnimationFrame(tick);
+  else { raf=null; cx.clearRect(0,0,innerWidth,innerHeight); }
+}
+function floatXP(txt,x,y){
+  if(REDUCED) return;
+  const n=el("div","floatxp",txt);
+  n.style.left=x+"px"; n.style.top=y+"px";
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(),950);
+}
+function bumpHud(sel){
+  const n=$(sel); if(!n) return;
+  n.classList.add("bump"); setTimeout(()=>n.classList.remove("bump"),420);
+}
+
+/* ============================================================
+   HUD + THEME
+   ============================================================ */
+function hud(){
+  $("#h-streak").textContent=S.streak;
+  $("#h-xp").textContent=S.xp;
+  $("#h-cro").textContent=S.cro;
+}
+$("#h-theme").onclick=()=>{
+  const r=document.documentElement;
+  const dark = r.getAttribute("data-theme")==="dark" ||
+    (!r.getAttribute("data-theme") && matchMedia("(prefers-color-scheme:dark)").matches);
+  r.setAttribute("data-theme", dark?"light":"dark");
+  try{ localStorage.setItem(LS+"-theme", dark?"light":"dark"); }catch(e){}
+};
+try{ const t=localStorage.getItem(LS+"-theme"); if(t) document.documentElement.setAttribute("data-theme",t); }catch(e){}
+
+try{ muted = localStorage.getItem(LS+"-mute")==="1"; }catch(e){}
+$("#h-mute").textContent = muted?"🔇":"🔊";
+$("#h-mute").onclick=()=>{
+  muted=!muted; $("#h-mute").textContent=muted?"🔇":"🔊";
+  try{ localStorage.setItem(LS+"-mute", muted?"1":"0"); }catch(e){}
+  if(!muted) SFX.tap();
+};
+addEventListener("pointerdown",()=>{ ac(); },{once:true});
+
+try{ PACE = localStorage.getItem(LS+"-pace")||"fast"; }catch(e){}
+function paintPace(){
+  $("#h-pace").textContent = PACE==="study" ? "📖" : "🐇";
+  $("#h-pace").title = PACE==="study"
+    ? "Study pace — read the pronunciation, then tap Continue"
+    : "Fast pace — moves on by itself";
+}
+paintPace();
+$("#h-pace").onclick=()=>{
+  PACE = PACE==="study" ? "fast" : "study";
+  try{ localStorage.setItem(LS+"-pace",PACE); }catch(e){}
+  paintPace(); SFX.tap();
+};
+
+/* ============================================================
+   MAP
+   ============================================================ */
+const OFFSETS=[0,52,78,52,0,-52,-78,-52];
+function topicState(id){
+  const c=S.crowns[id]||0;
+  if(c>=5) return "done";
+  if(id===6) return "active";
+  if(id<6) return "active";
+  // unlock next topic once the one before it is crowned out
+  if((S.crowns[id-1]||0)>=5) return hasContent(id)?"active":"soon";
+  return "locked";
+}
+function hasContent(id){ return BANK.some(q=>q.t===id); }
+
+function drawMap(){
+  const p=$("#path"); p.innerHTML="";
+  TOPICS.forEach((t,i)=>{
+    const [id,name]=t;
+    const st=topicState(id);
+    const n=el("div","node"); n.dataset.st=st;
+    n.style.setProperty("--off",OFFSETS[i%OFFSETS.length]+"px");
+    const b=el("button","disc");
+    b.innerHTML = st==="done"?"✓" : st==="locked"?"🔒" : st==="soon"?"🚧" : "🥐";
+    b.setAttribute("aria-label",name);
+    const num=el("div","num",id); b.appendChild(num);
+    const cr=el("div","crowns");
+    for(let k=0;k<5;k++){ const s=el("span",null,"👑"); if(k<(S.crowns[id]||0)) s.className="on"; cr.appendChild(s); }
+    const lab=el("label",null,name);
+    n.appendChild(b); n.appendChild(cr); n.appendChild(lab);
+    const open=()=> (st==="locked") ? null : topicSheet(id,name,st);
+    b.onclick=open; lab.onclick=open;
+    p.appendChild(n);
+  });
+  const done=TOPICS.filter(t=>(S.crowns[t[0]]||0)>=5).length;
+  $("#ban-sub").textContent = done+" of 44 stops cleared · "+S.xp+" XP";
+  const wc=Object.keys(S.wrong).length;
+  $("#weak-sub").textContent = wc? wc+" question"+(wc>1?"s":"")+" you've got wrong — drill them"
+                                 : "Nothing to fix yet — play a round first";
+  hud();
+}
+
+/* ============================================================
+   SHEETS
+   ============================================================ */
+function sheet(inner, onClose){
+  const root=$("#sheetroot"); root.innerHTML="";
+  const scrim=el("div","scrim"); const sh=el("div","sheet");
+  sh.appendChild(inner); scrim.appendChild(sh); root.appendChild(scrim);
+  scrim.onclick=e=>{ if(e.target===scrim){ closeSheet(); onClose&&onClose(); } };
+  return sh;
+}
+function closeSheet(){ $("#sheetroot").innerHTML=""; }
+
+function topicSheet(id,name,st){
+  const box=el("div");
+  box.appendChild(el("h3",null,name));
+  const c=S.crowns[id]||0;
+  const sub=el("p","sub");
+  const pool=BANK.filter(q=>q.t===id);
+  const seen=pool.filter(q=>S.seen[qid(q)]).length;
+  const count = pool.length ? " · "+pool.length+" exercises ("+seen+" seen)" : "";
+  sub.textContent = st==="soon" ? "This stop isn't built yet — it opens as the course grows."
+    : c>=5 ? "Mastered. Replay any time to keep it sharp."+count
+    : "Crown "+(c+1)+" of 5 · difficulty rises with each crown"+count;
+  box.appendChild(sub);
+  if(RULES[id]){
+    const r=el("div","rules"); r.innerHTML=RULES[id]; box.appendChild(r);
+  }
+  const row=el("div","row2");
+  if(hasContent(id)){
+    const play=el("button","go","Play a round");
+    play.onclick=()=>{ closeSheet(); startRound(id,"normal"); };
+    row.appendChild(play);
+  }
+  const close=el("button","go alt","Close"); close.onclick=closeSheet;
+  row.appendChild(close);
+  box.appendChild(row);
+  sheet(box);
+}
+
+/* ============================================================
+   ROUND ENGINE
+   ============================================================ */
+let R=null;
+
+// The one rule the player is actually losing on: enough attempts to judge,
+// under 60%. Drives the boss card and the round weighting.
+function weakTag(){
+  let worst=null, wa=1;
+  for(const k in S.hist){
+    if(!TAG[k]) continue;
+    const h=S.hist[k]||[0,0], n=(h[0]|0)+(h[1]|0);
+    if(n<3) continue;
+    const a=h[0]/n;
+    if(a<0.6 && a<wa){ wa=a; worst=k; }
+  }
+  return worst;
+}
+
+/* A question he has already answered three times teaches him nothing more, so
+   it is retired. Every pool is drawn from live() first; repeats are only ever a
+   last resort to avoid shipping a short round, and startRound asks Claude for
+   brand-new questions before it comes to that. */
+const SEEN_CAP = 3;
+const seenN = q => S.seen[qid(q)]|0;
+const live = qs => qs.filter(q=>seenN(q)<SEEN_CAP);
+const retired = qs => qs.filter(q=>seenN(q)>=SEEN_CAP);
+/* Draw up to n FRESH questions from `pool`. Never returns a retired one: if a
+   sub-pool is dry, the round takes a fresh question from elsewhere rather than
+   repeat this one a fourth time. */
+function drawFrom(pool,n){
+  const o=[]; const add=q=>{ if(q && !o.includes(q) && o.length<n) o.push(q); };
+  shuffle(live(pool)).forEach(add);
+  return o;
+}
+/* Last resort only, once every fresh question in the topic is spoken for. */
+function topUp(out,topic){
+  const add=q=>{ if(q && !out.includes(q) && out.length<8) out.push(q); };
+  shuffle(live(BANK.filter(q=>q.t===topic))).forEach(add);
+  shuffle(live(BANK.filter(q=>hasContent(q.t)))).forEach(add);
+  shuffle(retired(BANK.filter(q=>q.t===topic))).forEach(add);
+  return out;
+}
+
+function pickQuestions(topic,mode){
+  if(mode==="weak"){
+    // Calibration decides the mix: rules he owns come back HARDER (top tiers,
+    // typing/translation/error-spotting), rules he is losing come back MORE.
+    const {strong,weak}=ruleSplit();
+    // "proof": mostly rules he already owns, at the level he owns them, so the
+    // round is winnable and he can see it. Everything else drills the weak side.
+    if(S.calib==="proof"){
+      const win=BANK.filter(q=>strong.includes(q.tag) && q.tier<=3 && q.k==="choice");
+      const o=[]; const add=q=>{ if(q && !o.includes(q) && o.length<8) o.push(q); };
+      drawFrom(win,6).forEach(add);
+      drawFrom(BANK.filter(q=>weak.includes(q.tag) && q.tier<=2),2).forEach(add);
+      drawFrom(win,8).forEach(add);
+      return shuffle(topUp(o,6));
+    }
+    const nHard = S.calib==="harder" ? 4 : S.calib==="more" ? 1 : 3;
+    const hard=drawFrom(BANK.filter(q=>strong.includes(q.tag) &&
+                 (q.tier>=4 || q.k!=="choice")), nHard);
+    // his actual misses first, then anything else tagged with a losing rule
+    const missed=Object.keys(S.wrong).sort((a,b)=>S.wrong[b]-S.wrong[a]);
+    const out=[];
+    const push=q=>{ if(q && !out.includes(q) && out.length<8) out.push(q); };
+    hard.forEach(push);
+    drawFrom(BANK.filter(q=>missed.includes(qid(q))),8).forEach(push);
+    drawFrom(BANK.filter(q=>weak.includes(q.tag) && !missed.includes(qid(q))),8).forEach(push);
+    return shuffle(topUp(out,6));   // never ship a short round
+  }
+  const crown=S.crowns[topic]||0;
+  const target=Math.min(5,crown+1);
+  let pool=BANK.filter(q=>q.t===topic && q.tier<=target);
+  let main=drawFrom(pool.filter(q=>q.tier===target),5)
+             .concat(drawFrom(pool.filter(q=>q.tier<target),3));
+  if(main.length<6) main=drawFrom(pool,6);
+  // spaced review from earlier topics, weighted to past mistakes
+  const revPool=BANK.filter(q=>q.t<topic && hasContent(q.t));
+  const weighted=shuffle(live(revPool).concat(retired(revPool)))
+                   .sort((a,b)=>(S.wrong[qid(b)]||0)-(S.wrong[qid(a)]||0));
+  const rev=drawFrom(weighted,2);
+  let out=shuffle(topUp(main.slice(0,6).concat(rev),topic));
+  // Hunt the weak rule: 3 of the 8 become that rule, pulled from the whole
+  // bank so a weak rule from an earlier topic still gets drilled.
+  const wt=weakTag();
+  if(wt){
+    const fixes=drawFrom(BANK.filter(q=>q.tag===wt),3);
+    if(fixes.length){
+      // dropping the weak tag out of `out` can leave fewer than 8, so top up
+      const o=[]; const push=q=>{ if(q && !o.includes(q) && o.length<8) o.push(q); };
+      fixes.forEach(push);
+      out.filter(q=>q.tag!==wt).forEach(push);
+      drawFrom(pool,8).forEach(push);
+      drawFrom(revPool,8).forEach(push);
+      out=shuffle(topUp(o,topic));
+    }
+  }
+  return out;
+}
+
+function bossCard(tag,go){
+  const box=el("div");
+  box.appendChild(el("h3",null,"⚠️  "+(TAGNAME[tag]||tag)));
+  const h=S.hist[tag]||[0,0];
+  box.appendChild(el("p","sub","You are "+h[0]+" of "+((h[0]|0)+(h[1]|0))+" on this rule. This round hunts it."));
+  const r=el("div","rules");
+  r.innerHTML="<p>"+TAG[tag][0]+"</p><p><b>"+TAG[tag][1]+"</b></p>";
+  box.appendChild(r);
+  const b=el("button","go","Allez ! Chasse au boss");
+  b.onclick=()=>{ closeSheet(); go(); };
+  box.appendChild(b);
+  sheet(box);
+}
+
+function startRound(topic,mode,skipBoss){
+  if(!skipBoss && mode==="normal"){
+    const wt=weakTag();
+    if(wt && TAG[wt]) return bossCard(wt,()=>startRound(topic,mode,true));
+  }
+  const qs=pickQuestions(topic,mode);
+  if(!qs.length){ return; }
+  // Any question already answered SEEN_CAP times is a repeat. Rather than serve
+  // it a fourth time, ask Claude for that many brand-new ones.
+  const stale=qs.filter(q=>!q._ai && seenN(q)>=SEEN_CAP);
+  if(stale.length && SAMPLE && topic===6) return freshenRound(topic,mode,qs,stale);
+  launchRound(topic,mode,qs);
+}
+
+function launchRound(topic,mode,qs){
+  R={topic,mode,qs,i:0,hearts:5,right:0,xp:0,combo:0,best:0,answered:false,record:[]};
+  $("#scr-map").hidden=true; $("#scr-done").hidden=true; $("#scr-round").hidden=false;
+  scrollTo(0,0);
+  renderQ();
+}
+
+/* Swap the repeats out for new questions from Claude. If he is offline or the
+   call fails, the round still starts — a repeat beats no round. */
+async function freshenRound(topic,mode,qs,stale){
+  // tell him where he is actually looking — the map, or the results screen
+  const note=$("#scr-map").hidden ? $("#d-sub") : $("#ai-sub");
+  const was=note?note.textContent:"";
+  if(note) note.textContent="You've seen "+stale.length+" of these 3 times — Claude is writing new ones…";
+  let made=[];
+  try{
+    made=aiRows(await SAMPLE.json(aiPrompt(stale.length),{modelTier:TIER.generate,cache:false}));
+  }catch(e){ /* fall through: the round runs with the repeats */ }
+  if(note) note.textContent=was;
+  const out=qs.slice();
+  stale.forEach((q,i)=>{ if(made[i]) out[out.indexOf(q)]=made[i]; });
+  launchRound(topic,mode,out);
+}
+// Every step here is isolated: the results screen must appear even if
+// scoring, saving or the coach throws. A blank screen is never acceptable.
+function safely(label,fn){
+  try{ fn(); return null; }
+  catch(e){ console.error("[croissant-quest] "+label,e); return label+": "+(e&&e.message||e); }
+}
+
+function endRound(){
+  $("#scr-round").hidden=true;
+  $("#scr-round").classList.remove("glow");
+  let crowned=false, perfect=false, right=0, n=8, err=null;
+
+  err = safely("score",()=>{
+    n=R.qs.length; right=R.right; perfect=(right===n);
+    if(R.mode==="normal" && R.hearts>0){
+      const c=S.crowns[R.topic]||0;
+      const need = c>=3 ? n : n-1;
+      if(right>=need && c<5){ S.crowns[R.topic]=c+1; crowned=true; }
+    }
+    if(perfect) S.cro=(S.cro||0)+1;
+    S.rounds=(S.rounds||0)+1;
+    const t=TODAY();
+    if(S.last!==t){
+      const y=new Date(Date.now()-864e5).toLocaleDateString("en-CA");
+      S.streak = (S.last===y) ? (S.streak||0)+1 : 1;
+      S.last=t;
+    }
+  }) || err;
+
+  safely("save",saveAll);
+
+  safely("results",()=>{
+    $("#d-icon").textContent = crowned?"👑" : perfect?"🥐" : R.hearts>0?"✨":"💪";
+    $("#d-title").textContent = crowned?"Crown earned!" : R.hearts>0?"Round complete":"Out of hearts";
+    $("#d-sub").textContent = err ? err : crowned
+      ? "Topic "+R.topic+" is now at "+(S.crowns[R.topic]||0)+" of 5 crowns."
+      : R.hearts>0 ? (perfect?"Flawless. A croissant for you.":"Solid. One more gets you closer.")
+                   : "No damage done — the questions come back.";
+    $("#d-xp").textContent="+"+R.xp;
+    $("#d-acc").textContent=right+"/"+n;
+    $("#d-combo").textContent=R.best;
+    const cw=$("#d-crown");
+    if(crowned){ cw.hidden=false; cw.textContent="👑".repeat(S.crowns[R.topic]||0)+"  Crown "+(S.crowns[R.topic]||0)+" of 5"; }
+    else cw.hidden=true;
+  });
+
+  // show it BEFORE anything else can fail
+  $("#scr-done").hidden=false;
+  scrollTo(0,0);
+
+  safely("fanfare",()=>{
+    if(crowned){ SFX.crown(); rain(); buzz([30,60,30,60,80]); }
+    else if(R.hearts>0){ SFX.finish(); if(perfect) rain(); burst(innerWidth/2,innerHeight*0.32,30); }
+  });
+  safely("rate",()=>{ R.mine=myRate(); });
+  safely("feel",buildFeel);
+  safely("saylist",buildSayList);
+  safely("report",buildReport);
+  safely("map",drawMap);
+}
+
+function renderQ(){
+  const q=R.qs[R.i];
+  R.answered=false; R.picked=null; R.built=[]; R.pickedEl=null; R.grid=null;
+  $("#fill").style.width=(R.i/R.qs.length*100)+"%";
+  const h=$("#hearts"); h.innerHTML="";
+  for(let i=0;i<5;i++){ const s=el("span",null,"❤️"); if(i>=R.hearts)s.className="gone"; h.appendChild(s); }
+  drawCombo();
+
+  const w=$("#qwrap"); w.innerHTML="";
+  const kindLabel={choice:"Choose",type:"Write the sentence",en2fr:"Translate into French",
+    build:"Build the sentence",fix:"Tap the mistake",fr2en:"What does it mean?"}[q.k];
+  w.appendChild(el("div","qkind",kindLabel));
+
+  const chk=$("#btn-check"); chk.disabled=true; chk.textContent="Check";
+  chk.onclick=()=>submit();
+  const instant = (q.k==="choice"||q.k==="fr2en");
+  chk.hidden = instant;
+
+  // tap an option and it is judged on the spot — no confirm step
+  function optionGrid(list,styleFn){
+    // an unanswerable question is worse than a wrong one: the correct
+    // answer is guaranteed to be on screen, whatever the bank says
+    let opts=list.slice();
+    if(!opts.includes(q.a)){ opts.push(q.a); console.warn("[croissant-quest] answer missing from options:",q); }
+    const g=el("div","opts");
+    shuffle(opts).forEach(o=>{
+      const b=el("button","opt"+(o.length>6?" long":""),o);
+      if(styleFn) styleFn(b);
+      b.onclick=()=>{
+        if(R.answered) return;
+        R.picked=o; R.pickedEl=b; R.grid=g;
+        g.querySelectorAll(".opt").forEach(x=>x.disabled=true);
+        submit();
+      };
+      g.appendChild(b);
+    });
+    return g;
+  }
+
+  if(q.k==="choice"){
+    const card=el("div","card");
+    const fr=el("div","fr"); fr.innerHTML=q.s.replace("___",'<span class="bl"></span>');
+    card.appendChild(fr); card.appendChild(el("div","gloss",q.en));
+    w.appendChild(card);
+    w.appendChild(optionGrid(q.o));
+  }
+
+  if(q.k==="fr2en"){
+    const card=el("div","card");
+    card.appendChild(Object.assign(el("div","fr"),{textContent:q.s}));
+    w.appendChild(card);
+    w.appendChild(optionGrid(q.o,b=>{
+      b.classList.add("long");
+      b.style.fontFamily="Fredoka, system-ui, sans-serif"; b.style.fontSize="15px";
+    }));
+  }
+
+  if(q.k==="type"||q.k==="en2fr"){
+    const card=el("div","card");
+    if(q.k==="type"){
+      const fr=el("div","fr"); fr.innerHTML=q.s.replace("___",'<span class="bl"></span>');
+      card.appendChild(fr); card.appendChild(el("div","gloss",q.en));
+    } else {
+      const g=el("div","fr"); g.textContent=q.en;
+      g.style.fontFamily="Fredoka, system-ui, sans-serif"; g.style.fontSize="20px";
+      card.appendChild(g);
+      card.appendChild(el("div","gloss","Write it in French — full sentence."));
+    }
+    w.appendChild(card);
+    const inp=el("input","typebox");
+    inp.id="q-input"; inp.autocapitalize="none"; inp.autocomplete="off";
+    inp.spellcheck=false; inp.placeholder="Type in French…";
+    inp.oninput=()=>{ R.picked=inp.value; chk.disabled=!inp.value.trim(); };
+    inp.onkeydown=e=>{ if(e.key==="Enter"&&!chk.disabled) submit(); };
+    w.appendChild(inp);
+    const ab=el("div","accents");
+    ["é","è","ê","à","â","ù","û","î","ô","ç","œ","'"].forEach(a=>{
+      const b=el("button","acc",a);
+      b.onclick=()=>{ const p=inp.selectionStart??inp.value.length;
+        inp.value=inp.value.slice(0,p)+a+inp.value.slice(inp.selectionEnd??p);
+        inp.focus(); inp.setSelectionRange(p+1,p+1);
+        R.picked=inp.value; chk.disabled=!inp.value.trim(); };
+      ab.appendChild(b);
+    });
+    w.appendChild(ab);
+    setTimeout(()=>inp.focus(),60);
+  }
+
+  if(q.k==="build"){
+    const card=el("div","card");
+    const g=el("div","fr"); g.textContent=q.en;
+    g.style.fontFamily="Fredoka, system-ui, sans-serif"; g.style.fontSize="20px";
+    card.appendChild(g);
+    w.appendChild(card);
+    const slot=el("div","tiles"); slot.id="slot";
+    const bank=el("div","tiles bank");
+    const words=shuffle(q.a.replace(/[.!?]$/,"").split(" "));
+    words.forEach((word,idx)=>{
+      const t=el("button","tile",word); t.dataset.idx=idx;
+      t.onclick=()=>{
+        if(t.classList.contains("used")) return;
+        t.classList.add("used");
+        const c=el("button","tile",word);
+        c.onclick=()=>{ c.remove(); t.classList.remove("used"); sync(); };
+        slot.appendChild(c); sync();
+      };
+      bank.appendChild(t);
+    });
+    function sync(){
+      R.built=[...slot.querySelectorAll(".tile")].map(x=>x.textContent);
+      R.picked=R.built.join(" ");
+      chk.disabled=R.built.length===0;
+    }
+    w.appendChild(slot); w.appendChild(bank);
+  }
+
+  if(q.k==="fix"){
+    const card=el("div","card");
+    card.appendChild(el("div","gloss",q.en));
+    w.appendChild(card);
+    const line=el("div","wordline");
+    const parts=q.s.split(" ");
+    const badWords=q.bad.split(" ");
+    parts.forEach((word,i)=>{
+      const b=el("button","wd",word);
+      b.onclick=()=>{ line.querySelectorAll(".wd").forEach(x=>x.classList.remove("picked"));
+        b.classList.add("picked"); R.picked=word; R.pickedIdx=i; chk.disabled=false; };
+      line.appendChild(b);
+    });
+    w.appendChild(line);
+    const hint=el("div","gloss","One word here is wrong. Tap it.");
+    w.appendChild(hint);
+    R.badWords=badWords;
+  }
+}
+
+function judge(q){
+  if(q.k==="choice"||q.k==="fr2en") return R.picked===q.a;
+  if(q.k==="fix") return R.badWords.includes(R.picked);
+  const said=norm(R.picked||"");
+  if(said===norm(q.a)) return true;
+  // "Write the sentence" shows a blank, so typing only the missing word is a
+  // fair reading of the screen — accept it when it completes the sentence.
+  // knit() closes the elision, so typing "de l'" still matches "de l'eau".
+  return !!(q.s && q.s.includes("___") &&
+            norm(knit(q.s.replace("___",R.picked||"")))===norm(q.a));
+}
+
+const CHEERS=["Bien !","Oui !","Parfait !","Exact !","Bravo !","Nickel !"];
+
+function drawCombo(){
+  const cb=$("#combo");
+  if(R.combo>=2){
+    cb.className="combo on"+(R.combo>=8?" blaze":R.combo>=5?" hot":"");
+    cb.textContent = R.combo>=8 ? "🔥🔥 "+R.combo+" EN FEU !"
+                   : R.combo>=5 ? "🔥 "+R.combo+" in a row"
+                   : "✨ "+R.combo+" in a row";
+  } else { cb.className="combo"; cb.textContent=""; }
+}
+
+function submit(){
+  if(R.answered) return;
+  const q=R.qs[R.i];
+  R.answered=true;
+  const ok=judge(q);
+  const accentsOnly = !ok && (q.k==="type"||q.k==="en2fr"||q.k==="build") &&
+    deaccent(norm(R.picked||""))===deaccent(norm(q.a));
+
+  noteAnswer(q.tag, ok);
+  // COUNT, not a flag. This used to be =1, so nothing was ever retired and a
+  // question could come back forever.
+  if(!q._ai){ const k=qid(q); S.seen[k]=(S.seen[k]|0)+1; }
+  const fullNow=fullOf(q);
+  R.record.push({tag:q.tag, kind:q.k, ask:(q.s||q.en||""), want:q.a,
+                 gave:String(R.picked||"").slice(0,60), ok,
+                 full:fullNow, en:q.en||"",
+                 pr:(q.pr&&q.pr.e)?q.pr:pron(fullNow)});
+
+  if(ok){
+    R.right++; R.combo++; R.best=Math.max(R.best,R.combo);
+    const gain = 10 + Math.min(20,(R.combo-1)*3);
+    R.xp += gain;
+    S.xp += gain; hud(); bumpHud(".s-xp");
+    const id=qid(q); if(S.wrong[id]){ S.wrong[id]--; if(S.wrong[id]<=0) delete S.wrong[id]; }
+    SFX.right(R.combo); buzz(18);
+    if(R.pickedEl) R.pickedEl.classList.add("good");
+    const r = (R.pickedEl||$("#btn-check")).getBoundingClientRect();
+    burst(r.left+r.width/2, r.top+r.height/2, 18+Math.min(30,R.combo*5));
+    floatXP("+"+gain, r.left+r.width/2, r.top);
+    if(R.combo>=5){ $("#scr-round").classList.add("glow"); }
+    flashOK();
+  } else {
+    R.combo=0; R.hearts--;
+    $("#scr-round").classList.remove("glow");
+    // An AI question is not in BANK, so a weak-spots round can never serve it
+    // again and its count could never be worked back down. Log it, don't queue it.
+    const id=qid(q); if(!q._ai) S.wrong[id]=(S.wrong[id]||0)+1;
+    S.log.push({q:id,t:q.t,tag:q.tag,gave:String(R.picked||"").slice(0,60),at:Date.now()});
+    SFX.wrong(); buzz([25,50,25]);
+    $("#app").classList.add("hit"); setTimeout(()=>$("#app").classList.remove("hit"),320);
+    if(R.pickedEl){
+      R.pickedEl.classList.add("bad");
+      if(R.grid) [...R.grid.querySelectorAll(".opt")].forEach(b=>{
+        if(b.textContent===q.a) b.classList.add("good");
+      });
+    }
+    const hs=$("#hearts").children;
+    if(hs[R.hearts]) hs[R.hearts].className="gone";
+    setTimeout(()=>whyCard(q,accentsOnly), R.pickedEl?420:0);
+  }
+  // Commit after every answer, not just at the end of the round: a reload
+  // mid-round (a new version shipping while he plays) must not cost him the
+  // XP and the rule record he has already earned.
+  safely("save",saveAll);
+}
+
+/* A correct answer still has to teach the sound. Show the completed
+   sentence and its three readings inline — no sheet, no tap needed. */
+function flashOK(){
+  const chk=$("#btn-check");
+  const rec=R.record[R.record.length-1];
+  drawCombo();
+
+  const strip=el("div","okstrip");
+  const say=el("div","say"); say.textContent=rec.full;
+  strip.appendChild(say);
+  const dl=document.createElement("dl");
+  dl.innerHTML='<dt>Eng</dt><dd>'+rec.pr.e+'</dd>'+
+               '<dt>ગુજ</dt><dd>'+rec.pr.g+'</dd>'+
+               '<dt>हिं</dt><dd>'+rec.pr.h+'</dd>';
+  strip.appendChild(dl);
+  $("#qwrap").appendChild(strip);
+  strip.scrollIntoView({block:"nearest",behavior:REDUCED?"auto":"smooth"});
+
+  const go=()=>{ chk.style.background=""; chk.onclick=()=>submit(); next(); };
+  const waitForTap=(msg)=>{
+    strip.classList.add("held");
+    strip.appendChild(el("div","hold",msg));
+    chk.hidden=false; chk.disabled=false;
+    chk.textContent="Continue →"; chk.style.background="var(--grn2)";
+    chk.onclick=go;
+  };
+
+  if(PACE==="study"){ waitForTap("Say it out loud, then continue."); return; }
+
+  // fast pace: a countdown you can see — and stop by tapping the card
+  const MS=3400;
+  strip.style.setProperty("--cd",MS+"ms");
+  const cd=el("div","cd"); cd.appendChild(document.createElement("i"));
+  strip.appendChild(cd);
+  strip.appendChild(el("div","tapon","Tap this card to keep it on screen"));
+
+  if(!chk.hidden){
+    chk.textContent=CHEERS[(Math.random()*CHEERS.length)|0];
+    chk.disabled=true; chk.style.background="var(--grn2)";
+  }
+  const timer=setTimeout(go,MS);
+  strip.onclick=()=>{
+    clearTimeout(timer);
+    const t=strip.querySelector(".tapon"); if(t) t.remove();
+    strip.onclick=null;
+    waitForTap("Held. Take your time.");
+  };
+}
+
+/* Every sentence from the round, right and wrong, to read back at your own pace. */
+function buildSayList(){
+  const box=$("#saylist"); box.innerHTML="";
+  if(!R.record.length){ box.hidden=true; return; }
+  box.hidden=false;
+  box.appendChild(Object.assign(el("h4"),{textContent:"Say it out loud"}));
+  box.appendChild(Object.assign(el("p"),
+    {textContent:"Every sentence from this round. Gujarati and Hindi approximate the French — the u and the nasal vowels have no exact equivalent."}));
+  R.record.forEach(r=>{
+    const row=el("div","sayrow");
+    const t=el("div","fr2");
+    t.innerHTML='<span class="mk">'+(r.ok?"✅":"❌")+'</span><span>'+
+      r.full.replace(/</g,"&lt;")+'</span>';
+    row.appendChild(t);
+    if(r.en) row.appendChild(Object.assign(el("div","gloss"),{textContent:r.en}));
+    const dl=document.createElement("dl");
+    dl.innerHTML='<dt>Eng</dt><dd>'+r.pr.e+'</dd><dt>ગુજ</dt><dd>'+r.pr.g+
+                 '</dd><dt>हिं</dt><dd>'+r.pr.h+'</dd>';
+    row.appendChild(dl);
+    box.appendChild(row);
+  });
+}
+
+function next(){
+  R.i++;
+  if(R.i>=R.qs.length || R.hearts<=0){ $("#fill").style.width="100%"; setTimeout(endRound,200); return; }
+  renderQ();
+}
+
+function whyCard(q,accentsOnly){
+  const full=fullOf(q);
+  const p=(q.pr&&q.pr.e)?q.pr:pron(full);
+  const box=el("div");
+  const v=el("div","verdict no"); v.innerHTML="<span>✗</span><span>"+(accentsOnly?"So close — accents":"Not quite")+"</span>";
+  box.appendChild(v);
+
+  const ans=el("div","answerline");
+  if(q.k==="choice"||q.k==="type"){
+    ans.innerHTML = knit(q.s.replace("___","\u0001"+q.a+"\u0002"))
+      .replace(/</g,"&lt;").replace(/\u0001/g,"<em>").replace(/\u0002/g,"</em>");
+  } else if(q.k==="fr2en"){
+    ans.innerHTML = "<em>"+q.a+"</em>";
+    ans.style.fontFamily="Fredoka, system-ui, sans-serif"; ans.style.fontSize="17px";
+  } else {
+    ans.innerHTML = "<em>"+full+"</em>";
+  }
+  box.appendChild(ans);
+
+  if(R.picked && q.k!=="fix"){
+    const y=el("div","yourline");
+    y.innerHTML="You wrote: <s>"+String(R.picked).replace(/</g,"&lt;")+"</s>";
+    box.appendChild(y);
+  }
+  if(q.k==="fix"){
+    const y=el("div","yourline");
+    y.innerHTML="The broken part was <s>"+q.bad+"</s>";
+    box.appendChild(y);
+  }
+
+  // A question that IS the exception must not be explained by the general rule.
+  // "un festival → des festivals" was being taught with "-al becomes AUX".
+  const t=q.why||TAG[q.tag]||["",""];
+  if(accentsOnly){
+    const r=el("div","rule");
+    r.innerHTML='<i>⚠️</i><span>The words were right — the <b>accents</b> were not. In French an accent is a letter, not decoration.</span>';
+    box.appendChild(r);
+  }
+  if(t[0]){ const r=el("div","rule"); r.innerHTML='<i>💡</i><span>'+t[0]+'</span>'; box.appendChild(r); }
+  if(t[1]){ const r=el("div","rule"); r.innerHTML='<i>🧠</i><span><b>'+t[1]+'</b></span>'; box.appendChild(r); }
+
+  // When he produces the words himself he can miss in a way the tag rule does
+  // not explain — "beaucoup de chocolat" gets the article right and the
+  // quantity word wrong, and the rule above would only repeat what he already
+  // did correctly. Only Claude can name that difference, so ask on the spot.
+  if(SAMPLE && NEARMISS.includes(q.k)){
+    const c=el("div","coach");
+    c.innerHTML='<div class="coach-h"><i>🧑‍🏫</i><b>Why yours missed</b></div>';
+    const out=el("div","coach-body wait","Thinking…");
+    c.appendChild(out); box.appendChild(c);
+    SAMPLE(nearMissPrompt(q,R.picked),{modelTier:TIER.nearmiss,cache:false,
+      onText:({text})=>{ out.className="coach-body"; out.textContent=text; }})
+     .then(({text})=>{ out.className="coach-body"; out.textContent=text; })
+     .catch(()=>{ c.remove(); });   // no answer? the card reads as it always did
+  }
+
+  if(q.k!=="fr2en"){
+    const pr=el("div","pron");
+    pr.innerHTML='<h4>Say it</h4><dl>'+
+      '<dt>Eng</dt><dd>'+p.e+'</dd>'+
+      '<dt>ગુજ</dt><dd>'+p.g+'</dd>'+
+      '<dt>हिं</dt><dd>'+p.h+'</dd></dl>'+
+      '<p class="note">Gujarati and Hindi are approximations — French u and the nasal vowels have no exact equivalent.</p>';
+    box.appendChild(pr);
+  }
+
+  const row=el("div","row2");
+  const go=el("button","go","Got it");
+  go.onclick=()=>{ closeSheet(); next(); };
+  row.appendChild(go); box.appendChild(row);
+  sheet(box, ()=>{ closeSheet(); next(); });
+  setTimeout(()=>go.focus(),80);
+}
+
+/* ============================================================
+   AFTER-ROUND REPORT + AI COACH
+   ============================================================ */
+/* ============================================================
+   FEEL METER — he rates himself, I rate him, the gap sets the next drill
+   ============================================================ */
+const FEELWORD=[[0,"😶","No idea at all"],[15,"😣","Lost"],[30,"😕","Shaky"],
+  [45,"🤔","Half there"],[60,"🙂","Getting it"],[75,"😃","Solid"],
+  [90,"🤩","Automatic — no thinking"],[100,"🔥","Wake me from sleep, I'd still know"]];
+function feelWord(v){ let f=FEELWORD[0]; for(const r of FEELWORD) if(v>=r[0]) f=r; return f; }
+
+/* My honest read of him: this round, weighted against his lifetime record on
+   the rules it touched, then capped by his worst rule — one rule he keeps
+   losing means the topic is not understood, however well one round went. */
+function myRate(){
+  const n=R.record.length||1;
+  const round=R.record.filter(r=>r.ok).length/n;
+  const touched=[...new Set(R.record.map(r=>r.tag).filter(Boolean))];
+  let r=0,t=0;
+  touched.forEach(k=>{ const h=S.hist[k]||[0,0]; r+=(h[0]|0); t+=(h[0]|0)+(h[1]|0); });
+  const life = t ? r/t : round;
+  let pct=Math.round((round*0.6+life*0.4)*100);
+  const worst=touched.map(k=>{ const h=S.hist[k]||[0,0], tt=(h[0]|0)+(h[1]|0);
+                               return tt>=2 ? h[0]/tt : 1; })
+                     .reduce((a,b)=>Math.min(a,b),1);
+  if(worst<0.6) pct=Math.min(pct,65);
+  else if(worst<0.9) pct=Math.min(pct,85);
+  return Math.max(0,Math.min(100,pct));
+}
+
+/* Rules split by his lifetime record: mastered ones get harder questions,
+   losing ones get more questions. Both feed the drill. */
+function ruleSplit(){
+  const strong=[], weak=[];
+  for(const k in S.hist){
+    if(!TAG[k]) continue;
+    const h=S.hist[k]||[0,0], n=(h[0]|0)+(h[1]|0);
+    if(n<2) continue;
+    (h[0]/n>=0.9 ? strong : weak).push(k);
+  }
+  return {strong,weak};
+}
+
+function buildFeel(){
+  const box=$("#feel"), rng=$("#feel-range"), v=$("#feel-verdict");
+  box.hidden=false; v.hidden=true; v.innerHTML=""; v.className="fverdict";
+  const lock=$("#feel-lock");
+  lock.hidden=false; lock.disabled=false; lock.textContent="Lock it in";
+  rng.disabled=false;
+  rng.value = S.feel==null ? 50 : S.feel;   // start where he last put it
+  $("#report").hidden=true;                 // my read stays sealed until he commits
+  // He has twice rated himself near zero while scoring far higher. My NUMBER
+  // stays sealed, but the rules he has already nailed are his own data and he
+  // should be looking at them before he judges himself.
+  const own=tagStats().filter(s=>s.total>=2 && s.pct>=90);
+  const owned=$("#feel-own");
+  if(own.length){
+    owned.hidden=false;
+    owned.innerHTML="<b>Already yours</b>"+own.map(s=>
+      '<span class="ownpill">'+s.name+' <i>'+s.right+'/'+s.total+'</i></span>').join("");
+  } else owned.hidden=true;
+  paintFeel();
+  rng.oninput=paintFeel;
+  lock.onclick=lockFeel;
+}
+function paintFeel(){
+  const v=+$("#feel-range").value, f=feelWord(v);
+  $("#feel-pct").textContent=v+"%";
+  $("#feel-face").textContent=f[1];
+  $("#feel-word").textContent=f[2];
+}
+
+function lockFeel(){
+  const feel=+$("#feel-range").value, mine=(R&&R.mine!=null)?R.mine:myRate();
+  const gap=feel-mine;
+  const acc=R&&R.record.length ? R.record.filter(r=>r.ok).length/R.record.length : 0;
+  S.feel=feel;
+  // Four outcomes, not three. Someone scoring well and still rating themselves
+  // near zero does not need more grinding — more grinding is what convinced them
+  // they are bad at it. They need a round they can feel themselves win.
+  // Gate on MY rating, not the raw round score: my rating already folds in his
+  // lifetime record and caps for a rule he is losing, so >=50 means genuinely
+  // half-competent. His real round 8 was 5/8 = 62.5%, which a raw-accuracy
+  // threshold of 0.7 would have thrown away.
+  S.calib = gap<=-25 && mine>=50 ? "proof"
+          : gap>=15 ? "harder"
+          : gap<=-15 ? "more"
+          : "aligned";
+  S.feelLog=(S.feelLog||[]).concat([{at:Date.now(),feel,mine,r:S.rounds}]).slice(-20);
+  $("#feel-range").disabled=true;
+  $("#feel-lock").hidden=true;
+
+  const {strong,weak}=ruleSplit();
+  const wn=weak.map(k=>TAGNAME[k]||k);
+  const sn=strong.map(k=>TAGNAME[k]||k);
+  const v=$("#feel-verdict");
+  v.className="fverdict "+(S.calib==="harder"?"hard":S.calib==="more"?"more":"same");
+  let title,body;
+  if(S.calib==="proof"){
+    title="You just scored "+Math.round(acc*100)+"% and rated yourself "+feel+"%.";
+    body="I scored you <b>"+mine+"%</b>. One of us is reading the round wrong, and it is not me — "+
+         "the answers are on record. So the next drill is not harder and it is not longer: it is "+
+         "built from the rules you have <b>already nailed</b>"+(sn.length?" ("+sn.slice(0,3).join(", ")+")":"")+
+         ", with two from "+(wn.length?wn[0]:"the weak list")+" mixed in. Play it, watch yourself get "+
+         "them right, then rate yourself again. Grinding more questions is what taught you to score "+
+         "yourself at "+feel+"%.";
+  }else if(S.calib==="harder"){
+    title="You're ahead of your record — so the gloves come off.";
+    body="You said <b>"+feel+"%</b>, I scored you <b>"+mine+"%</b>. If you feel that solid, the "+
+         "questions were too easy. The next drill moves up a tier"+
+         (sn.length?" on "+sn.slice(0,3).join(", "):"")+" — typing, translation and error-spotting "+
+         "instead of tapping an option"+(wn.length?", and it still hammers "+wn.slice(0,2).join(" and ")+".":".");
+  }else if(S.calib==="more"){
+    title="You're harder on yourself than the data is — but we practise anyway.";
+    body="You said <b>"+feel+"%</b>, I scored you <b>"+mine+"%</b>. Your call wins: the next drill is "+
+         "<b>volume, not difficulty</b>"+(wn.length?" — mostly "+wn.slice(0,3).join(", "):"")+
+         ". Same tier, more reps, until it stops feeling like guessing.";
+  }else{
+    title="We agree. That means the number is real.";
+    body="You said <b>"+feel+"%</b>, I scored you <b>"+mine+"%</b>. The next drill keeps the balance: "+
+         "harder questions where you are clean"+(sn.length?" ("+sn.slice(0,3).join(", ")+")":"")+
+         ", more questions where you are not"+(wn.length?" ("+wn.slice(0,3).join(", ")+")":"")+".";
+  }
+  v.innerHTML=
+    '<div class="vrow"><div class="vcell"><b>'+feel+'%</b><span>You said</span></div>'+
+    '<div class="vcell mineu"><b>'+mine+'%</b><span>I say</span></div></div>'+
+    '<div class="vtitle">'+title+'</div><div class="vbody">'+body+'</div>'+
+    accordHTML(feel);
+  v.hidden=false;
+  $("#report").hidden=false;
+  $("#btn-drill").hidden=false;
+  safely("save",saveAll);
+}
+
+/* The shared target: every rule at 90%+ on my side AND 90%+ on his. */
+function accordHTML(feel){
+  const under=tagStats().filter(s=>s.total>=2 && s.pct<90);
+  if(!under.length && feel>=90)
+    return '<div class="accord">🤝 <b>Accord.</b> Every rule you have attempted is at 90% or better, '+
+           'and you say 90%+ too. That is the bar we set. Take the crown rounds and move on.';
+  const mineLeft = under.length
+    ? under.length+" rule"+(under.length>1?"s":"")+" still under 90% on my side ("+
+      under.slice(0,3).map(s=>(TAGNAME[s.tag]||s.tag)+" "+s.pct+"%").join(", ")+")"
+    : "every rule is 90%+ on my side";
+  const yoursLeft = feel>=90 ? "you are already at 90%+" : "you are at "+feel+"%";
+  return '<div class="accord">🎯 <b>Target: 90%+ from both of us, on every rule.</b><br>'+
+         mineLeft+", and "+yoursLeft+'. Keep drilling.</div>';
+}
+
+function buildReport(){
+  const touched=[...new Set(R.record.map(r=>r.tag).filter(Boolean))];
+  const stats=tagStats();
+  const shown=stats.filter(s=>touched.includes(s.tag));
+  const box=$("#rep-bars"); box.innerHTML="";
+
+  const total=BANK.filter(q=>q.t===R.topic).length;
+  const done=BANK.filter(q=>q.t===R.topic && S.seen[qid(q)]).length;
+  if(total){
+    const eb=el("div","exbar");
+    eb.innerHTML='<span>Exercises seen</span><span class="meter"><i style="width:'+
+      (done/total*100)+'%"></i></span><span>'+done+' / '+total+'</span>';
+    box.appendChild(eb);
+  }
+
+  shown.forEach(s=>{
+    const cls = s.pct>=90?"ok" : s.pct>=60?"mid" : "low";
+    const b=el("div","bar "+cls);
+    b.innerHTML='<span class="nm">'+s.name+
+      (s.pct>=90&&s.total>=2?'<span class="acc">🤝</span>':'')+'</span><span class="sc2">'+s.right+'/'+s.total+
+      '</span><span class="meter"><i style="width:'+s.pct+'%"></i></span>';
+    box.appendChild(b);
+  });
+  if(!shown.length) box.appendChild(el("div","coach-body wait","Play a round to see your rule-by-rule breakdown."));
+
+  // the drill stays locked until he commits his own number
+  $("#btn-drill").hidden = true;
+  askCoach(shown);
+}
+
+function askCoach(shown){
+  const out=$("#coach-body");
+  if(!SAMPLE){
+    out.className="coach-body wait";
+    out.textContent = R.right===R.qs.length
+      ? "Clean round — nothing broke. Keep the pace."
+      : "Look at the bars above: anything red is what the next round should hit.";
+    return;
+  }
+  out.className="coach-body wait"; out.textContent="Thinking…";
+
+  const lines=R.record.map(r=>
+    (r.ok?"RIGHT":"WRONG")+" · rule["+(TAGNAME[r.tag]||r.tag)+"] · asked: "+r.ask+
+    " · correct: "+r.want+(r.ok?"":" · they answered: "+(r.gave||"(blank)"))).join("\n");
+  const life=shown.map(s=>s.name+": "+s.right+"/"+s.total).join("\n");
+
+  const prompt =
+"You are the personal French A1 grammar coach for a learner in India (English/Gujarati/Hindi speaker). "+
+"They are drilling PARTITIVE ARTICLES (du / de la / de l' / des) and reviewing pronouns, gender, plurals and articles.\n\n"+
+"They just finished one round. Exactly what happened, question by question:\n"+lines+
+"\n\nTheir lifetime accuracy on the rules this round touched:\n"+life+
+"\n\nWrite exactly three short lines, no headings, no bullet characters, no preamble:\n"+
+"Line 1: the one thing they now clearly own, named specifically.\n"+
+"Line 2: the one thing that is actually breaking — quote their own wrong answer and say why it was wrong in plain English.\n"+
+"Line 3: one concrete instruction for their next two minutes.\n"+
+"If they got everything right, say so in line 1 and use lines 2-3 to name the hardest thing still ahead of them in this topic.\n"+
+"Under 70 words total. Speak straight to them as 'you'.";
+
+  SAMPLE(prompt,{modelTier:TIER.coach,cache:false,
+    onText:({text})=>{ out.className="coach-body"; out.textContent=text; }})
+   .then(({text,modelTierApplied})=>{
+     out.className="coach-body"; out.textContent=text;
+     const tag=el("div","tierline");
+     tag.textContent="tier: "+(modelTierApplied||TIER.coach)+
+       (modelTierApplied&&modelTierApplied!==TIER.coach?" (substituted)":"");
+     out.appendChild(tag);
+   })
+   .catch(e=>{
+     out.className="coach-body wait";
+     out.textContent = e.code==="not_granted"
+       ? "Allow Claude in this page and I'll read every round for you."
+       : "Couldn't reach Claude this time — the bars above still hold.";
+   });
+}
+
+/* Model tiers, declared in one place so they cannot drift.
+   The runtime exposes tiers, never model names:
+     "quick"   - fastest, does not think first   (Haiku-class)
+     "default" - the balanced everyday model     (Sonnet-class)
+     "complex" - most capable, thinks longest    (Opus-class)
+   "complex" is deliberately NEVER requested by this page. */
+const TIER = { coach:"quick", generate:"default", nearmiss:"default" };
+
+/* ---- the near-miss explainer, for answers he typed or built himself ---- */
+const NEARMISS=["type","en2fr","build","fix"];
+function nearMissPrompt(q,gave){
+  // an exception question carries its own rule; never hand Claude the general one
+  const t=q.why||TAG[q.tag]||["",""];
+  const asked = q.k==="en2fr" ? (q.en||"") : (q.s||q.en||"");
+  const theirs = q.k==="fix"
+    ? 'They tapped "'+(gave||"(nothing)")+'" as the mistake, but the broken word was "'+(q.bad||"")+'".'
+    : 'They wrote: '+(gave||"(nothing)");
+  return (
+"A French A1 learner in India (speaks English, Gujarati and Hindi) just answered a "+
+"produce-the-sentence exercise wrong.\n"+
+"They were asked: "+asked+"\n"+
+"Expected French: "+q.a+"\n"+
+theirs+"\n"+
+"The rule this exercise drills: "+String(t[0]).replace(/<[^>]+>/g,"")+"\n\n"+
+"Write at most 2 short lines, no headings, no bullet characters, no preamble:\n"+
+"Line 1: the ONE real difference between what they wrote and what was wanted. Do NOT restate the "+
+"rule above — they may have applied it correctly already. Name the actual word or form that differs "+
+"and say what each one means in English.\n"+
+"Line 2: how to remember which one to reach for next time.\n"+
+"Ignore spelling slips unless the spelling IS the error. If what they wrote is in fact acceptable "+
+"French for that prompt, say exactly that in one line instead. Under 50 words. Speak to them as 'you'.");
+}
+
+/* ---- infinite AI-generated exercises ---- */
+const AITAGS=["m","f","v","p","neg","qty","gen","fix","twin","sans","gre"];
+function aiPrompt(n){
+  // (n|0) is 0 when n is omitted, and Math.max(1,0) is 1 — which silently asked
+  // Claude for ONE question and killed the whole drill. Default to 8 explicitly.
+  const count = (n|0)>0 ? Math.min(8,n|0) : 8;
+  const stats=tagStats().filter(s=>s.total>=1);
+  const weak=stats.filter(s=>s.pct<90).slice(0,4).map(s=>s.tag);
+  const focus=(weak.length?weak:["m","f","v","neg"]);
+  const split=ruleSplit();
+  // the retired ones matter most here: those are the sentences he is sick of
+  const worn=BANK.filter(q=>q.t===6&&seenN(q)>=SEEN_CAP).map(q=>q.s||q.a);
+  const other=BANK.filter(q=>q.t===6&&seenN(q)>0&&seenN(q)<SEEN_CAP).map(q=>q.s||q.a);
+  const seen=worn.concat(other).slice(0,40).join(" / ");
+  // the learner's own self-rating vs mine decides how hard these land
+  const last=(S.feelLog||[]).slice(-1)[0];
+  let calib="";
+  if(last){
+    calib="\nThe learner rated their own understanding "+last.feel+"% and the app scored them "+
+      last.mine+"%. ";
+    if(S.calib==="proof") calib+="They scored well and still rated themselves near zero. Do NOT make "+
+      "these harder and do NOT pile on. Write clear, fair, winnable questions on the rules they "+
+      "already hold, so they can see themselves get them right. Confidence is the goal of this set.\n";
+    else if(S.calib==="harder") calib+="They are MORE confident than their record. Make these genuinely "+
+      "hard: longer sentences, two decisions in one sentence (a trigger word AND a gender call), "+
+      "less obvious nouns, and distractor options that punish guessing by noun ending.\n";
+    else if(S.calib==="more") calib+="They are LESS confident than their record. Keep the difficulty "+
+      "where it is and give plenty of straightforward repetitions of the same rules so the pattern "+
+      "becomes automatic. Do not make these harder.\n";
+    else calib+="Their self-rating matches their record. Keep most questions at the current level and "+
+      "make two of the eight clearly harder.\n";
+    if(split.strong.length) calib+="Rules they have already mastered — ask these ones HARDER, not more: "+
+      split.strong.join(", ")+".\n";
+    if(split.weak.length) calib+="Rules they keep losing — ask MORE of these, plainly: "+
+      split.weak.join(", ")+".\n";
+  }
+  return (
+"Write "+count+" brand-new French A1 fill-in-the-blank exercises on PARTITIVE ARTICLES for one learner.\n"+
+"Weight them toward these rules (use the tag codes exactly): "+focus.join(", ")+".\n"+calib+
+"Tag codes: m = du with a masculine noun; f = de la with a feminine noun; v = de l' before a vowel or mute h; "+
+"p = des with a plural noun; neg = after ne...pas the article becomes de or d'; "+
+"qty = after beaucoup/un peu/trop/assez/un kilo/une bouteille it is bare de; "+
+"gen = aimer/adorer/detester/preferer take le/la/les; fix = fixed expressions like faire du sport, "+
+"jouer de la guitare, avoir de la chance; sans = sans takes no article at all; "+
+"gre = the gender trap where a noun ends in -e but is masculine because a consonant precedes the final -re "+
+"(le sucre, le beurre, le poivre, le verre, le livre), contrasted with -ure nouns that are feminine "+
+"(la confiture, la voiture) — for this tag use those nouns specifically.\n\n"+
+"Hard rules:\n"+
+"- Every sentence must be correct, natural French at A1 level, 3 to 6 words plus the blank.\n"+
+"- Use everyday food, drink, weather and activity nouns. Vary the subject pronoun.\n"+
+"- He is sick of these. Do NOT reuse any of them, and do not write a near-copy with one "+
+"word swapped — change the subject, the verb AND the noun: "+seen+"\n"+
+"- 'o' must be 4 plausible options including the correct one.\n"+
+"- 'pe' is an English phonetic reading of the COMPLETED sentence for an Indian English speaker (e.g. 'Eel mahnzh dü sho-ko-LA'). "+
+"'pg' is the same in Gujarati script, 'ph' the same in Devanagari. These are approximations of the French sounds, "+
+"not letter-by-letter transliterations of the spelling.\n\n"+
+'Reply with only a JSON array of '+count+' objects shaped exactly like this one:\n'+
+'{"s":"Il mange ___ chocolat.","a":"du","en":"He eats some chocolate.","o":["du","de la","de l\'","des"],'+
+'"tag":"m","pe":"Eel mahnzh dü sho-ko-LA","pg":"ઈલ માઁઝ઼ દ્યૂ શોકોલા","ph":"ईल माँझ़ द्यू शोकोला"}');
+}
+
+/* The model's reply is the one untrusted input in this file, and four of its
+   fields reach innerHTML. Sanitise and shape it once, here at the boundary,
+   rather than at each of the six render sites. */
+const aiEsc = s => String(s).replace(/[&<>"]/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function aiRows(rows){
+  return (Array.isArray(rows)?rows:[])
+    // no blank means no question — it would render as a readable statement
+    .filter(r=>r&&r.s&&r.a&&Array.isArray(r.o)&&String(r.s).includes("___"))
+    .slice(0,8).map(r=>{
+      // cap FIRST, then force the answer in — capping afterwards could slice
+      // the correct answer off the end and ship an unanswerable question
+      const o=[...new Set(r.o.map(aiEsc).filter(Boolean))].slice(0,6);
+      const a=aiEsc(r.a);
+      if(!o.includes(a)){ if(o.length>=6) o.pop(); o.unshift(a); }
+      return { t:6, tier:3, k:"choice", _ai:true,
+        s:aiEsc(r.s), a, en:aiEsc(r.en||""), o,
+        tag:AITAGS.includes(r.tag)?r.tag:"m",
+        pr:{e:aiEsc(r.pe||""),g:aiEsc(r.pg||""),h:aiEsc(r.ph||"")} };
+    }).filter(q=>q.o.length>=2);
+}
+
+async function aiRound(btn){
+  if(!SAMPLE) return;
+  const old=btn.textContent; btn.disabled=true; btn.textContent="Claude is writing 8 questions…";
+  try{
+    const rows=await SAMPLE.json(aiPrompt(8),{modelTier:TIER.generate,cache:false});
+    const qs=aiRows(rows);
+    if(qs.length<4) throw {code:"empty_completion"};
+    btn.disabled=false; btn.textContent=old;
+    launchRound(6,"ai",qs);
+  }catch(e){
+    btn.disabled=false; btn.textContent=old;
+    // #ai-sub lives on the MAP. Pressed from the results screen it is hidden,
+    // so a failure looked like a dead button. Report where he is looking.
+    const note=$("#scr-map").hidden ? $("#d-sub") : $("#ai-sub");
+    if(note) note.textContent = e && e.code==="not_granted"
+      ? "Allow Claude in this page to generate fresh questions"
+      : "Claude couldn't write them this time — drilling from your own mistakes instead";
+    console.error("[croissant-quest] aiRound",e);
+    // A tapped button must always do something. Fall back to the local drill.
+    if(Object.keys(S.wrong||{}).length) startRound(6,"weak",true);
+  }
+}
+
+/* ---- progress you can paste back into the conversation ---- */
+function progressText(){
+  const stats=tagStats();
+  const total6=BANK.filter(q=>q.t===6).length;
+  const done6=BANK.filter(q=>q.t===6&&S.seen[qid(q)]).length;
+  let s="## Croissant Quest — progress\n";
+  s+="XP "+S.xp+" · streak "+S.streak+" · croissants "+S.cro+" · rounds "+S.rounds+"\n";
+  s+="Partitives: crown "+(S.crowns[6]||0)+"/5 · exercises seen "+done6+"/"+total6+"\n";
+  const lf=(S.feelLog||[]).slice(-1)[0];
+  if(lf) s+="Feel meter: I said "+lf.feel+"% · game said "+lf.mine+"% · drill mode "+(S.calib||"aligned")+"\n";
+  s+="\n";
+  s+="### Rule-by-rule (lifetime)\n";
+  stats.forEach(x=>{ s+="- "+x.name+": "+x.right+"/"+x.total+" ("+x.pct+"%)\n"; });
+  const recent=S.log.slice(-15);
+  if(recent.length){
+    s+="\n### Last "+recent.length+" mistakes\n";
+    recent.forEach(m=>{ s+="- ["+(TAGNAME[m.tag]||m.tag)+"] answered \""+m.gave+"\"\n"; });
+  }
+  return s;
+}
+function copyProgress(btn){
+  const txt=progressText();
+  const done=()=>{ const o=btn.textContent; btn.textContent="✓ Copied — paste it to Claude";
+    setTimeout(()=>btn.textContent=o,2200); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done,()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta=document.createElement("textarea"); ta.value=txt;
+    ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done(); }catch(e){ btn.textContent="Copy failed"; }
+    ta.remove();
+  }
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+$("#btn-quit").onclick=()=>{
+  $("#scr-round").hidden=true; $("#scr-map").hidden=false; scrollTo(0,0); drawMap();
+};
+$("#btn-back").onclick=()=>{
+  $("#scr-done").hidden=true; $("#scr-map").hidden=false; scrollTo(0,0); drawMap();
+};
+$("#btn-weak").onclick=()=>{
+  if(!Object.keys(S.wrong).length) return;
+  startRound(6,"weak");
+};
+$("#btn-ai").onclick=e=>aiRound(e.currentTarget.querySelector("b"));
+$("#btn-drill").onclick=e=>{
+  if(SAMPLE) aiRound(e.currentTarget);
+  else if(Object.keys(S.wrong).length) startRound(6,"weak");
+};
+$("#btn-copy").onclick=e=>copyProgress(e.currentTarget);
+
+/* ---- boot ---- */
+function boot(){
+  loadLocal();
+  drawMap();
+  if(window.claude&&claude.use){
+    claude.use("sample").then(s=>{
+      if(!s) return;
+      SAMPLE=s; $("#btn-ai").hidden=false;
+    }).catch(()=>{});
+    claude.use("db").then(d=>{
+      if(!d) return;
+      DB=d;
+      // Do NOT publish SAVEDOC before the read lands: saveAll() now runs after
+      // every answer, and on a second device (empty localStorage) one early
+      // answer would overwrite the real save with xp 0.
+      const doc=DB.doc("save/state");
+      doc.get().then(snap=>{
+        if(snap.exists){
+          // A snapshot and everything under it is FROZEN. Assigning it
+          // straight into S makes S.crowns/S.log frozen too, and the next
+          // write to one throws under "use strict" — which is what blanked
+          // the results screen. Deep-copy it into plain mutable objects.
+          let v; try{ v=JSON.parse(JSON.stringify(snap.data()||{})); }catch(e){ v={}; }
+          S=Object.assign(S,v);
+          S.crowns=S.crowns||{}; S.wrong=S.wrong||{};
+          S.log=Array.isArray(S.log)?S.log:[];
+          S.hist=S.hist||{}; S.seen=S.seen||{};
+          S.feelLog=Array.isArray(S.feelLog)?S.feelLog:[];
+          if(typeof S.feel!=="number") S.feel=null;
+          if(["harder","more","aligned","proof"].indexOf(S.calib)<0) S.calib="aligned";
+          MASTERED.forEach(t=>{ if(!S.crowns[t]) S.crowns[t]=5; });
+          SAVEDOC=doc;
+          drawMap();
+        } else { SAVEDOC=doc; saveAll(); }
+      }).catch(()=>{});
+    }).catch(()=>{});
+  }
+}
+if(window.claude&&window.claude.hot&&window.claude.hot.ready){
+  window.claude.hot.snapshot(()=>({S}));
+  window.claude.hot.ready(d=>{ if(d&&d.S) S=Object.assign(S,d.S); boot(); });
+} else { boot(); }
+</script>
