@@ -3,6 +3,14 @@
 Branch `claude/nest-next-rebuild`, PR https://github.com/silly-cloud/croissant-quest/pull/3. Rules: unchanged (see PLAN.md Global Constraints, AGENTS.md).
 Do not open/merge a PR, publish the artifact, delete branches, or remove `croissant-quest.html` before the parity gate without the owner's yes.
 
+## Where things really are (2026-10-24, before the finish-and-host run)
+- On the branch: packages/{shared,content,config}, apps/api (+ review fixes, 171b8c8), guardrails hook (active), Husky files (installed with HUSKY=0, not enabled), infra compose, CI file, ADRs 0001-0007, audit docs under docs/audit/.
+- Finished but unmerged: apps/web on worktree-agent-af9d502963e0ce5f9 @ 3e83d84 (65 unit, 14 Playwright tests, run against a fake API only; based on 080abcf, before the API review fixes).
+- Running: only the audit consolidator (writes to scratch). Lanes A-K and the API-fix agent have all returned.
+- Open: no Dockerfiles; CI never run on GitHub and its web e2e step passes with zero projects; legacy HTML present; PR #3 not merged; main has no branch protection (protected:false).
+- Audit (reproduced by me): hook fails open (empty/malformed stdin; jq missing) and has evasions (`git push "-f"`, `git -C . push -f`, `--mirror`); coach abuse via minted cookies (unlimited GET /v1/progress) and cross-site text/plain POST; `last` unvalidated (pins streak); two tabs lose increments and misses (max merge); SEEN_CAP untested; apps/web lacks a vitest devDependency (typecheck breaks after merge).
+- Banned/allowed lists: see AGENTS.md (updated in this run).
+
 ## State
 | Lane | State | Evidence |
 |---|---|---|
