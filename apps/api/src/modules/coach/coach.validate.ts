@@ -26,8 +26,21 @@ const CLOSED = new Set(["du", "de la", "de l'", "des", "de", "d'", "le", "la", "
 const ALLOWED: Record<string, string[]> = {
   m: ["du"], f: ["de la"], v: ["de l'"], p: ["des"],
   neg: ["de", "d'"], qty: ["de", "d'"], gen: ["le", "la", "les", "l'"],
-  sans: [],
+  sans: [], cnt: [], t1: [], t2: [], t3: [], t4: [], t5: [],
 };
+/** Mute-h words elide like a vowel (l'homme); any other h is treated as aspirate (le homard). */
+const MUTE_H = /^h(omme|ôtel|otel|uile|ôpita|opita|eure|istoire|erbe|abit|iver|umain)/;
+const VOWEL = /^[aeiouyàâäéèêëîïôöûùüœæ]/;
+/** The noun after the blank decides elision: de l'/d'/l' before a vowel or mute h, never before a consonant or aspirate h. */
+function elisionOk(s: string, a: string): boolean {
+  const next = (s.split("___")[1] ?? "").trim().toLowerCase().split(/\s+/)[0] ?? "";
+  if (!next) return false;
+  const elides = VOWEL.test(next) || MUTE_H.test(next);
+  if (a === "des" || a === "les") return true;
+  return a.endsWith("'") === elides;
+}
+/** After être + pas the article does not change: "Ce n'est pas du vin". */
+const ETRE_PAS = /\b(n'|ne )(est|es|suis|sommes|êtes|sont|était|étaient)\s+(pas|plus)\s+___/i;
 const apos = (x: string) => x.trim().replace(/[’`´]/g, "'");
 /** No markup in anything that reaches a screen. */
 const hasMarkup = (...xs: (string | undefined)[]) => xs.some((x) => x !== undefined && /[<>]/.test(x));
@@ -73,6 +86,7 @@ export function validateRound(rows: unknown[], max = 8): Question[] {
     const s = r.s.trim();
     if (s.split("___").length !== 2 || o.length < 2 || o.length > 6 || !o.includes(a)) continue;
     if (!CLOSED.has(a) || (ALLOWED[r.tag] && !ALLOWED[r.tag]!.includes(a))) continue;
+    if (!elisionOk(s, a) || (ETRE_PAS.test(apos(s)) && (a === "de" || a === "d'"))) continue;
 
     const draft = {
       t: 6, tier: 3, k: "choice" as const, _ai: true as const,

@@ -26,3 +26,14 @@ describe("question bank", () => {
     expect(all).not.toMatch(/CONSONANT before the final/);
   });
 });
+
+describe("rule text agrees with the bank (audit B-french-1/2)", () => {
+  it("qty rule mentions d' because some qty answers are d'", () => {
+    expect(BANK.some((q) => q.tag === "qty" && q.a === "d'")).toBe(true);
+    expect(TAG.qty!.join(" ")).toContain("d'");
+  });
+  it("plural trick does not claim every -s/-x noun is plural (du jus, du riz exist)", () => {
+    expect(BANK.some((q) => /___ (jus|riz)\b/.test(q.s ?? "") && q.a === "du")).toBe(true);
+    expect(TAG.p!.join(" ")).toMatch(/jus|riz/);
+  });
+});

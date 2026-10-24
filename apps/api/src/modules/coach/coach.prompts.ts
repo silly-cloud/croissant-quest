@@ -51,7 +51,7 @@ export function roundPrompt(s: State, n: number, requestedFocus: string[] = []):
     "Weight them toward these rules (use the tag codes exactly): " + focus.join(", ") + ".\n" + calib +
     "Tag codes: m = du with a masculine noun; f = de la with a feminine noun; v = de l' before a vowel or mute h; " +
     "p = des with a plural noun; neg = after ne...pas the article becomes de or d'; " +
-    "qty = after beaucoup/un peu/trop/assez/un kilo/une bouteille it is bare de; " +
+    "qty = after beaucoup/un peu/trop/assez/un kilo/une bouteille it is bare de (d' before a vowel); " +
     "gen = aimer/adorer/detester/preferer take le/la/les; fix = fixed expressions like faire du sport, " +
     "avoir de la chance (NOT jouer: jouer de + instrument is not a partitive); sans = sans takes no article at all; " +
     "gre = the gender trap where a noun ends in -e: -ure nouns are usually feminine (la confiture, la voiture) but other -re nouns " +
