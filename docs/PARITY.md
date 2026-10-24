@@ -29,7 +29,7 @@ Columns: legacy test | where covered | same or changed (with the reason or ADR).
 | C14 | saveAll trims log to last 120 and feelLog to last 20 in the db copy | SHARED; `apps/web/test/game-store.test.ts` :: "sends the log trimmed"; `apps/api/test/unit/core.test.ts` :: "keeps the newest 120 log entries" | changed: ADR 0006: normState keeps 500 log entries locally, 120 are stored |
 | C15 | db copy carries xp, cro, streak, crowns, wrong, seen, hist, calib | SHARED; `apps/api/test/e2e/progress.e2e.ts` :: "create, read, update" | same |
 | C16 | every answer is committed immediately (reload mid-round keeps the xp) | `apps/web/test/engine.test.ts` :: "scores XP with the combo ladder"; `apps/web/test/game-store.test.ts` :: "loads the single-file game's save" | same |
-| C17 | answer after boot with a db: the db doc receives the answer's xp | `apps/web/test/game-store.test.ts` :: "merges the server copy into the local one" | same |
+| C17 | answer after boot with a db: the db doc receives the answer's xp | `apps/web/test/game-store.test.ts` :: "adds a save made before this client kept a base (no cq.base) onto the server copy, once" | changed: device copy is rebased onto the server copy, not max-merged (ADR 0010) |
 | C18 | 7/8 on topic 6 with hearts left earns crown 1; a perfect round also earns a croissant and results show | SHARED; `apps/web/e2e/smoke.spec.ts` :: "play a full round answering everything correctly" | same (score tiles: e2e) |
 | C19 | exactly one miss still earns a crown while the topic has under 3 crowns | SHARED | same |
 | C20 | two misses earns no crown but the round is counted | SHARED | same |
@@ -56,13 +56,13 @@ Columns: legacy test | where covered | same or changed (with the reason or ADR).
 | C41 | boot with nothing stored starts fresh with topics 1-5 mastered | SHARED; `apps/web/test/game-store.test.ts` :: "starts empty with the mastered stops crowned" | same |
 | C42 | boot restores local state | SHARED; `apps/web/test/game-store.test.ts` :: "loads the single-file game's save" | same |
 | C43 | boot survives corrupt local storage | SHARED; `apps/web/test/game-store.test.ts` :: "survives a corrupt save" | same |
-| C44 | boot with a db save: db state is adopted, mutable, and later saves go to the db | SHARED; `apps/web/test/game-store.test.ts` :: "merges the server copy into the local one" | same |
+| C44 | boot with a db save: db state is adopted, mutable, and later saves go to the db | SHARED; `apps/web/test/game-store.test.ts` :: "adds a save made before this client kept a base (no cq.base) onto the server copy, once" | changed: device copy is rebased onto the server copy, not max-merged (ADR 0010) |
 | C45 | boot with an empty db creates the save doc from local state | `apps/web/test/game-store.test.ts` :: "never PUTs before a GET" | same |
 | C46 | before the db read lands, answers are saved locally but NOT written to the db (no xp-0 overwrite) | `apps/web/test/game-store.test.ts` :: "never PUTs before a GET" | same |
-| C47 | [fixed #4] a device copy newer than the db copy must not be lost on boot | SHARED; `apps/web/test/game-store.test.ts` :: "merges the server copy into the local one" | same |
+| C47 | [fixed #4] a device copy newer than the db copy must not be lost on boot | SHARED; `apps/web/test/game-store.test.ts` :: "adds a save made before this client kept a base (no cq.base) onto the server copy, once" | changed: device copy is rebased onto the server copy, not max-merged (ADR 0010) |
 | C48 | [fixed #6] a question answered wrong 3 times and still outstanding in S.wrong must not be retired | SHARED | same |
 | C49 | [fixed #7] topic-6 crown must not be awardable by a round with no topic-6 questions | SHARED | same |
-| F1 | a newer device copy survives the db read (xp 500 vs db 100) | SHARED; `apps/web/test/game-store.test.ts` :: "merges the server copy into the local one" | same (merge now also pairs streak+last, ADR 0006) |
+| F1 | a newer device copy survives the db read (xp 500 vs db 100) | SHARED; `apps/web/test/game-store.test.ts` :: "adds a save made before this client kept a base (no cq.base) onto the server copy, once" | changed: device copy is rebased onto the server copy, not max-merged (ADR 0010) |
 | F2 | an answer given before the db read lands is not wiped when it does | SHARED; `apps/web/test/game-store.test.ts` :: "never PUTs before a GET" | same |
 | F3 | two copies merge upward: counters never shrink, hist and seen take the larger | SHARED | same |
 | F4 | a __proto__ key in a saved doc cannot re-prototype the state | SHARED; `apps/api/test/e2e/progress.e2e.ts` :: "hostile bodies are normalised" | same |
