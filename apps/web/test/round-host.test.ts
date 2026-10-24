@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeApi } from "./fake-api";
 import { makeHost, makeStore } from "./helpers";
+import { FALLBACK_NOTE, LIMIT_NOTE, LOGIN_NOTE } from "@/lib/round-host";
 import { BANK, qid } from "@cq/content";
 
 beforeEach(() => vi.useFakeTimers());
@@ -22,6 +23,20 @@ describe("Fresh questions / Drill", () => {
     expect(host.engine?.mode).toBe("weak");
     expect(host.engine?.getSnapshot().qs.length).toBeGreaterThan(0);
     expect(host.getSnapshot().busy).toBe(false);
+  });
+
+  it("the local Claude CLI coach says why: signed out, or plan limit reached", async () => {
+    for (const [reason, note] of [
+      ["login_required", LOGIN_NOTE],
+      ["rate_limited", LIMIT_NOTE],
+      ["timeout", FALLBACK_NOTE],
+    ] as const) {
+      const { host, api } = setup("fallback");
+      api.fallbackReason = reason;
+      expect(await host.fresh()).toBe("weak");
+      expect(host.getSnapshot().note).toBe(note);
+    }
+    expect(LOGIN_NOTE).toContain("/login");
   });
 
   it("a 429 from the coach falls back to a local round", async () => {
@@ -48,15 +63,17 @@ describe("Fresh questions / Drill", () => {
     const { host, api } = setup("fallback");
     const [a, b] = await Promise.all([host.fresh(), host.fresh()]);
     expect([a, b].sort()).toEqual(["busy", "weak"]);
-    expect(api.calls.filter((c) => c.path === "/v1/coach/round")).toHaveLength(1);
+    expect(api.calls.filter((c) => c.path === "/v1/coach/round")).toHaveLength(
+      1
+    );
   });
 
-  it("is disabled (busy) while waiting, and gives up after 30 s", async () => {
+  it("is disabled (busy) while waiting, and gives up after 100 s (past both server deadlines)", async () => {
     const { host } = setup("hang");
     const p = host.fresh();
     await vi.advanceTimersByTimeAsync(0);
     expect(host.getSnapshot().busy).toBe(true);
-    await vi.advanceTimersByTimeAsync(29_999);
+    await vi.advanceTimersByTimeAsync(99_999);
     expect(host.getSnapshot().busy).toBe(true);
     await vi.advanceTimersByTimeAsync(1);
     expect(await p).toBe("weak");

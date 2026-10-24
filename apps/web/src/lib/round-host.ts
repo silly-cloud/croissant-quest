@@ -1,7 +1,20 @@
 import { qid, TAGNAME, type Question } from "@cq/content";
-import { pickQuestions, retired, SEEN_CAP, tagStats, type Rng } from "@cq/shared";
+import {
+  pickQuestions,
+  retired,
+  SEEN_CAP,
+  tagStats,
+  type CoachFallbackReason,
+  type Rng,
+} from "@cq/shared";
 import { requestCoachRound, COACH_TIMEOUT_MS } from "./coach";
-import { RoundEngine, type Effects, type Pace, type RoundMode, type Timers } from "./engine";
+import {
+  RoundEngine,
+  type Effects,
+  type Pace,
+  type RoundMode,
+  type Timers,
+} from "./engine";
 import type { GameStore } from "./game-store";
 
 export interface HostSnapshot {
@@ -15,7 +28,13 @@ export interface HostSnapshot {
   rev: number;
 }
 
-export const HOST_SERVER: HostSnapshot = { engine: null, last: null, busy: false, note: null, rev: 0 };
+export const HOST_SERVER: HostSnapshot = {
+  engine: null,
+  last: null,
+  busy: false,
+  note: null,
+  rev: 0,
+};
 
 export interface HostDeps {
   getPace: () => Pace;
@@ -29,8 +48,21 @@ export interface HostDeps {
 
 export type FreshResult = "ai" | "weak" | "empty" | "busy" | "stale";
 
-export const EMPTY_NOTE = "You've used every question 3 times. Come back after a break.";
-export const FALLBACK_NOTE = "Claude couldn't write them this time, so this drill comes from your own mistakes.";
+export const EMPTY_NOTE =
+  "You've used every question 3 times. Come back after a break.";
+export const FALLBACK_NOTE =
+  "Claude couldn't write them this time, so this drill comes from your own mistakes.";
+/** The local Claude Code CLI coach (ADR 0011) is signed out, or its subscription limit is reached. */
+export const LOGIN_NOTE =
+  "Claude Code is signed out on this computer: run `claude` in a terminal and type /login. Meanwhile, this drill comes from your own mistakes.";
+export const LIMIT_NOTE =
+  "Your Claude plan's usage limit is reached (run `claude` to see when it resets). Meanwhile, this drill comes from your own mistakes.";
+const fallbackNote = (r: CoachFallbackReason | null) =>
+  r === "login_required"
+    ? LOGIN_NOTE
+    : r === "rate_limited"
+      ? LIMIT_NOTE
+      : FALLBACK_NOTE;
 export const freshenNote = (n: number) =>
   `You've seen ${n === 1 ? "one of these" : n + " of these"} ${SEEN_CAP} times. Claude is writing new ones…`;
 export const repeatNote = (n: number) =>
@@ -54,7 +86,7 @@ export class RoundHost {
 
   constructor(
     private readonly store: GameStore,
-    private readonly deps: HostDeps,
+    private readonly deps: HostDeps
   ) {}
 
   subscribe = (fn: () => void) => {
@@ -78,7 +110,12 @@ export class RoundHost {
     this.invalidate();
     this.endCurrent();
     const engine = new RoundEngine(topic, mode, qs, {
-      repeats: new Set(retired(this.store.state, qs.filter((q) => !q._ai)).map(qid)),
+      repeats: new Set(
+        retired(
+          this.store.state,
+          qs.filter((q) => !q._ai)
+        ).map(qid)
+      ),
       store: this.store,
       getPace: this.deps.getPace,
       fx: this.deps.fx,
@@ -87,15 +124,28 @@ export class RoundHost {
       today: this.deps.today,
     });
     this.unsub = engine.subscribe(() => {
-      if (engine.getSnapshot().phase === "done" && this.snap.engine === engine) this.set({ last: engine });
+      if (engine.getSnapshot().phase === "done" && this.snap.engine === engine)
+        this.set({ last: engine });
     });
     this.set({ engine, last: null, note: null, busy: false });
     return engine;
   }
 
   /** A round built from the learner's own record. null (and a note) when every question is used up. */
-  startLocal(topic: number, mode: "normal" | "weak", picked?: Question[]): RoundEngine | null {
-    const qs = picked ?? pickQuestions(this.store.bank, this.store.state, topic, mode, this.deps.rng);
+  startLocal(
+    topic: number,
+    mode: "normal" | "weak",
+    picked?: Question[]
+  ): RoundEngine | null {
+    const qs =
+      picked ??
+      pickQuestions(
+        this.store.bank,
+        this.store.state,
+        topic,
+        mode,
+        this.deps.rng
+      );
     if (!qs.length) {
       this.set({ note: EMPTY_NOTE });
       return null;
@@ -108,9 +158,24 @@ export class RoundHost {
    * SEEN_CAP times first asks the coach for that many new ones and swaps them in (legacy freshenRound).
    * If the coach falls back, the repeats stay and each is labelled. null: no questions, or the learner left.
    */
-  async startRound(topic: number, mode: "normal" | "weak"): Promise<RoundEngine | null> {
-    const qs = pickQuestions(this.store.bank, this.store.state, topic, mode, this.deps.rng);
-    const stale = topic === 6 ? retired(this.store.state, qs.filter((q) => !q._ai)) : [];
+  async startRound(
+    topic: number,
+    mode: "normal" | "weak"
+  ): Promise<RoundEngine | null> {
+    const qs = pickQuestions(
+      this.store.bank,
+      this.store.state,
+      topic,
+      mode,
+      this.deps.rng
+    );
+    const stale =
+      topic === 6
+        ? retired(
+            this.store.state,
+            qs.filter((q) => !q._ai)
+          )
+        : [];
     if (!qs.length || !stale.length) return this.startLocal(topic, mode, qs);
     if (this.snap.busy) return null;
     const g = ++this.gen;
@@ -132,7 +197,8 @@ export class RoundHost {
       if (made[i]) out[out.indexOf(q)] = made[i]!;
     });
     const engine = this.begin(topic, mode, out);
-    if (engine.repeats.size) this.set({ note: repeatNote(engine.repeats.size) });
+    if (engine.repeats.size)
+      this.set({ note: repeatNote(engine.repeats.size) });
     return engine;
   }
 
@@ -168,7 +234,12 @@ export class RoundHost {
     }
     const e = this.snap.engine;
     if (!e || e.cancelled) return null;
-    if (e.topic === topic && e.mode === mode && e.getSnapshot().phase !== "done") return e;
+    if (
+      e.topic === topic &&
+      e.mode === mode &&
+      e.getSnapshot().phase !== "done"
+    )
+      return e;
     return null;
   }
 
@@ -206,12 +277,14 @@ export class RoundHost {
     this.set({ busy: true, note: null });
     const stats = tagStats(this.store.state, TAGNAME).filter((s) => s.pct < 90);
     let qs: Awaited<ReturnType<typeof requestCoachRound>> = null;
+    let why: CoachFallbackReason | null = null;
     try {
       qs = await requestCoachRound(this.deps.fetch ?? ((...a) => fetch(...a)), {
         n: 8,
         focus: stats.slice(0, 4).map((s) => s.tag),
         signal: ctl.signal,
         timeoutMs: this.deps.coachTimeoutMs ?? COACH_TIMEOUT_MS,
+        onFallback: (r) => (why = r),
       });
     } catch {
       qs = null;
@@ -224,13 +297,19 @@ export class RoundHost {
       this.begin(6, "ai", qs);
       return "ai";
     }
-    const local = pickQuestions(this.store.bank, this.store.state, 6, "weak", this.deps.rng);
+    const local = pickQuestions(
+      this.store.bank,
+      this.store.state,
+      6,
+      "weak",
+      this.deps.rng
+    );
     if (!local.length) {
       this.set({ note: EMPTY_NOTE });
       return "empty";
     }
     this.begin(6, "weak", local);
-    this.set({ note: FALLBACK_NOTE });
+    this.set({ note: fallbackNote(why) });
     return "weak";
   }
 }

@@ -2,6 +2,8 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default tseslint.config(
+  // each package is its own tsconfig root: lint-staged lints files from several packages in one run
+  { languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } } },
   { ignores: [".next", ".next-real", ".e2e-real","node_modules", "coverage", "next-env.d.ts", "playwright-report", "test-results"] },
   ...tseslint.configs.recommended,
   {
