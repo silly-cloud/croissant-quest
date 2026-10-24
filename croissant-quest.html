@@ -9,6 +9,7 @@
   --gold:#96701A; --gold2:#E4BA55; --goldsoft:#F7ECCF;
   --rouge:#C21B33; --rougesoft:#FBE2E5;
   --lock:#A6B2A8; --shade:rgba(16,50,36,.13);
+  --fill:#0E5B43; --fill2:#15805F;
   --r:16px;
   color-scheme:light dark;
 }
@@ -19,6 +20,7 @@
   --gold:#E0B551; --gold2:#F0CC79; --goldsoft:#33290F;
   --rouge:#F4697F; --rougesoft:#3A1820;
   --lock:#46564C; --shade:rgba(0,0,0,.45);
+  --fill:#1B7F5E; --fill2:#16684D;
 }}
 :root[data-theme="dark"]{
   --bg:#0E1512; --surf:#18211C; --surf2:#212C25; --sunk:#131B16;
@@ -27,6 +29,7 @@
   --gold:#E0B551; --gold2:#F0CC79; --goldsoft:#33290F;
   --rouge:#F4697F; --rougesoft:#3A1820;
   --lock:#46564C; --shade:rgba(0,0,0,.45);
+  --fill:#1B7F5E; --fill2:#16684D;
 }
 
 *{box-sizing:border-box}
@@ -60,7 +63,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 /* ---------- MAP ---------- */
 #scr-map{padding:0 16px 40px}
 .banner{margin:18px 0 6px;padding:18px 20px;border-radius:22px;
-  background:linear-gradient(150deg,var(--grn) 0%,var(--grn2) 100%);
+  background:linear-gradient(150deg,var(--fill) 0%,var(--fill2) 100%);
   color:#F4FBF7;box-shadow:0 8px 22px -12px var(--shade);position:relative;overflow:hidden}
 .banner h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.4px}
 .banner p{margin:4px 0 0;font-size:14px;opacity:.86;font-weight:400}
@@ -83,7 +86,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   font-size:26px;font-weight:700;position:relative;
   background:var(--surf2);color:var(--lock);
   border:3px solid var(--line);box-shadow:0 5px 0 0 var(--line)}
-.node[data-st="done"] .disc{background:var(--grn);color:#fff;border-color:var(--grn);
+.node[data-st="done"] .disc{background:var(--fill);color:#fff;border-color:var(--fill);
   box-shadow:0 5px 0 0 color-mix(in srgb,var(--grn) 70%,#000)}
 .node[data-st="active"] .disc{background:var(--gold2);color:#3A2B06;border-color:var(--gold);
   box-shadow:0 5px 0 0 var(--gold);animation:bob 2.4s ease-in-out infinite}
@@ -161,9 +164,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 .go{width:100%;padding:16px;border-radius:15px;font-size:16px;font-weight:700;
   letter-spacing:.04em;text-transform:uppercase;
-  background:var(--grn);color:#fff;box-shadow:0 4px 0 0 color-mix(in srgb,var(--grn) 68%,#000);
+  background:var(--fill);color:#fff;box-shadow:0 4px 0 0 color-mix(in srgb,var(--fill) 68%,#000);
   transition:transform .08s}
-.go:active{transform:translateY(3px);box-shadow:0 1px 0 0 color-mix(in srgb,var(--grn) 68%,#000)}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 0 color-mix(in srgb,var(--fill) 68%,#000)}
 .go[disabled]{background:var(--surf2);color:var(--faint);box-shadow:0 4px 0 0 var(--line);cursor:default}
 
 /* ---------- SHEET ---------- */
@@ -591,7 +594,13 @@ const W = {
 "hôpitaux":["o-pee-TO","ઓપીતો","ओपीतो"]
 };
 
-const VOW = "aàâeéèêiîoôuûyhœ";
+/* Liaison links a silent final s/x/z to a vowel sound — but only after words that
+   always link (articles, plural pronouns, short prepositions), and never through
+   an ASPIRATE h (les haricots -> "lay a-ree-KO"; the Académie calls the z a faute).
+   Mute-h words are listed so they still link (les hôtels, des hommes). */
+const VOW = "aàâeéèêiîoôuûyœ";
+const MUTEH = new Set(["homme","hôtel","huile","hôpital","hôpitaux","heure","histoire","herbe","habite","hiver"]);
+const LIAISE = new Set(["les","des","nous","vous","ils","elles","aux","dans","sans","très","ces","mes","tes","ses"]);
 function pron(sentence){
   const raw = sentence.replace(/[.?!,]/g,"").trim().split(/\s+/);
   const out = [[],[],[]];
@@ -601,8 +610,8 @@ function pron(sentence){
     const cur = e ? e.slice() : [raw[i],raw[i],raw[i]];
     // liaison: word ending in s/x/z before a vowel-initial word
     const nk = raw[i+1] ? raw[i+1].toLowerCase().replace(/’/g,"'") : null;
-    const linksFrom = /[sxz]$/.test(key) && W[key];
-    const linksTo = nk && VOW.includes(nk[0]) && W[nk];
+    const linksFrom = LIAISE.has(key) && W[key];
+    const linksTo = nk && (VOW.includes(nk[0]) || MUTEH.has(nk)) && W[nk];
     if(linksFrom && linksTo){
       const nx = W[nk];
       out[0].push(cur[0]+"-z"+nx[0]); out[1].push(cur[1]+"ઝ઼"+nx[1]); out[2].push(cur[2]+"ज़"+nx[2]);
@@ -627,8 +636,8 @@ const TAG = {
  p:   ["Plural, so there is only one form. <b>du</b> and <b>de la</b> are singular words — they can "+
        "never sit in front of a plural noun. Plural leaves you only <b>des</b> (some) or <b>les</b> (in general).",
        "See an -S on the noun? DU is dead. Only DES or LES survive."],
- neg: ["After a negative verb every article flattens. Before a vowel or mute h it elides.",
-       "After PAS, it all collapses to DE."],
+ neg: ["After <b>ne … pas</b>, <code>un / une / des / du / de la / de l'</code> become <code>de</code> (<code>d'</code> before a vowel or mute h). <b>le / la / les do NOT change</b> (<i>Je n'aime pas le café</i>), and nothing changes after <b>être</b> (<i>Ce n'est pas du pain</i>).",
+       "DU, DE LA, DES, UN + PAS → DE. LE, LA, LES stay."],
  qty: ["A word that already says HOW MUCH kills the partitive — only bare <code>de</code> survives.",
        "You already measured it → DE alone."],
  gen: ["<b>aimer, adorer, détester, préférer</b> talk about the thing in general, so they take the definite article, never a partitive.",
@@ -637,14 +646,14 @@ const TAG = {
        "Aspirate H blocks the apostrophe."],
  sans:["<code>sans</code> already means 'without any', so no article follows it at all.",
        "SANS takes NOTHING."],
- twin:["This <code>du</code> is not a partitive — it is <code>de + le</code> meaning 'of the / about the'.",
+ twin:["This <code>du</code> is not a partitive — it is <code>de + le</code> meaning 'of the / about the', and it stays <code>du</code> after <i>pas</i>. Also <b>jouer DE + instrument</b> (jouer du piano, jouer de la guitare).",
        "Same spelling, two jobs. Read the verb."],
  cnt: ["You can count this one, so it takes an indefinite article, not a partitive.",
        "Countable → un / une / des."],
- fix: ["A fixed expression. French treats this activity or quality as an uncountable substance.",
-       "faire du · jouer de la · avoir de la — mug them up."],
- gre: ["Gender trap. A CONSONANT before the final <code>-re</code> means masculine — le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b>. A VOWEL before it (<code>-ure</code>) means feminine — la confit<b>ure</b>, la voit<b>ure</b>.",
-       "Consonant before -RE → masculine. Vowel before -RE → feminine."],
+ fix: ["A fixed expression. French pairs these activities and qualities with du / de la — learn each one as a lump.",
+       "faire du · avoir de la · il y a du — mug them up. (jouer is different: jouer DE + instrument.)"],
+ gre: ["Gender trap: a final <code>-e</code> tells you nothing. <code>-ure</code> is usually feminine (la confit<b>ure</b>, la voit<b>ure</b>), but other <code>-re</code> nouns must be learned one by one — le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b> are masculine, yet la fenê<b>tre</b> and la le<b>ttre</b> are feminine.",
+       "Learn the article WITH the noun. Only -URE is a safe pattern."],
  t1:  ["Subject pronoun agreement.","One man in the group and ILS wins."],
  t2:  ["Noun gender follows the ending.","-tion / -té / -ette are feminine. -age / -eau / -isme are masculine."],
  t3:  ["Plural formation.","-eau/-eu take X. -al becomes AUX."],
@@ -678,7 +687,7 @@ const BANK = [];
    answer it just marked correct. */
 function choice(t,tier,opts,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'choice',{s:r[0],a:r[1],en:r[2],tag:r[3],o:opts,why:r[4]}))); }
 function typed(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'type',{s:r[0],a:r[1],en:r[2],tag:r[3]}))); }
-function en2fr(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'en2fr',{en:r[0],a:r[1],tag:r[2]}))); }
+function en2fr(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'en2fr',{en:r[0],a:r[1],tag:r[2],alt:r[3]}))); }
 function build(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'build',{en:r[0],a:r[1],tag:r[2]}))); }
 function fix(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'fix',{s:r[0],bad:r[1],a:r[2],en:r[3],tag:r[4]}))); }
 function fr2en(t,tier,rows){ rows.forEach(r=>BANK.push(mk(t,tier,'fr2en',{s:r[0],a:r[1],o:r[2],tag:r[3]}))); }
@@ -861,10 +870,10 @@ choice(6,2,A4,[
  ["Nous achetons ___ beurre.","du","We buy some butter.","gre"],
  ["Il goûte ___ confiture.","de la","He tastes some jam.","gre"],
  ["Vous voulez ___ poivre.","du","You want some pepper.","gre"],
- ["Elle apporte ___ farine.","de la","She brings some flour.","gre"],
+ ["Elle apporte ___ farine.","de la","She brings some flour.","f"],
  ["Je cherche ___ beurre.","du","I'm looking for some butter.","gre"],
  ["Tu veux ___ sucre.","du","You want some sugar.","gre"],
- ["Il donne ___ farine.","de la","He gives some flour.","gre"],
+ ["Il donne ___ farine.","de la","He gives some flour.","f"],
  ["Nous voulons ___ poivre.","du","We want some pepper.","gre"]
 ]);
 
@@ -898,19 +907,19 @@ build(6,3,[
 en2fr(6,4,[
  ["I eat some cheese.","Je mange du fromage.","m"],
  ["She drinks some milk.","Elle boit du lait.","m"],
- ["We buy some meat.","Nous achetons de la viande.","f"],
+ ["We buy some meat.","Nous achetons de la viande.","f",["On achète de la viande."]],
  ["He wants some water.","Il veut de l'eau.","v"],
- ["You eat some vegetables.","Tu manges des légumes.","p"],
+ ["You eat some vegetables.","Tu manges des légumes.","p",["Vous mangez des légumes."]],
  ["I don't eat meat.","Je ne mange pas de viande.","neg"],
  ["She doesn't drink water.","Elle ne boit pas d'eau.","neg"],
  ["He eats too much chocolate.","Il mange trop de chocolat.","qty"],
  ["I love chocolate.","J'adore le chocolat.","gen"],
- ["She plays the guitar.","Elle joue de la guitare.","fix"],
- ["We do swimming.","Nous faisons de la natation.","fix"],
+ ["She plays the guitar.","Elle joue de la guitare.","twin"],
+ ["We do swimming.","Nous faisons de la natation.","fix",["On fait de la natation."]],
  ["He has courage.","Il a du courage.","fix"],
  ["A coffee without sugar.","Un café sans sucre.","sans"],
  ["I take a glass of water.","Je prends un verre d'eau.","qty"],
- ["You are lucky.","Tu as de la chance.","fix"]
+ ["You are lucky.","Tu as de la chance.","fix",["Vous avez de la chance."]]
 ]);
 fr2en(6,4,[
  ["Je parle du film.","I'm talking about the film.",
@@ -942,9 +951,9 @@ en2fr(6,5,[
  ["He eats some fish.","Il mange du poisson.","m"],
  ["I don't want any beer.","Je ne veux pas de bière.","neg"],
  ["She buys a kilo of apples.","Elle achète un kilo de pommes.","qty"],
- ["We drink some orange juice.","Nous buvons du jus d'orange.","m"],
- ["You play the piano.","Tu joues du piano.","fix"],
- ["They hate soup.","Ils détestent la soupe.","gen"],
+ ["We drink some orange juice.","Nous buvons du jus d'orange.","m",["On boit du jus d'orange."]],
+ ["You play the piano.","Tu joues du piano.","twin",["Vous jouez du piano."]],
+ ["They hate soup.","Ils détestent la soupe.","gen",["Elles détestent la soupe."]],
  ["I eat some strawberries.","Je mange des fraises.","p"],
  ["He takes a little honey.","Il prend un peu de miel.","qty"],
  ["She has patience.","Elle a de la patience.","fix"],
@@ -1021,7 +1030,7 @@ choice(3,1,['hôpitaux','hôpitals','hôpitales','hôpitaus'],[
 /* the four -al words that just take -s */
 choice(3,1,['festivals','festivaux','festivales','festivaus'],[
  ["un festival → des ___","festivals","one festival → some festivals","t3",
-  ["<b>-al</b> normally becomes <b>-aux</b> (journal → journaux), but FOUR words refuse and just take <b>-s</b>.",
+  ["<b>-al</b> normally becomes <b>-aux</b> (journal → journaux), but a few common words refuse and just take <b>-s</b>: bal, carnaval, festival, récital.",
    "le bal · le carnaval · le festival · le récital — the party four take -S."]]
 ]);
 choice(3,1,['cheveux','cheveus','cheveaux','cheves'],[
@@ -1089,7 +1098,7 @@ const RULES = {
 <p>The plural -s is <b>silent</b>. In speech the article carries the plural, not the noun.</p>`,
 4:`<h5>THE</h5><p><code>le</code> m · <code>la</code> f · <code>l'</code> before vowel / mute h · <code>les</code> plural</p>
 <p>Also used for things <b>in general</b>: <code>J'aime le café.</code> — English drops the article here, French never does.</p>
-<div class="tip">A French noun is never naked.</div>`,
+<div class="tip">French usually wants a small word in front of a noun: le, la, les, un, du…</div>`,
 5:`<h5>A / AN</h5><p><code>un</code> m · <code>une</code> f · <code>des</code> plural. <code>un</code> and <code>une</code> never elide.</p>
 <h5>After PAS</h5><p>un / une / des all become <code>de</code> (or <code>d'</code> before a vowel).</p>
 <div class="tip">But <b>être is immune</b>: <code>Ce n'est pas un chien.</code></div>`,
@@ -1097,18 +1106,17 @@ const RULES = {
 <h5>Forms</h5><p><code>du</code> m · <code>de la</code> f · <code>de l'</code> vowel or mute h · <code>des</code> plural</p>
 <div class="tip">LE and LES get <b>eaten</b> (de+le = du, de+les = des). LA and L' <b>escape</b>.</div>
 <h5>What kills the partitive</h5>
-<p>After <b>pas</b> → <code>de</code> / <code>d'</code><br>
+<p>After <b>pas</b>: un / une / des / du / de la / de l' → <code>de</code> / <code>d'</code>. But <code>le / la / les</code> stay (<i>je n'aime pas le café</i>) and <b>être</b> changes nothing (<i>ce n'est pas du pain</i>).<br>
 After a quantity word (beaucoup, un peu, trop, assez, un kilo) → <code>de</code><br>
 After <b>sans</b> → nothing at all<br>
 With <b>aimer / adorer / détester / préférer</b> → <code>le</code> / <code>la</code> / <code>les</code></p>
 <div class="tip">LIKE IT → LE. TAKE IT → DU.</div>
 <h5>The gender trap: a final -e is NOT feminine</h5>
-<p>Listen to what comes before the final <code>-re</code>.<br>
-A <b>consonant</b> before it → masculine → <code>du</code>: le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b>, le li<b>vre</b>.<br>
-A <b>vowel</b> before it (<code>-ure</code>) → feminine → <code>de la</code>: la confit<b>ure</b>, la voit<b>ure</b>.</p>
-<div class="tip">Consonant before -RE → masculine. Vowel before -RE → feminine.</div>
-<h5>The twin</h5><p><code>Je mange du pain</code> = some bread. <code>Je parle du film</code> = <i>about the</i> film. Same word, two jobs.</p>
-<h5>Fixed</h5><p>faire du sport · faire de la natation · jouer du piano · jouer de la guitare · avoir du courage · avoir de la chance · il y a du vent · il fait du soleil</p>`
+<p><code>-ure</code> is usually feminine → <code>de la</code>: la confit<b>ure</b>, la voit<b>ure</b>.<br>
+Other <code>-re</code> nouns are learned one by one: le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b>, le li<b>vre</b> are masculine, but la fenê<b>tre</b> and la le<b>ttre</b> are feminine.</p>
+<div class="tip">Learn the article WITH the noun. Only -URE is a safe pattern.</div>
+<h5>The twin</h5><p><code>Je mange du pain</code> = some bread. <code>Je parle du film</code> = <i>about the</i> film. Same word, two jobs. Likewise <b>jouer DE</b> + instrument: <i>jouer du piano, jouer de la guitare</i> — not a partitive.</p>
+<h5>Fixed</h5><p>faire du sport · faire de la natation · avoir du courage · avoir de la chance · il y a du vent · il fait du soleil</p>`
 };
 
 /* ============================================================
@@ -1142,23 +1150,79 @@ function noteAnswer(tag,ok){
   h[ok?0:1]++; S.hist[tag]=h;
 }
 
+/* One place turns any saved shape (this device, the db, a hot reload) into a
+   safe S: known keys only, right types, no __proto__, no mistakes for questions
+   the bank no longer has. */
+const STATE_KEYS=["xp","cro","streak","last","crowns","wrong","log","rounds","hist","seen","feel","calib","feelLog","ts"];
+function normState(v){
+  const o={}; v=(v&&typeof v==="object")?v:{};
+  STATE_KEYS.forEach(k=>{ if(Object.prototype.hasOwnProperty.call(v,k)) o[k]=v[k]; });
+  const map=x=>{ const r={}; if(x&&typeof x==="object"&&!Array.isArray(x))
+    Object.keys(x).forEach(k=>{ if(k!=="__proto__") r[k]=x[k]; }); return r; };
+  o.xp=+o.xp||0; o.cro=+o.cro||0; o.streak=+o.streak||0; o.rounds=+o.rounds||0; o.ts=+o.ts||0;
+  if(typeof o.last!=="string") o.last=null;
+  o.crowns=map(o.crowns); o.wrong=map(o.wrong); o.seen=map(o.seen);
+  const h=map(o.hist); o.hist={};
+  Object.keys(h).forEach(t=>{ if(Array.isArray(h[t])) o.hist[t]=[+h[t][0]||0,+h[t][1]||0]; });
+  o.log=Array.isArray(o.log)?o.log:[]; o.feelLog=Array.isArray(o.feelLog)?o.feelLog:[];
+  if(typeof o.feel!=="number") o.feel=null;
+  if(["harder","more","aligned","proof"].indexOf(o.calib)<0) o.calib="aligned";
+  MASTERED.forEach(t=>{ if(!o.crowns[t]) o.crowns[t]=5; });
+  const ids=new Set(BANK.map(qid));
+  Object.keys(o.wrong).forEach(k=>{ if(!ids.has(k)) delete o.wrong[k]; });
+  return o;
+}
+/* Two copies of one save (this device, the db, another tab). Counters only
+   ever grow, so the larger one is always right; mistakes, log and feel come
+   from whichever copy was written last. */
+function mergeStates(a,b){
+  const [lo,hi]=(a.ts||0)>(b.ts||0)?[b,a]:[a,b];
+  const m=Object.assign({},lo,hi);
+  ["xp","cro","rounds","streak"].forEach(k=>{ m[k]=Math.max(a[k]|0,b[k]|0); });
+  const top=k=>{ const r={}; [a[k],b[k]].forEach(x=>Object.keys(x).forEach(i=>{ r[i]=Math.max(r[i]|0,x[i]|0); })); return r; };
+  m.crowns=top("crowns"); m.seen=top("seen");
+  m.hist={};
+  [a.hist,b.hist].forEach(x=>Object.keys(x).forEach(t=>{
+    const c=m.hist[t]||[0,0]; m.hist[t]=[Math.max(c[0],x[t][0]),Math.max(c[1],x[t][1])]; }));
+  return m;
+}
 function loadLocal(){
-  try{ const r=localStorage.getItem(LS); if(r) S=Object.assign(S,JSON.parse(r)); }catch(e){}
+  try{ const r=localStorage.getItem(LS); if(r) S=Object.assign(S,normState(JSON.parse(r))); }catch(e){}
+}
+/* Cloud writes go one at a time: read the db copy, merge, write the merge. Two
+   tabs or devices add up instead of the last writer winning, and a failed
+   write is shown instead of swallowed. */
+let SYNC=Promise.resolve(), SYNC_OK=true;
+function syncNote(ok){
+  if(ok===SYNC_OK) return; SYNC_OK=ok;
+  const n=$("#ban-sub");
+  if(n) n.textContent = ok ? "Le voyage continue…" : "⚠ Not synced to the cloud — progress is safe on this device";
+}
+function pushDb(){
+  const doc=SAVEDOC; if(!doc) return;
+  SYNC=SYNC.then(async()=>{
+    try{
+      const mine=()=>normState(JSON.parse(JSON.stringify(S)));
+      let out=mine();
+      const snap=await doc.get();
+      if(snap&&snap.exists)
+        out=mergeStates(mine(), normState(JSON.parse(JSON.stringify(snap.data()||{}))));
+      // take on what another tab or device earned
+      const cur=mergeStates(mine(),out);
+      ["xp","cro","rounds","streak"].forEach(k=>{ S[k]=cur[k]; });
+      S.crowns=cur.crowns; S.seen=cur.seen; S.hist=cur.hist;
+      out.log=out.log.slice(-120); out.feelLog=out.feelLog.slice(-20);
+      await doc.set(out);
+      syncNote(true);
+    }catch(e){ syncNote(false); }
+  });
 }
 function saveAll(){
+  S.ts=Date.now();
+  if(S.log.length>500) S.log=S.log.slice(-500);
   try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){}
   // a failed save must never take the screen down with it
-  try{
-    if(SAVEDOC){
-      const body={xp:S.xp,cro:S.cro,streak:S.streak,last:S.last,crowns:S.crowns||{},
-        wrong:S.wrong||{},log:(S.log||[]).slice(-120),rounds:S.rounds,
-        hist:S.hist||{},seen:S.seen||{},
-        feel:(typeof S.feel==="number"?S.feel:null),calib:S.calib||"aligned",
-        feelLog:(S.feelLog||[]).slice(-20)};
-      const p=SAVEDOC.set(body);
-      if(p&&p.catch) p.catch(()=>{});
-    }
-  }catch(e){}
+  try{ pushDb(); }catch(e){}
 }
 
 /* ============================================================
@@ -1429,8 +1493,11 @@ function weakTag(){
    brand-new questions before it comes to that. */
 const SEEN_CAP = 3;
 const seenN = q => S.seen[qid(q)]|0;
-const live = qs => qs.filter(q=>seenN(q)<SEEN_CAP);
-const retired = qs => qs.filter(q=>seenN(q)>=SEEN_CAP);
+/* A question still outstanding in S.wrong is not retired: three tries that went
+   wrong are exactly the ones Weak Spots must keep serving until they are right. */
+const outstanding = q => (S.wrong[qid(q)]|0)>0;
+const live = qs => qs.filter(q=>seenN(q)<SEEN_CAP || outstanding(q));
+const retired = qs => qs.filter(q=>seenN(q)>=SEEN_CAP && !outstanding(q));
 /* Draw up to n FRESH questions from `pool`. Never returns a retired one: if a
    sub-pool is dry, the round takes a fresh question from elsewhere rather than
    repeat this one a fourth time. */
@@ -1440,11 +1507,12 @@ function drawFrom(pool,n){
   return o;
 }
 /* Last resort only, once every fresh question in the topic is spoken for. */
-function topUp(out,topic){
+function topUp(out,topic,maxTier){
+  const cap=maxTier||9;
   const add=q=>{ if(q && !out.includes(q) && out.length<8) out.push(q); };
-  shuffle(live(BANK.filter(q=>q.t===topic))).forEach(add);
-  shuffle(live(BANK.filter(q=>hasContent(q.t)))).forEach(add);
-  shuffle(retired(BANK.filter(q=>q.t===topic))).forEach(add);
+  shuffle(live(BANK.filter(q=>q.t===topic && q.tier<=cap))).forEach(add);
+  shuffle(live(BANK.filter(q=>hasContent(q.t) && q.tier<=cap))).forEach(add);
+  shuffle(retired(BANK.filter(q=>q.t===topic && q.tier<=cap))).forEach(add);
   return out;
 }
 
@@ -1486,7 +1554,7 @@ function pickQuestions(topic,mode){
   const weighted=shuffle(live(revPool).concat(retired(revPool)))
                    .sort((a,b)=>(S.wrong[qid(b)]||0)-(S.wrong[qid(a)]||0));
   const rev=drawFrom(weighted,2);
-  let out=shuffle(topUp(main.slice(0,6).concat(rev),topic));
+  let out=shuffle(topUp(main.slice(0,6).concat(rev),topic,target));
   // Hunt the weak rule: 3 of the 8 become that rule, pulled from the whole
   // bank so a weak rule from an earlier topic still gets drilled.
   const wt=weakTag();
@@ -1499,7 +1567,7 @@ function pickQuestions(topic,mode){
       out.filter(q=>q.tag!==wt).forEach(push);
       drawFrom(pool,8).forEach(push);
       drawFrom(revPool,8).forEach(push);
-      out=shuffle(topUp(o,topic));
+      out=shuffle(topUp(o,topic,target));
     }
   }
   return out;
@@ -1519,21 +1587,32 @@ function bossCard(tag,go){
   sheet(box);
 }
 
-function startRound(topic,mode,skipBoss){
+function startRound(topic,mode,skipBoss,noAI){
   if(!skipBoss && mode==="normal"){
     const wt=weakTag();
     if(wt && TAG[wt]) return bossCard(wt,()=>startRound(topic,mode,true));
   }
   const qs=pickQuestions(topic,mode);
-  if(!qs.length){ return; }
+  if(!qs.length){
+    // every question is used up: ask Claude for new ones, or say so — never nothing
+    if(SAMPLE && topic===6 && !noAI) return aiRound($("#btn-ai b"));
+    const note=$("#scr-map").hidden ? $("#d-sub") : $("#weak-sub");
+    if(note) note.textContent="You've used every question 3 times. Come back after a break.";
+    return;
+  }
   // Any question already answered SEEN_CAP times is a repeat. Rather than serve
   // it a fourth time, ask Claude for that many brand-new ones.
-  const stale=qs.filter(q=>!q._ai && seenN(q)>=SEEN_CAP);
+  const stale=retired(qs.filter(q=>!q._ai));
   if(stale.length && SAMPLE && topic===6) return freshenRound(topic,mode,qs,stale);
   launchRound(topic,mode,qs);
 }
 
+/* Every timer a round starts is tied to the round that started it. Quitting (or
+   starting another round) bumps RGEN, so a leftover timer does nothing. */
+let RGEN=0;
+const inRound=fn=>{ const g=RGEN; return (...a)=>{ if(g===RGEN) return fn(...a); }; };
 function launchRound(topic,mode,qs){
+  RGEN++;
   R={topic,mode,qs,i:0,hearts:5,right:0,xp:0,combo:0,best:0,answered:false,record:[]};
   $("#scr-map").hidden=true; $("#scr-done").hidden=true; $("#scr-round").hidden=false;
   scrollTo(0,0);
@@ -1570,7 +1649,9 @@ function endRound(){
 
   err = safely("score",()=>{
     n=R.qs.length; right=R.right; perfect=(right===n);
-    if(R.mode==="normal" && R.hearts>0){
+    // a crown is for the topic: at least half the round must be its own questions
+    const own=R.qs.filter(q=>q.t===R.topic).length;
+    if(R.mode==="normal" && R.hearts>0 && own>=Math.ceil(n/2)){
       const c=S.crowns[R.topic]||0;
       const need = c>=3 ? n : n-1;
       if(right>=need && c<5){ S.crowns[R.topic]=c+1; crowned=true; }
@@ -1758,6 +1839,8 @@ function judge(q){
   if(q.k==="fix") return R.badWords.includes(R.picked);
   const said=norm(R.picked||"");
   if(said===norm(q.a)) return true;
+  // English "you / we / they" can be tu or vous, nous or on, ils or elles
+  if(q.alt && q.alt.some(a=>norm(a)===said)) return true;
   // "Write the sentence" shows a blank, so typing only the missing word is a
   // fair reading of the screen — accept it when it completes the sentence.
   // knit() closes the elision, so typing "de l'" still matches "de l'eau".
@@ -1825,7 +1908,7 @@ function submit(){
     }
     const hs=$("#hearts").children;
     if(hs[R.hearts]) hs[R.hearts].className="gone";
-    setTimeout(()=>whyCard(q,accentsOnly), R.pickedEl?420:0);
+    setTimeout(inRound(()=>whyCard(q,accentsOnly)), R.pickedEl?420:0);
   }
   // Commit after every answer, not just at the end of the round: a reload
   // mid-round (a new version shipping while he plays) must not cost him the
@@ -1856,7 +1939,7 @@ function flashOK(){
     strip.classList.add("held");
     strip.appendChild(el("div","hold",msg));
     chk.hidden=false; chk.disabled=false;
-    chk.textContent="Continue →"; chk.style.background="var(--grn2)";
+    chk.textContent="Continue →"; chk.style.background="var(--fill2)";
     chk.onclick=go;
   };
 
@@ -1871,9 +1954,9 @@ function flashOK(){
 
   if(!chk.hidden){
     chk.textContent=CHEERS[(Math.random()*CHEERS.length)|0];
-    chk.disabled=true; chk.style.background="var(--grn2)";
+    chk.disabled=true; chk.style.background="var(--fill2)";
   }
-  const timer=setTimeout(go,MS);
+  const timer=setTimeout(inRound(go),MS);
   strip.onclick=()=>{
     clearTimeout(timer);
     const t=strip.querySelector(".tapon"); if(t) t.remove();
@@ -1907,7 +1990,7 @@ function buildSayList(){
 
 function next(){
   R.i++;
-  if(R.i>=R.qs.length || R.hearts<=0){ $("#fill").style.width="100%"; setTimeout(endRound,200); return; }
+  if(R.i>=R.qs.length || R.hearts<=0){ $("#fill").style.width="100%"; setTimeout(inRound(endRound),200); return; }
   renderQ();
 }
 
@@ -1919,14 +2002,17 @@ function whyCard(q,accentsOnly){
   box.appendChild(v);
 
   const ans=el("div","answerline");
-  if(q.k==="choice"||q.k==="type"){
-    ans.innerHTML = knit(q.s.replace("___","\u0001"+q.a+"\u0002"))
+  if(q.k==="choice"){
+    // only a choice answers ONE word into the blank; type/en2fr/build/fix
+    // answers are the finished sentence (see fullOf). The closing marker may
+    // sit between an elision and its noun, so knit past it: "de l'<em/> eau".
+    ans.innerHTML = q.s.replace("___","\u0001"+q.a+"\u0002").replace(/'(\u0002?)\s+/g,"'$1")
       .replace(/</g,"&lt;").replace(/\u0001/g,"<em>").replace(/\u0002/g,"</em>");
   } else if(q.k==="fr2en"){
     ans.innerHTML = "<em>"+q.a+"</em>";
     ans.style.fontFamily="Fredoka, system-ui, sans-serif"; ans.style.fontSize="17px";
   } else {
-    ans.innerHTML = "<em>"+full+"</em>";
+    ans.innerHTML = "<em>"+full.replace(/</g,"&lt;")+"</em>";
   }
   box.appendChild(ans);
 
@@ -2215,7 +2301,7 @@ function askCoach(shown){
      "default" - the balanced everyday model     (Sonnet-class)
      "complex" - most capable, thinks longest    (Opus-class)
    "complex" is deliberately NEVER requested by this page. */
-const TIER = { coach:"quick", generate:"default", nearmiss:"default" };
+const TIER = { coach:"default", generate:"default", nearmiss:"default" };   // never "complex"
 
 /* ---- the near-miss explainer, for answers he typed or built himself ---- */
 const NEARMISS=["type","en2fr","build","fix"];
@@ -2285,10 +2371,11 @@ function aiPrompt(n){
 "p = des with a plural noun; neg = after ne...pas the article becomes de or d'; "+
 "qty = after beaucoup/un peu/trop/assez/un kilo/une bouteille it is bare de; "+
 "gen = aimer/adorer/detester/preferer take le/la/les; fix = fixed expressions like faire du sport, "+
-"jouer de la guitare, avoir de la chance; sans = sans takes no article at all; "+
-"gre = the gender trap where a noun ends in -e but is masculine because a consonant precedes the final -re "+
-"(le sucre, le beurre, le poivre, le verre, le livre), contrasted with -ure nouns that are feminine "+
-"(la confiture, la voiture) — for this tag use those nouns specifically.\n\n"+
+"avoir de la chance (NOT jouer: jouer de + instrument is not a partitive); sans = sans takes no article at all; "+
+"gre = the gender trap where a noun ends in -e: -ure nouns are usually feminine (la confiture, la voiture) but other -re nouns "+
+"must be learned individually (le sucre, le beurre, le poivre, le verre are masculine; la fenetre, la lettre are feminine) — "+
+"never state a rule from the letter before -re; for this tag use those nouns specifically. "+
+"neg: only un/une/des/du/de la/de l' become de after pas; le/la/les stay, and nothing changes after etre.\n\n"+
 "Hard rules:\n"+
 "- Every sentence must be correct, natural French at A1 level, 3 to 6 words plus the blank.\n"+
 "- Use everyday food, drink, weather and activity nouns. Vary the subject pronoun.\n"+
@@ -2325,8 +2412,11 @@ function aiRows(rows){
     }).filter(q=>q.o.length>=2);
 }
 
+let AIBUSY=false;
 async function aiRound(btn){
+  if(AIBUSY) return;
   if(!SAMPLE) return;
+  AIBUSY=true;
   const old=btn.textContent; btn.disabled=true; btn.textContent="Claude is writing 8 questions…";
   try{
     const rows=await SAMPLE.json(aiPrompt(8),{modelTier:TIER.generate,cache:false});
@@ -2344,8 +2434,8 @@ async function aiRound(btn){
       : "Claude couldn't write them this time — drilling from your own mistakes instead";
     console.error("[croissant-quest] aiRound",e);
     // A tapped button must always do something. Fall back to the local drill.
-    if(Object.keys(S.wrong||{}).length) startRound(6,"weak",true);
-  }
+    startRound(6,"weak",true,true);
+  } finally { AIBUSY=false; }
 }
 
 /* ---- progress you can paste back into the conversation ---- */
@@ -2388,19 +2478,17 @@ function copyProgress(btn){
    WIRING
    ============================================================ */
 $("#btn-quit").onclick=()=>{
+  RGEN++;
   $("#scr-round").hidden=true; $("#scr-map").hidden=false; scrollTo(0,0); drawMap();
 };
 $("#btn-back").onclick=()=>{
   $("#scr-done").hidden=true; $("#scr-map").hidden=false; scrollTo(0,0); drawMap();
 };
-$("#btn-weak").onclick=()=>{
-  if(!Object.keys(S.wrong).length) return;
-  startRound(6,"weak");
-};
+$("#btn-weak").onclick=()=>startRound(6,"weak");
 $("#btn-ai").onclick=e=>aiRound(e.currentTarget.querySelector("b"));
 $("#btn-drill").onclick=e=>{
   if(SAMPLE) aiRound(e.currentTarget);
-  else if(Object.keys(S.wrong).length) startRound(6,"weak");
+  else startRound(6,"weak");
 };
 $("#btn-copy").onclick=e=>copyProgress(e.currentTarget);
 
@@ -2422,28 +2510,23 @@ function boot(){
       const doc=DB.doc("save/state");
       doc.get().then(snap=>{
         if(snap.exists){
-          // A snapshot and everything under it is FROZEN. Assigning it
-          // straight into S makes S.crowns/S.log frozen too, and the next
-          // write to one throws under "use strict" — which is what blanked
-          // the results screen. Deep-copy it into plain mutable objects.
+          // A snapshot and everything under it is FROZEN, so deep-copy it into
+          // plain mutable objects (assigning it into S blanked the results
+          // screen once). Then MERGE it with this device's copy: the db copy
+          // used to overwrite a newer local one and wipe answers given while
+          // the read was in flight.
           let v; try{ v=JSON.parse(JSON.stringify(snap.data()||{})); }catch(e){ v={}; }
-          S=Object.assign(S,v);
-          S.crowns=S.crowns||{}; S.wrong=S.wrong||{};
-          S.log=Array.isArray(S.log)?S.log:[];
-          S.hist=S.hist||{}; S.seen=S.seen||{};
-          S.feelLog=Array.isArray(S.feelLog)?S.feelLog:[];
-          if(typeof S.feel!=="number") S.feel=null;
-          if(["harder","more","aligned","proof"].indexOf(S.calib)<0) S.calib="aligned";
-          MASTERED.forEach(t=>{ if(!S.crowns[t]) S.crowns[t]=5; });
-          SAVEDOC=doc;
-          drawMap();
-        } else { SAVEDOC=doc; saveAll(); }
-      }).catch(()=>{});
+          S=Object.assign(S,mergeStates(normState(JSON.parse(JSON.stringify(S))),normState(v)));
+          drawMap(); hud();
+        }
+        SAVEDOC=doc;
+        saveAll();      // write the merged copy back so both agree
+      }).catch(()=>{ syncNote(false); });
     }).catch(()=>{});
   }
 }
 if(window.claude&&window.claude.hot&&window.claude.hot.ready){
   window.claude.hot.snapshot(()=>({S}));
-  window.claude.hot.ready(d=>{ if(d&&d.S) S=Object.assign(S,d.S); boot(); });
+  window.claude.hot.ready(d=>{ if(d&&d.S) S=Object.assign(S,normState(d.S)); boot(); });
 } else { boot(); }
 </script>

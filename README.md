@@ -12,17 +12,26 @@ The game was written as a Claude artifact and expects two runtime capabilities: 
 (AI question generation and coaching). Without them it falls back to `localStorage` and the built-in question bank.
 Open the file in a browser, or publish it as an artifact with `db` and `sample` enabled.
 
-## Known issues (found by audit, not yet fixed)
+## Tests
 
-This is v18. An audit found problems you should know about before relying on it for learning:
+```
+cd tests
+node C-behave.js    # 49 behaviour tests: answering, saving, quitting, round building
+node fixes.js       # 20 regression tests for the audit fixes
+```
 
-- Some rule texts teach incorrect French (the negation rule is too broad: `le/la/les` do not become `de`;
-  "consonant before -re means masculine" is false; `jouer du piano` is not a partitive).
-- Pronunciation makes a liaison through an aspirate h (`les haricots`).
-- Save-state races between devices/tabs, and Quit does not cancel a running round.
-- Dark-theme contrast and keyboard navigation need work.
+They run the page's `<script>` in node with a stubbed DOM, `localStorage` and artifact runtime. No dependencies.
 
-Issues and pull requests are welcome.
+## Audit
+
+`docs/AUDIT-REPORT.md` is the ranked list of 21 findings from a full audit of v18. Items 1-10 are fixed on this
+branch; the rest are open:
+
+- Repeat cap is not enforced when Claude is offline, and topics 1-5 have no cap (11).
+- Accessibility: focus management, dialog semantics, live regions, 44px tap targets, long results screen (12-13).
+- Database-sourced text reaches `innerHTML` unescaped (14).
+- Several exception questions lack their own rule text (15); light-theme contrast (16).
+- Two simultaneous tabs or devices merge to the larger counters rather than adding up.
 
 ## License
 
