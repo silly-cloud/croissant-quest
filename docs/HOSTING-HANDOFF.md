@@ -1,7 +1,7 @@
 # Hosting hand-off (for the win-lin session on the owner's ops box)
 
-Owner: Viram (silly-cloud). Server: "crossaint-quest", i-017d41719b40a1f04, 100.56.246.74 (us-east-1a, t3.medium, Ubuntu 24.04), account 907620281516, SG sg-05c6dc525c5ef84c4 (SSH only from the owner's IPs).
-Goal: run Croissant Quest publicly over HTTPS on that server and **leave it running** (personal server, no planned shutdown). Shut down early only on clear abuse, and say so.
+For the owner's own server (any Linux host with Docker). Server details (IP, cloud account, security group) are deliberately NOT in this public repo; the session doing the hosting already has them. Keep SSH restricted to the owner's IPs.
+Goal: run Croissant Quest publicly over HTTPS on the owner's server and **leave it running** (personal server, no planned shutdown). Shut down early only on clear abuse, and say so.
 
 ## What it is
 
@@ -13,8 +13,8 @@ Goal: run Croissant Quest publicly over HTTPS on that server and **leave it runn
 ## Rules
 
 1. **`ANTHROPIC_API_KEY` (owner-approved, optional):** set it only in `infra/.env` on the server, never in chat, logs or git. The coach abuse limits (ADR 0009) are in place: device required, 10/min and 50/day per device, 20/min per IP, 120/min and 500/day globally. Without a key the coach falls back to local rounds.
-2. HTTPS is required for saves (device cookie is `Secure` because compose sets `NODE_ENV=production`). Easiest: Caddy with `https://100-56-246-74.sslip.io` (automatic Let's Encrypt; needs inbound 80 and 443). If you use plain http, set `COOKIE_SECURE=false` on the api and report it.
-3. `WEB_ORIGIN` must equal the public URL exactly (e.g. `https://100-56-246-74.sslip.io`), or browser saves get 403 `bad_origin`.
+2. HTTPS is required for saves (device cookie is `Secure` because compose sets `NODE_ENV=production`). Easiest: Caddy with `https://<server-ip-with-dashes>.sslip.io` (automatic Let's Encrypt; needs inbound 80 and 443). If you use plain http, set `COOKIE_SECURE=false` on the api and report it.
+3. `WEB_ORIGIN` must equal the public URL exactly (e.g. `https://<server-ip-with-dashes>.sslip.io`), or browser saves get 403 `bad_origin`.
 4. Public: only 80/443. Never open 3001 or 5432. Prefer publishing the api as `127.0.0.1:3001:3001` on the server.
 5. `POSTGRES_PASSWORD` in `infra/.env`: random, generated on the server; never in chat, logs or git.
 6. These images have never been built with a real Docker daemon. If a build step fails, keep a local workaround if you must, but report the exact error so the repo can be fixed.
