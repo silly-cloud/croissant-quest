@@ -41,7 +41,7 @@ export function judge(q: Question, picked: string | null): boolean {
   const said = norm(p);
   if (said === norm(q.a)) return true;
   if (q.alt?.some((a) => norm(a) === said)) return true;
-  return !!(q.s && q.s.includes("___") && norm(knit(q.s.replace("___", p))) === norm(q.a));
+  return !!(q.s && q.s.includes("___") && norm(q.s.replace("___", p)) === norm(q.a));
 }
 
 /** Right words, wrong accents: shown as "So close". */
