@@ -17,9 +17,6 @@ export type ProgressResponse = z.infer<typeof ProgressResponse>;
 export const PutProgressBody = z.object({ state: StateBody });
 export type PutProgressBody = z.infer<typeof PutProgressBody>;
 
-/** 409 body for a stale If-Match: the server's current copy, for the client to merge and retry. */
-export const ConflictResponse = ProgressResponse;
-
 export const CoachRoundBody = z.object({
   /** how many questions to write, 1-8 */
   n: z.number().int().min(1).max(8).default(8),
@@ -29,8 +26,14 @@ export const CoachRoundBody = z.object({
 export type CoachRoundBody = z.infer<typeof CoachRoundBody>;
 
 export const CoachRoundResponse = z.discriminatedUnion("fallback", [
-  z.object({ fallback: z.literal(false), questions: z.array(Question).min(4).max(8) }),
-  z.object({ fallback: z.literal(true), reason: z.enum(["no_key", "timeout", "error", "invalid"]) }),
+  z.object({
+    fallback: z.literal(false),
+    questions: z.array(Question).min(4).max(8),
+  }),
+  z.object({
+    fallback: z.literal(true),
+    reason: z.enum(["no_key", "timeout", "error", "invalid"]),
+  }),
 ]);
 export type CoachRoundResponse = z.infer<typeof CoachRoundResponse>;
 
@@ -43,11 +46,17 @@ export type CoachExplainBody = z.infer<typeof CoachExplainBody>;
 
 export const CoachExplainResponse = z.discriminatedUnion("fallback", [
   z.object({ fallback: z.literal(false), text: z.string() }),
-  z.object({ fallback: z.literal(true), reason: z.enum(["no_key", "timeout", "error", "invalid"]) }),
+  z.object({
+    fallback: z.literal(true),
+    reason: z.enum(["no_key", "timeout", "error", "invalid"]),
+  }),
 ]);
 export type CoachExplainResponse = z.infer<typeof CoachExplainResponse>;
 
-export const HealthResponse = z.object({ ok: z.literal(true), db: z.boolean() });
+export const HealthResponse = z.object({
+  ok: z.literal(true),
+  db: z.boolean(),
+});
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
 export const API_PREFIX = "/v1";
