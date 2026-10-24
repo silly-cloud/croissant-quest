@@ -12,6 +12,10 @@ describe("question bank", () => {
       expect(TAGNAME[q.tag], q.tag).toBeDefined();
     }
   });
+  it("exception questions each carry their own rule text [fixed #15]", () => {
+    const whys = BANK.filter((q) => q.why).length;
+    expect(whys).toBe(14);
+  });
   it("44 topics and rule cards for topics 1-6", () => {
     expect(TOPICS).toHaveLength(44);
     for (const t of [1, 2, 3, 4, 5, 6]) expect(RULES[t]).toBeTruthy();

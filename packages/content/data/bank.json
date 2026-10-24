@@ -3000,6 +3000,10 @@
   "o": [
    "le",
    "la"
+  ],
+  "why": [
+   "<b>sucre</b> ends in -re but is masculine. A final -re does not tell you the gender.",
+   "-RE alone proves nothing: learn the word."
   ]
  },
  {
@@ -3013,6 +3017,10 @@
   "o": [
    "le",
    "la"
+  ],
+  "why": [
+   "<b>beurre</b> ends in -re but is masculine. A final -re does not tell you the gender.",
+   "-RE alone proves nothing: learn the word."
   ]
  },
  {
@@ -3071,6 +3079,10 @@
    "bijous",
    "bijoues",
    "bijeaux"
+  ],
+  "why": [
+   "<b>-ou</b> normally takes <b>-s</b> (un trou → des trous), but seven words take <b>-x</b>.",
+   "bijou · caillou · chou · genou · hibou · joujou · pou: add X."
   ]
  },
  {
@@ -3086,6 +3098,10 @@
    "œils",
    "oeuils",
    "yeuxs"
+  ],
+  "why": [
+   "<b>œil</b> has an irregular plural: <b>yeux</b>.",
+   "One eye, two YEUX. Just learn it."
   ]
  },
  {
@@ -3180,6 +3196,10 @@
    "genous",
    "genoues",
    "geneaux"
+  ],
+  "why": [
+   "<b>-ou</b> normally takes <b>-s</b> (un trou → des trous), but seven words take <b>-x</b>.",
+   "bijou · caillou · chou · genou · hibou · joujou · pou: add X."
   ]
  },
  {
@@ -3195,6 +3215,10 @@
    "chous",
    "choues",
    "cheaux"
+  ],
+  "why": [
+   "<b>-ou</b> normally takes <b>-s</b> (un trou → des trous), but seven words take <b>-x</b>.",
+   "bijou · caillou · chou · genou · hibou · joujou · pou: add X."
   ]
  },
  {
@@ -3293,6 +3317,10 @@
    "le",
    "la",
    "les"
+  ],
+  "why": [
+   "<b>hibou</b> starts with an <b>aspirate h</b>, so <b>le</b> does not shrink to l'.",
+   "Aspirate h blocks the apostrophe: le hibou."
   ]
  },
  {
