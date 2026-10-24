@@ -1,5 +1,5 @@
 // Only in playwright.real.config.ts: the real NestJS API on Postgres (no coach key) behind the Next rewrite.
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Browser, type Page } from "@playwright/test";
 import { answer, currentQuestion, playPerfectRound, qwrap, serverProgress, startTopic6, studyPace } from "../helpers";
 import { API_ORIGIN, WEB_ORIGIN } from "./env";
 
@@ -41,14 +41,17 @@ test("a perfect round is saved on the server and comes back after the device cop
   await expect(banner(page)).toBeHidden();
 });
 
-test("two tabs on one device both save: no 409 loop, nothing one of them did not touch is lost", async ({ browser, request }) => {
+/**
+ * Two browser contexts on one device id: B gets A's cookie, not its localStorage (a second tab would share both),
+ * so each holds its own copy and base, like two devices of one player. Both have saved once when this returns.
+ */
+async function twoCopies(browser: Browser, request: APIRequestContext) {
   const ctxA = await browser.newContext({ baseURL: WEB_ORIGIN });
   const a = await ctxA.newPage();
   await a.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   await studyPace(a);
   await a.goto("/");
   await expect.poll(async () => (await ctxA.cookies()).some((c) => c.name === "cq_device")).toBe(true);
-  // tab B shares the device cookie, not the localStorage (another browser profile or a private window would not; a second tab does both)
   const ctxB = await browser.newContext({ baseURL: WEB_ORIGIN });
   await ctxB.addCookies(await ctxA.cookies());
   const b = await ctxB.newPage();
@@ -59,6 +62,15 @@ test("two tabs on one device both save: no 409 loop, nothing one of them did not
   b.on("request", (r) => void (r.method() === "PUT" && puts.b++));
   await b.goto("/");
   await expect.poll(async () => (await serverProgress(b, request)).version).toBeGreaterThanOrEqual(2);
+  const close = async () => {
+    await ctxA.close();
+    await ctxB.close();
+  };
+  return { a, b, puts, close };
+}
+
+test("two copies on one device both save: no 409 loop, nothing either of them did is lost", async ({ browser, request }) => {
+  const { a, b, puts, close } = await twoCopies(browser, request);
 
   // both tabs now hold an older version than the server for at least one of their saves
   await startTopic6(a);
@@ -81,17 +93,39 @@ test("two tabs on one device both save: no 409 loop, nothing one of them did not
       };
     })
     .toEqual({ xp: 10, logA: true, seenA: true, seenB: true, missOnRuleA: 1, rightOnRuleB: 1 });
-  // Known gap, not fixed here (packages/shared, ADR 0006 / AUD-01): `wrong` follows the copy with the newer ts,
-  // so B's later save drops A's queued miss from Weak Spots. Flip to a plain expect when the merge changes.
-  const { state } = await serverProgress(a, request);
-  if (qa.id !== qb.id) expect.soft((state as unknown as Saved).wrong[qa.id] ?? 0, "AUD-01: A's miss lost from wrong").toBe(0);
+  // AUD-01 (ADR 0010): B's later save is rebased onto the server copy, so A's miss stays queued in Weak Spots
+  if (qa.id !== qb.id) await expect.poll(async () => ((await serverProgress(a, request)).state as unknown as Saved).wrong[qa.id] ?? 0).toBe(1);
   await expect(banner(a)).toBeHidden();
   await expect(banner(b)).toBeHidden();
   // a few retries converge; a 409 loop would hit MAX_PUT_TRIES (5) per change and show the banner
   expect(puts.a).toBeLessThanOrEqual(6);
   expect(puts.b).toBeLessThanOrEqual(6);
-  await ctxA.close();
-  await ctxB.close();
+  await close();
+});
+
+test("two copies on one device both earn xp: the server total is the sum, not the larger one", async ({ browser, request }) => {
+  const { a, b, close } = await twoCopies(browser, request);
+  await startTopic6(a);
+  await startTopic6(b);
+  const xpOf = async () => ((await serverProgress(a, request)).state as unknown as Saved).xp;
+  const before = await xpOf();
+  // interleave: each answer is saved from a copy whose version the other has just moved on (409, rebase, retry)
+  for (const p of [a, b, a, b]) {
+    const q = await answer(p, true);
+    await p.getByRole("button", { name: /Continue/ }).click();
+    await expect(qwrap(p)).not.toHaveAttribute("data-qid", q.id);
+  }
+  // each copy: 10 for its first right answer, 13 for the second (combo 2, xpFor in @cq/shared); max-merge would give 23
+  const sum = before + 2 * (10 + 13);
+  await expect.poll(xpOf).toBe(sum);
+  // both copies come to show the same total once they read the server again
+  await a.reload();
+  await b.reload();
+  await expect.poll(async () => (await local(a))?.xp).toBe(sum);
+  await expect.poll(async () => (await local(b))?.xp).toBe(sum);
+  await expect(banner(a)).toBeHidden();
+  await expect(banner(b)).toBeHidden();
+  await close();
 });
 
 test("the coach with no key falls back to a local round", async ({ page }) => {
