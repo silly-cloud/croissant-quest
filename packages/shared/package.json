@@ -1,6 +1,6 @@
 {
   "name": "@cq/shared", "version": "0.0.0", "private": true, "type": "module",
   "main": "src/index.ts", "types": "src/index.ts",
-  "scripts": { "test": "vitest run --passWithNoTests", "typecheck": "tsc --noEmit", "lint": "eslint src" },
+  "scripts": { "test": "TZ=Asia/Kolkata vitest run --passWithNoTests", "typecheck": "tsc --noEmit", "lint": "eslint src" },
   "dependencies": { "zod": "^4.6.0", "@cq/content": "workspace:*" }
 }
