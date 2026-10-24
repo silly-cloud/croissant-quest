@@ -1,0 +1,3373 @@
+[
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Il mange ___ chocolat.",
+  "a": "du",
+  "en": "He eats some chocolate.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Je bois ___ eau.",
+  "a": "de l'",
+  "en": "I drink some water.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Tu manges ___ viande.",
+  "a": "de la",
+  "en": "You eat some meat.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Elle achète ___ fraises.",
+  "a": "des",
+  "en": "She buys some strawberries.",
+  "tag": "p",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Nous buvons ___ lait.",
+  "a": "du",
+  "en": "We drink some milk.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Il achète ___ confiture.",
+  "a": "de la",
+  "en": "He buys some jam.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Je prends ___ argent.",
+  "a": "de l'",
+  "en": "I take some money.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Vous mangez ___ riz.",
+  "a": "du",
+  "en": "You eat some rice.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Elle boit ___ limonade.",
+  "a": "de la",
+  "en": "She drinks some lemonade.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Ils mangent ___ pâtes.",
+  "a": "des",
+  "en": "They eat some pasta.",
+  "tag": "p",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Tu prends ___ sucre.",
+  "a": "du",
+  "en": "You take some sugar.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Je mange ___ salade.",
+  "a": "de la",
+  "en": "I eat some salad.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Il boit ___ jus.",
+  "a": "du",
+  "en": "He drinks some juice.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Nous achetons ___ huile.",
+  "a": "de l'",
+  "en": "We buy some oil.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Elle mange ___ glace.",
+  "a": "de la",
+  "en": "She eats some ice cream.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Vous buvez ___ vin.",
+  "a": "du",
+  "en": "You drink some wine.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Je mange ___ légumes.",
+  "a": "des",
+  "en": "I eat some vegetables.",
+  "tag": "p",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Tu bois ___ bière.",
+  "a": "de la",
+  "en": "You drink some beer.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Il prend ___ beurre.",
+  "a": "du",
+  "en": "He takes some butter.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Nous mangeons ___ poisson.",
+  "a": "du",
+  "en": "We eat some fish.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Elle achète ___ farine.",
+  "a": "de la",
+  "en": "She buys some flour.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Je bois ___ soda.",
+  "a": "du",
+  "en": "I drink some soda.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Ils achètent ___ pommes.",
+  "a": "des",
+  "en": "They buy some apples.",
+  "tag": "p",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Tu manges ___ soupe.",
+  "a": "de la",
+  "en": "You eat some soup.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 1,
+  "k": "choice",
+  "s": "Vous prenez ___ miel.",
+  "a": "du",
+  "en": "You take some honey.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne mange pas ___ pain.",
+  "a": "de",
+  "en": "I don't eat bread.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il boit beaucoup ___ café.",
+  "a": "de",
+  "en": "He drinks a lot of coffee.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle ne boit pas ___ eau.",
+  "a": "d'",
+  "en": "She doesn't drink water.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous mangeons ___ poulet.",
+  "a": "du",
+  "en": "We eat some chicken.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu prends un peu ___ sel.",
+  "a": "de",
+  "en": "You take a little salt.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il n'achète pas ___ viande.",
+  "a": "de",
+  "en": "He doesn't buy meat.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je bois ___ thé.",
+  "a": "du",
+  "en": "I drink some tea.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous mangez trop ___ sucre.",
+  "a": "de",
+  "en": "You eat too much sugar.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle achète un kilo ___ fraises.",
+  "a": "de",
+  "en": "She buys a kilo of strawberries.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Ils ne mangent pas ___ haricots.",
+  "a": "de",
+  "en": "They don't eat beans.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je prends ___ crème.",
+  "a": "de la",
+  "en": "I take some cream.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu ne prends pas ___ argent.",
+  "a": "d'",
+  "en": "You don't take money.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous buvons une bouteille ___ vin.",
+  "a": "de",
+  "en": "We drink a bottle of wine.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il mange ___ œufs.",
+  "a": "des",
+  "en": "He eats some eggs.",
+  "tag": "p",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle veut un verre ___ eau.",
+  "a": "d'",
+  "en": "She wants a glass of water.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne veux pas ___ soupe.",
+  "a": "de",
+  "en": "I don't want soup.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu achètes ___ huile.",
+  "a": "de l'",
+  "en": "You buy some oil.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous prenez assez ___ légumes.",
+  "a": "de",
+  "en": "You take enough vegetables.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il ne boit pas ___ bière.",
+  "a": "de",
+  "en": "He doesn't drink beer.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous mangeons ___ tarte.",
+  "a": "de la",
+  "en": "We eat some tart.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne mange pas ___ pommes.",
+  "a": "de",
+  "en": "I don't eat apples.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il ne boit pas ___ alcool.",
+  "a": "d'",
+  "en": "He doesn't drink alcohol.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous n'avons pas ___ argent.",
+  "a": "d'",
+  "en": "We don't have money.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle ne veut pas ___ huile.",
+  "a": "d'",
+  "en": "She doesn't want oil.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle ne mange pas ___ oignons.",
+  "a": "d'",
+  "en": "She doesn't eat onions.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu ne prends pas ___ fromage.",
+  "a": "de",
+  "en": "You don't take cheese.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu ne manges pas ___ gâteau.",
+  "a": "de",
+  "en": "You don't eat cake.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Ils ne boivent pas ___ lait.",
+  "a": "de",
+  "en": "They don't drink milk.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne veux pas ___ confiture.",
+  "a": "de",
+  "en": "I don't want jam.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il n'achète pas ___ poisson.",
+  "a": "de",
+  "en": "He doesn't buy fish.",
+  "tag": "neg",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je bois beaucoup ___ eau.",
+  "a": "d'",
+  "en": "I drink a lot of water.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il mange trop ___ oranges.",
+  "a": "d'",
+  "en": "He eats too many oranges.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle prend un peu ___ huile.",
+  "a": "d'",
+  "en": "She takes a little oil.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu manges trop ___ fromage.",
+  "a": "de",
+  "en": "You eat too much cheese.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous avons assez ___ argent.",
+  "a": "d'",
+  "en": "We have enough money.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il veut un peu ___ confiture.",
+  "a": "de",
+  "en": "He wants a little jam.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle achète beaucoup ___ légumes.",
+  "a": "de",
+  "en": "She buys a lot of vegetables.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je prends une tasse ___ café.",
+  "a": "de",
+  "en": "I take a cup of coffee.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu bois trop ___ alcool.",
+  "a": "d'",
+  "en": "You drink too much alcohol.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous mangez assez ___ poisson.",
+  "a": "de",
+  "en": "You eat enough fish.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il achète un kilo ___ oignons.",
+  "a": "d'",
+  "en": "He buys a kilo of onions.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle veut un morceau ___ tarte.",
+  "a": "de",
+  "en": "She wants a piece of tart.",
+  "tag": "qty",
+  "o": [
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il mange ___ de chocolat.",
+  "a": "trop",
+  "en": "He eats TOO MUCH chocolate.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle boit ___ de café.",
+  "a": "beaucoup",
+  "en": "She drinks A LOT OF coffee.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je prends ___ de sel.",
+  "a": "un peu",
+  "en": "I take A LITTLE salt.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous avons ___ de pain.",
+  "a": "assez",
+  "en": "We have ENOUGH bread.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu bois ___ de vin.",
+  "a": "trop",
+  "en": "You drink TOO MUCH wine.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous mangez ___ de légumes.",
+  "a": "beaucoup",
+  "en": "You eat A LOT OF vegetables.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il veut ___ de confiture.",
+  "a": "un peu",
+  "en": "He wants A LITTLE jam.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle achète ___ de poisson.",
+  "a": "assez",
+  "en": "She buys ENOUGH fish.",
+  "tag": "qty",
+  "o": [
+   "trop",
+   "beaucoup",
+   "un peu",
+   "assez"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je prends ___ fromage.",
+  "a": "du",
+  "en": "I take some cheese.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne prends pas ___ fromage.",
+  "a": "de",
+  "en": "I don't take cheese.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle boit ___ alcool.",
+  "a": "de l'",
+  "en": "She drinks some alcohol.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle ne boit pas ___ alcool.",
+  "a": "d'",
+  "en": "She doesn't drink alcohol.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous achetons ___ oranges.",
+  "a": "des",
+  "en": "We buy some oranges.",
+  "tag": "p",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous n'achetons pas ___ oranges.",
+  "a": "d'",
+  "en": "We don't buy oranges.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il veut ___ huile.",
+  "a": "de l'",
+  "en": "He wants some oil.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il ne veut pas ___ huile.",
+  "a": "d'",
+  "en": "He doesn't want oil.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous mangez ___ gâteau.",
+  "a": "du",
+  "en": "You eat some cake.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous ne mangez pas ___ gâteau.",
+  "a": "de",
+  "en": "You don't eat cake.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous achetons ___ homard.",
+  "a": "du",
+  "en": "We buy some lobster.",
+  "tag": "ah",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il commande ___ homard.",
+  "a": "du",
+  "en": "He orders some lobster.",
+  "tag": "ah",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne mange pas ___ haricots.",
+  "a": "de",
+  "en": "I don't eat beans.",
+  "tag": "ah",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle ne veut pas ___ homard.",
+  "a": "de",
+  "en": "She doesn't want lobster.",
+  "tag": "ah",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle mange ___ pomme.",
+  "a": "une",
+  "en": "She eats AN apple.",
+  "tag": "cnt",
+  "o": [
+   "un",
+   "une",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il veut ___ croissant.",
+  "a": "un",
+  "en": "He wants A croissant.",
+  "tag": "cnt",
+  "o": [
+   "un",
+   "une",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je prends ___ sandwich.",
+  "a": "un",
+  "en": "I take A sandwich.",
+  "tag": "cnt",
+  "o": [
+   "un",
+   "une",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu achètes ___ tarte.",
+  "a": "une",
+  "en": "You buy A tart.",
+  "tag": "cnt",
+  "o": [
+   "un",
+   "une",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il boit un peu ___ café.",
+  "a": "de",
+  "en": "He drinks a little coffee.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous n'achetons pas ___ pain.",
+  "a": "de",
+  "en": "We don't buy bread.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous achetez un kilo ___ pommes.",
+  "a": "de",
+  "en": "You buy a kilo of apples.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Ils aiment ___ fraises.",
+  "a": "les",
+  "en": "They like strawberries.",
+  "tag": "gen",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous buvons une bouteille ___ eau.",
+  "a": "d'",
+  "en": "We drink a bottle of water.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je ne mange pas ___ beurre.",
+  "a": "de",
+  "en": "I don't eat butter.",
+  "tag": "neg",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous achetez un kilo ___ sucre.",
+  "a": "de",
+  "en": "You buy a kilo of sugar.",
+  "tag": "qty",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des",
+   "de",
+   "d'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle adore ___ confiture de fraises.",
+  "a": "la",
+  "en": "She loves strawberry jam.",
+  "tag": "gen",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Ils ont ___ chance aujourd'hui.",
+  "a": "de la",
+  "en": "They are lucky today.",
+  "tag": "fix",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "de"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je mange ___ carottes.",
+  "a": "des",
+  "en": "I eat some carrots.",
+  "tag": "p",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu aimes ___ carottes.",
+  "a": "les",
+  "en": "You like carrots (in general).",
+  "tag": "gen",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle achète ___ tomates.",
+  "a": "des",
+  "en": "She buys some tomatoes.",
+  "tag": "p",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle adore ___ tomates.",
+  "a": "les",
+  "en": "She loves tomatoes (in general).",
+  "tag": "gen",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous mangeons ___ pâtes.",
+  "a": "des",
+  "en": "We eat some pasta.",
+  "tag": "p",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous préférons ___ pâtes.",
+  "a": "les",
+  "en": "We prefer pasta (in general).",
+  "tag": "gen",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous prenez ___ œufs.",
+  "a": "des",
+  "en": "You take some eggs.",
+  "tag": "p",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous détestez ___ œufs.",
+  "a": "les",
+  "en": "You hate eggs (in general).",
+  "tag": "gen",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Ils achètent ___ bananes.",
+  "a": "des",
+  "en": "They buy some bananas.",
+  "tag": "p",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Ils aiment ___ bananes.",
+  "a": "les",
+  "en": "They like bananas (in general).",
+  "tag": "gen",
+  "o": [
+   "des",
+   "les",
+   "du",
+   "de la"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "J'aime ___ café.",
+  "a": "le",
+  "en": "I like coffee.",
+  "tag": "gen",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je bois ___ café.",
+  "a": "du",
+  "en": "I drink some coffee.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle adore ___ chocolat.",
+  "a": "le",
+  "en": "She loves chocolate.",
+  "tag": "gen",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle mange ___ chocolat.",
+  "a": "du",
+  "en": "She eats some chocolate.",
+  "tag": "m",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il déteste ___ viande.",
+  "a": "la",
+  "en": "He hates meat.",
+  "tag": "gen",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il achète ___ viande.",
+  "a": "de la",
+  "en": "He buys some meat.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous préférons ___ eau.",
+  "a": "l'",
+  "en": "We prefer water.",
+  "tag": "gen",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous buvons ___ eau.",
+  "a": "de l'",
+  "en": "We drink some water.",
+  "tag": "v",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "le",
+   "la",
+   "l'"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu aimes ___ légumes.",
+  "a": "les",
+  "en": "You like vegetables.",
+  "tag": "gen",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu manges ___ légumes.",
+  "a": "des",
+  "en": "You eat some vegetables.",
+  "tag": "p",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "J'adore ___ fraises.",
+  "a": "les",
+  "en": "I love strawberries.",
+  "tag": "gen",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "J'achète ___ fraises.",
+  "a": "des",
+  "en": "I buy some strawberries.",
+  "tag": "p",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il déteste ___ haricots.",
+  "a": "les",
+  "en": "He hates beans.",
+  "tag": "gen",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il mange ___ haricots.",
+  "a": "des",
+  "en": "He eats some beans.",
+  "tag": "p",
+  "o": [
+   "les",
+   "des",
+   "le",
+   "du"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je prends ___ sucre.",
+  "a": "du",
+  "en": "I take some sugar.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle commande ___ confiture.",
+  "a": "de la",
+  "en": "She orders some jam.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous achetons ___ beurre.",
+  "a": "du",
+  "en": "We buy some butter.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il goûte ___ confiture.",
+  "a": "de la",
+  "en": "He tastes some jam.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Vous voulez ___ poivre.",
+  "a": "du",
+  "en": "You want some pepper.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Elle apporte ___ farine.",
+  "a": "de la",
+  "en": "She brings some flour.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Je cherche ___ beurre.",
+  "a": "du",
+  "en": "I'm looking for some butter.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Tu veux ___ sucre.",
+  "a": "du",
+  "en": "You want some sugar.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Il donne ___ farine.",
+  "a": "de la",
+  "en": "He gives some flour.",
+  "tag": "f",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 2,
+  "k": "choice",
+  "s": "Nous voulons ___ poivre.",
+  "a": "du",
+  "en": "We want some pepper.",
+  "tag": "gre",
+  "o": [
+   "du",
+   "de la",
+   "de l'",
+   "des"
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Je mange ___ fromage.",
+  "a": "Je mange du fromage.",
+  "en": "I eat some cheese.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Elle boit ___ lait.",
+  "a": "Elle boit du lait.",
+  "en": "She drinks some milk.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Il achète ___ glace.",
+  "a": "Il achète de la glace.",
+  "en": "He buys some ice cream.",
+  "tag": "f"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Nous buvons ___ eau.",
+  "a": "Nous buvons de l'eau.",
+  "en": "We drink some water.",
+  "tag": "v"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Tu manges ___ fruits.",
+  "a": "Tu manges des fruits.",
+  "en": "You eat some fruit.",
+  "tag": "p"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Je ne bois pas ___ vin.",
+  "a": "Je ne bois pas de vin.",
+  "en": "I don't drink wine.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Vous mangez beaucoup ___ pain.",
+  "a": "Vous mangez beaucoup de pain.",
+  "en": "You eat a lot of bread.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Elle prend ___ confiture.",
+  "a": "Elle prend de la confiture.",
+  "en": "She takes some jam.",
+  "tag": "f"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Il veut ___ argent.",
+  "a": "Il veut de l'argent.",
+  "en": "He wants some money.",
+  "tag": "v"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "type",
+  "s": "Nous achetons ___ poivre.",
+  "a": "Nous achetons du poivre.",
+  "en": "We buy some pepper.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "I eat some bread.",
+  "a": "Je mange du pain.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "She drinks some water.",
+  "a": "Elle boit de l'eau.",
+  "tag": "v"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "He buys some meat.",
+  "a": "Il achète de la viande.",
+  "tag": "f"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "We eat some apples.",
+  "a": "Nous mangeons des pommes.",
+  "tag": "p"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "You don't eat sugar.",
+  "a": "Tu ne manges pas de sucre.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "I drink a lot of tea.",
+  "a": "Je bois beaucoup de thé.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "She takes some cream.",
+  "a": "Elle prend de la crème.",
+  "tag": "f"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "They want some money.",
+  "a": "Ils veulent de l'argent.",
+  "tag": "v"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "I like coffee.",
+  "a": "J'aime le café.",
+  "tag": "gen"
+ },
+ {
+  "t": 6,
+  "tier": 3,
+  "k": "build",
+  "en": "He does sport.",
+  "a": "Il fait du sport.",
+  "tag": "fix"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "I eat some cheese.",
+  "a": "Je mange du fromage.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "She drinks some milk.",
+  "a": "Elle boit du lait.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "We buy some meat.",
+  "a": "Nous achetons de la viande.",
+  "tag": "f",
+  "alt": [
+   "On achète de la viande."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "He wants some water.",
+  "a": "Il veut de l'eau.",
+  "tag": "v"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "You eat some vegetables.",
+  "a": "Tu manges des légumes.",
+  "tag": "p",
+  "alt": [
+   "Vous mangez des légumes."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "I don't eat meat.",
+  "a": "Je ne mange pas de viande.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "She doesn't drink water.",
+  "a": "Elle ne boit pas d'eau.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "He eats too much chocolate.",
+  "a": "Il mange trop de chocolat.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "I love chocolate.",
+  "a": "J'adore le chocolat.",
+  "tag": "gen"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "She plays the guitar.",
+  "a": "Elle joue de la guitare.",
+  "tag": "twin"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "We do swimming.",
+  "a": "Nous faisons de la natation.",
+  "tag": "fix",
+  "alt": [
+   "On fait de la natation."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "He has courage.",
+  "a": "Il a du courage.",
+  "tag": "fix"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "A coffee without sugar.",
+  "a": "Un café sans sucre.",
+  "tag": "sans"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "I take a glass of water.",
+  "a": "Je prends un verre d'eau.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "en2fr",
+  "en": "You are lucky.",
+  "a": "Tu as de la chance.",
+  "tag": "fix",
+  "alt": [
+   "Vous avez de la chance."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "fr2en",
+  "s": "Je parle du film.",
+  "a": "I'm talking about the film.",
+  "o": [
+   "I'm talking about the film.",
+   "I'm eating some film.",
+   "I like the film.",
+   "I'm watching a film."
+  ],
+  "tag": "twin"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "fr2en",
+  "s": "Elle mange du poulet.",
+  "a": "She eats some chicken.",
+  "o": [
+   "She eats some chicken.",
+   "She likes chicken.",
+   "She eats the chicken.",
+   "She doesn't eat chicken."
+  ],
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "fr2en",
+  "s": "Il n'y a pas de pain.",
+  "a": "There isn't any bread.",
+  "o": [
+   "There isn't any bread.",
+   "There is some bread.",
+   "He doesn't like bread.",
+   "There is a bread."
+  ],
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "fr2en",
+  "s": "J'aime le thé.",
+  "a": "I like tea.",
+  "o": [
+   "I like tea.",
+   "I drink some tea.",
+   "I want a tea.",
+   "I have tea."
+  ],
+  "tag": "gen"
+ },
+ {
+  "t": 6,
+  "tier": 4,
+  "k": "fr2en",
+  "s": "Il fait du soleil.",
+  "a": "It's sunny.",
+  "o": [
+   "It's sunny.",
+   "He makes a sun.",
+   "He does the sun.",
+   "It's windy."
+  ],
+  "tag": "fix"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Je mange de le pain.",
+  "bad": "de le",
+  "a": "Je mange du pain.",
+  "en": "I eat some bread.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Elle boit du eau.",
+  "bad": "du",
+  "a": "Elle boit de l'eau.",
+  "en": "She drinks some water.",
+  "tag": "v"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Il achète du viande.",
+  "bad": "du",
+  "a": "Il achète de la viande.",
+  "en": "He buys some meat.",
+  "tag": "f"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Nous ne mangeons pas du pain.",
+  "bad": "du",
+  "a": "Nous ne mangeons pas de pain.",
+  "en": "We don't eat bread.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Tu bois beaucoup du café.",
+  "bad": "du",
+  "a": "Tu bois beaucoup de café.",
+  "en": "You drink a lot of coffee.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "J'aime du chocolat.",
+  "bad": "du",
+  "a": "J'aime le chocolat.",
+  "en": "I like chocolate.",
+  "tag": "gen"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Elle mange de les fruits.",
+  "bad": "de les",
+  "a": "Elle mange des fruits.",
+  "en": "She eats some fruit.",
+  "tag": "p"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Il prend un café sans du sucre.",
+  "bad": "du",
+  "a": "Il prend un café sans sucre.",
+  "en": "He takes a coffee without sugar.",
+  "tag": "sans"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Je fais de le sport.",
+  "bad": "de le",
+  "a": "Je fais du sport.",
+  "en": "I do sport.",
+  "tag": "fix"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "fix",
+  "s": "Elle n'a pas du chance.",
+  "bad": "du",
+  "a": "Elle n'a pas de chance.",
+  "en": "She isn't lucky.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "He eats some fish.",
+  "a": "Il mange du poisson.",
+  "tag": "m"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "I don't want any beer.",
+  "a": "Je ne veux pas de bière.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "She buys a kilo of apples.",
+  "a": "Elle achète un kilo de pommes.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "We drink some orange juice.",
+  "a": "Nous buvons du jus d'orange.",
+  "tag": "m",
+  "alt": [
+   "On boit du jus d'orange."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "You play the piano.",
+  "a": "Tu joues du piano.",
+  "tag": "twin",
+  "alt": [
+   "Vous jouez du piano."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "They hate soup.",
+  "a": "Ils détestent la soupe.",
+  "tag": "gen",
+  "alt": [
+   "Elles détestent la soupe."
+  ]
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "I eat some strawberries.",
+  "a": "Je mange des fraises.",
+  "tag": "p"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "He takes a little honey.",
+  "a": "Il prend un peu de miel.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "She has patience.",
+  "a": "Elle a de la patience.",
+  "tag": "fix"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "en2fr",
+  "en": "There is some wind.",
+  "a": "Il y a du vent.",
+  "tag": "fix"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "type",
+  "s": "Il ne prend pas ___ sucre.",
+  "a": "Il ne prend pas de sucre.",
+  "en": "He doesn't take sugar.",
+  "tag": "neg"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "type",
+  "s": "Nous mangeons ___ haricots.",
+  "a": "Nous mangeons des haricots.",
+  "en": "We eat some beans.",
+  "tag": "p"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "type",
+  "s": "Tu adores ___ fromage.",
+  "a": "Tu adores le fromage.",
+  "en": "You love cheese.",
+  "tag": "gen"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "type",
+  "s": "Elle veut une tasse ___ thé.",
+  "a": "Elle veut une tasse de thé.",
+  "en": "She wants a cup of tea.",
+  "tag": "qty"
+ },
+ {
+  "t": 6,
+  "tier": 5,
+  "k": "type",
+  "s": "Je mange un morceau ___ gâteau.",
+  "a": "Je mange un morceau de gâteau.",
+  "en": "I eat a piece of cake.",
+  "tag": "qty"
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "Marie et Paul ? ___ mangent.",
+  "a": "ils",
+  "en": "Marie and Paul? They eat.",
+  "tag": "t1",
+  "o": [
+   "il",
+   "elle",
+   "ils",
+   "elles"
+  ]
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "Anne et Sophie ? ___ chantent.",
+  "a": "elles",
+  "en": "Anne and Sophie? They sing.",
+  "tag": "t1",
+  "o": [
+   "il",
+   "elle",
+   "ils",
+   "elles"
+  ]
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "Le garçon ? ___ danse.",
+  "a": "il",
+  "en": "The boy? He dances.",
+  "tag": "t1",
+  "o": [
+   "il",
+   "elle",
+   "ils",
+   "elles"
+  ]
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "La fille ? ___ chante.",
+  "a": "elle",
+  "en": "The girl? She sings.",
+  "tag": "t1",
+  "o": [
+   "il",
+   "elle",
+   "ils",
+   "elles"
+  ]
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ parlez français.",
+  "a": "vous",
+  "en": "You speak French. — said to your boss",
+  "tag": "t1",
+  "o": [
+   "tu",
+   "vous",
+   "nous",
+   "on"
+  ]
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ parles français.",
+  "a": "tu",
+  "en": "You speak French. — said to one friend",
+  "tag": "t1",
+  "o": [
+   "tu",
+   "vous",
+   "nous",
+   "on"
+  ]
+ },
+ {
+  "t": 1,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ mange à midi.",
+  "a": "on",
+  "en": "We eat at noon. — the informal 'we'",
+  "tag": "t1",
+  "o": [
+   "tu",
+   "vous",
+   "nous",
+   "on"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ télévision",
+  "a": "la",
+  "en": "the television",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ fromage",
+  "a": "le",
+  "en": "the cheese",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ liberté",
+  "a": "la",
+  "en": "the freedom",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ village",
+  "a": "le",
+  "en": "the village",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ plage",
+  "a": "la",
+  "en": "the beach",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ],
+  "why": [
+   "<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ bateau",
+  "a": "le",
+  "en": "the boat",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ page",
+  "a": "la",
+  "en": "the page",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ],
+  "why": [
+   "<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ cage",
+  "a": "la",
+  "en": "the cage",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ],
+  "why": [
+   "<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ nage",
+  "a": "la",
+  "en": "the swimming",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ],
+  "why": [
+   "<b>-age</b> is masculine (le fromage, le village, le voyage) — except for SIX short words that are feminine.",
+   "la page · la plage · l'image · la cage · la nage · la rage — the six girls of the -age family."
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ voyage",
+  "a": "le",
+  "en": "the journey",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ garage",
+  "a": "le",
+  "en": "the garage",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ nation",
+  "a": "la",
+  "en": "the nation",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ farine",
+  "a": "la",
+  "en": "the flour",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ sucre",
+  "a": "le",
+  "en": "the sugar",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ beurre",
+  "a": "le",
+  "en": "the butter",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 2,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ confiture",
+  "a": "la",
+  "en": "the jam",
+  "tag": "t2",
+  "o": [
+   "le",
+   "la"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un journal → des ___",
+  "a": "journaux",
+  "en": "one newspaper → some newspapers",
+  "tag": "t3",
+  "o": [
+   "journaux",
+   "journals",
+   "journales",
+   "journeaux"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un bateau → des ___",
+  "a": "bateaux",
+  "en": "one boat → some boats",
+  "tag": "t3",
+  "o": [
+   "bateaux",
+   "bateaus",
+   "bateax",
+   "bateux"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un bijou → des ___",
+  "a": "bijoux",
+  "en": "one jewel → some jewels",
+  "tag": "t3",
+  "o": [
+   "bijoux",
+   "bijous",
+   "bijoues",
+   "bijeaux"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un œil → des ___",
+  "a": "yeux",
+  "en": "one eye → some eyes",
+  "tag": "t3",
+  "o": [
+   "yeux",
+   "œils",
+   "oeuils",
+   "yeuxs"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un cheval → des ___",
+  "a": "chevaux",
+  "en": "one horse → some horses",
+  "tag": "t3",
+  "o": [
+   "chevaux",
+   "chevals",
+   "chevaus",
+   "chevales"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un animal → des ___",
+  "a": "animaux",
+  "en": "one animal → some animals",
+  "tag": "t3",
+  "o": [
+   "animaux",
+   "animals",
+   "animales",
+   "animaus"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un hôpital → des ___",
+  "a": "hôpitaux",
+  "en": "one hospital → some hospitals",
+  "tag": "t3",
+  "o": [
+   "hôpitaux",
+   "hôpitals",
+   "hôpitales",
+   "hôpitaus"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un festival → des ___",
+  "a": "festivals",
+  "en": "one festival → some festivals",
+  "tag": "t3",
+  "o": [
+   "festivals",
+   "festivaux",
+   "festivales",
+   "festivaus"
+  ],
+  "why": [
+   "<b>-al</b> normally becomes <b>-aux</b> (journal → journaux), but a few common words refuse and just take <b>-s</b>: bal, carnaval, festival, récital.",
+   "le bal · le carnaval · le festival · le récital — the party four take -S."
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un cheveu → des ___",
+  "a": "cheveux",
+  "en": "one hair → some hairs",
+  "tag": "t3",
+  "o": [
+   "cheveux",
+   "cheveus",
+   "cheveaux",
+   "cheves"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un genou → des ___",
+  "a": "genoux",
+  "en": "one knee → some knees",
+  "tag": "t3",
+  "o": [
+   "genoux",
+   "genous",
+   "genoues",
+   "geneaux"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un chou → des ___",
+  "a": "choux",
+  "en": "one cabbage → some cabbages",
+  "tag": "t3",
+  "o": [
+   "choux",
+   "chous",
+   "choues",
+   "cheaux"
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "un trou → des ___",
+  "a": "trous",
+  "en": "one hole → some holes",
+  "tag": "t3",
+  "o": [
+   "trous",
+   "troux",
+   "troues",
+   "trouds"
+  ],
+  "why": [
+   "Most <b>-ou</b> words take a plain <b>-s</b>. Only seven take -x, and trou is NOT one of them.",
+   "bijou · caillou · chou · genou · hibou · joujou · pou take -X. Every other -ou takes -S."
+  ]
+ },
+ {
+  "t": 3,
+  "tier": 1,
+  "k": "choice",
+  "s": "le prix → les ___",
+  "a": "prix",
+  "en": "the price → the prices",
+  "tag": "t3",
+  "o": [
+   "prix",
+   "prixs",
+   "prixes",
+   "pris"
+  ],
+  "why": [
+   "A noun that already ends in <b>-s</b>, <b>-x</b> or <b>-z</b> does not change at all. Only the article shows the plural.",
+   "Already ends in S/X/Z? Add nothing. le prix → les prix."
+  ]
+ },
+ {
+  "t": 4,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ homme",
+  "a": "l'",
+  "en": "the man",
+  "tag": "t4",
+  "o": [
+   "l'",
+   "le",
+   "la",
+   "les"
+  ]
+ },
+ {
+  "t": 4,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ école",
+  "a": "l'",
+  "en": "the school",
+  "tag": "t4",
+  "o": [
+   "l'",
+   "le",
+   "la",
+   "les"
+  ]
+ },
+ {
+  "t": 4,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ amis",
+  "a": "les",
+  "en": "the friends",
+  "tag": "t4",
+  "o": [
+   "l'",
+   "le",
+   "la",
+   "les"
+  ]
+ },
+ {
+  "t": 4,
+  "tier": 1,
+  "k": "choice",
+  "s": "___ hibou",
+  "a": "le",
+  "en": "the owl",
+  "tag": "t4",
+  "o": [
+   "l'",
+   "le",
+   "la",
+   "les"
+  ]
+ },
+ {
+  "t": 5,
+  "tier": 1,
+  "k": "choice",
+  "s": "Il a ___ chien.",
+  "a": "un",
+  "en": "He has a dog.",
+  "tag": "t5",
+  "o": [
+   "un",
+   "une",
+   "des",
+   "de"
+  ]
+ },
+ {
+  "t": 5,
+  "tier": 1,
+  "k": "choice",
+  "s": "Elle a ___ voiture.",
+  "a": "une",
+  "en": "She has a car.",
+  "tag": "t5",
+  "o": [
+   "un",
+   "une",
+   "des",
+   "de"
+  ]
+ },
+ {
+  "t": 5,
+  "tier": 1,
+  "k": "choice",
+  "s": "J'ai ___ amis.",
+  "a": "des",
+  "en": "I have friends.",
+  "tag": "t5",
+  "o": [
+   "un",
+   "une",
+   "des",
+   "de"
+  ]
+ },
+ {
+  "t": 5,
+  "tier": 1,
+  "k": "choice",
+  "s": "Je n'ai pas ___ chien.",
+  "a": "de",
+  "en": "I don't have a dog.",
+  "tag": "t5",
+  "o": [
+   "un",
+   "une",
+   "des",
+   "de"
+  ]
+ },
+ {
+  "t": 5,
+  "tier": 1,
+  "k": "choice",
+  "s": "Il n'a pas ___ maison.",
+  "a": "de",
+  "en": "He doesn't have a house.",
+  "tag": "t5",
+  "o": [
+   "un",
+   "une",
+   "des",
+   "de"
+  ]
+ }
+]

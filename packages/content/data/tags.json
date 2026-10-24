@@ -1,0 +1,96 @@
+{
+ "TAG": {
+  "m": [
+   "Masculine + uncountable → the <code>de + le</code> pair merges into one word.",
+   "LE gets EATEN. de + le is never written out."
+  ],
+  "f": [
+   "Feminine + uncountable → <code>de</code> and <code>la</code> stay apart. Nothing merges.",
+   "LA ESCAPES. It never gets swallowed."
+  ],
+  "v": [
+   "The noun starts with a vowel or a mute h, so <code>la</code>/<code>le</code> shrinks to <code>l'</code> — gender stops mattering.",
+   "Vowel ahead → the article gets out of the way."
+  ],
+  "p": [
+   "Plural, so there is only one form. <b>du</b> and <b>de la</b> are singular words — they can never sit in front of a plural noun. Plural leaves you only <b>des</b> (some) or <b>les</b> (in general).",
+   "See an -S on the noun? DU is dead. Only DES or LES survive."
+  ],
+  "neg": [
+   "After <b>ne … pas</b>, <code>un / une / des / du / de la / de l'</code> become <code>de</code> (<code>d'</code> before a vowel or mute h). <b>le / la / les do NOT change</b> (<i>Je n'aime pas le café</i>), and nothing changes after <b>être</b> (<i>Ce n'est pas du pain</i>).",
+   "DU, DE LA, DES, UN + PAS → DE. LE, LA, LES stay."
+  ],
+  "qty": [
+   "A word that already says HOW MUCH kills the partitive — only bare <code>de</code> survives.",
+   "You already measured it → DE alone."
+  ],
+  "gen": [
+   "<b>aimer, adorer, détester, préférer</b> talk about the thing in general, so they take the definite article, never a partitive.",
+   "LIKE IT → LE. TAKE IT → DU."
+  ],
+  "ah": [
+   "This h is <b>aspirate</b> — an invisible wall. Nothing elides in front of it.",
+   "Aspirate H blocks the apostrophe."
+  ],
+  "sans": [
+   "<code>sans</code> already means 'without any', so no article follows it at all.",
+   "SANS takes NOTHING."
+  ],
+  "twin": [
+   "This <code>du</code> is not a partitive — it is <code>de + le</code> meaning 'of the / about the', and it stays <code>du</code> after <i>pas</i>. Also <b>jouer DE + instrument</b> (jouer du piano, jouer de la guitare).",
+   "Same spelling, two jobs. Read the verb."
+  ],
+  "cnt": [
+   "You can count this one, so it takes an indefinite article, not a partitive.",
+   "Countable → un / une / des."
+  ],
+  "fix": [
+   "A fixed expression. French pairs these activities and qualities with du / de la — learn each one as a lump.",
+   "faire du · avoir de la · il y a du — mug them up. (jouer is different: jouer DE + instrument.)"
+  ],
+  "gre": [
+   "Gender trap: a final <code>-e</code> tells you nothing. <code>-ure</code> is usually feminine (la confit<b>ure</b>, la voit<b>ure</b>), but other <code>-re</code> nouns must be learned one by one — le su<b>cre</b>, le beu<b>rre</b>, le poi<b>vre</b>, le ve<b>rre</b> are masculine, yet la fenê<b>tre</b> and la le<b>ttre</b> are feminine.",
+   "Learn the article WITH the noun. Only -URE is a safe pattern."
+  ],
+  "t1": [
+   "Subject pronoun agreement.",
+   "One man in the group and ILS wins."
+  ],
+  "t2": [
+   "Noun gender follows the ending.",
+   "-tion / -té / -ette are feminine. -age / -eau / -isme are masculine."
+  ],
+  "t3": [
+   "Plural formation.",
+   "-eau/-eu take X. -al becomes AUX."
+  ],
+  "t4": [
+   "Definite article — 'the', or a thing in general.",
+   "le · la · l' · les"
+  ],
+  "t5": [
+   "Indefinite article — one countable thing.",
+   "un · une · des, and after PAS they all become DE."
+  ]
+ },
+ "TAGNAME": {
+  "m": "du — masculine",
+  "f": "de la — feminine",
+  "v": "de l' — vowel or mute h",
+  "p": "des — plural",
+  "neg": "negation → de / d'",
+  "qty": "quantity word → de",
+  "gen": "aimer / adorer → le / la / les",
+  "ah": "aspirate h blocks elision",
+  "sans": "sans + no article",
+  "twin": "du = 'of the'",
+  "gre": "gender trap: -re vs -ure",
+  "cnt": "countable → un / une",
+  "fix": "fixed expressions",
+  "t1": "subject pronouns",
+  "t2": "noun gender",
+  "t3": "plurals",
+  "t4": "definite articles",
+  "t5": "indefinite articles"
+ }
+}
