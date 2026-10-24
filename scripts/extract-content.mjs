@@ -1,9 +1,9 @@
 // One-off extraction of the question bank and static data from the legacy single-file game.
-// Usage: node scripts/extract-content.mjs [path/to/croissant-quest.html]
+// Usage: node scripts/extract-content.mjs [path/to/legacy.html] (default: tests-legacy/croissant-quest.html, the frozen v18 fixture)
 import fs from "node:fs";
 import vm from "node:vm";
 
-const src = process.argv[2] ?? "croissant-quest.html";
+const src = process.argv[2] ?? "tests-legacy/croissant-quest.html";
 const html = fs.readFileSync(src, "utf8");
 const js = html.match(/<script>([\s\S]*)<\/script>/)?.[1];
 if (!js) throw new Error("no <script> found");

@@ -1,38 +1,43 @@
 # Croissant Quest
 
-A single-file French A1 learning game, focused on partitive articles (du / de la / de l' / des), with
-pronunciation in English phonetics, Gujarati and Devanagari. One HTML file, no build step.
+A French A1 game for partitive articles (du / de la / de l' / des), with pronunciation in English phonetics, Gujarati and
+Devanagari. pnpm monorepo, Node 22, MIT licensed.
 
-- `croissant-quest.html`: the whole game (HTML + CSS + one `<script>`).
-- `docs/audit-prompt.md`: the full-structure audit prompt used to review it, chained across Claude Code skill packs.
+| Folder | What it is |
+|---|---|
+| `apps/web` | **Frontend**: Next.js (App Router). Map, rounds, why-cards, results, settings. Calls the API only over HTTP (`/v1/*`, forwarded by Next). |
+| `apps/api` | **Backend**: NestJS + Prisma + Postgres 16. Questions, progress (versioned saves), coach (Anthropic, optional), health. |
+| `packages/shared` | Pure game rules and the HTTP contract (zod), used by both apps. |
+| `packages/content` | The 246-question bank as validated JSON, rule text, pronunciation data. |
+| `infra/` | `docker-compose.yml` (Postgres, API, web) and `.env.example`. |
+| `tests-legacy/` | The original single-file game (v18) as a frozen fixture and its 69 tests; `scripts/parity-report.mjs` maps each to the port. |
 
-## Running it
+## Run it in 5 minutes
+Prerequisites: Node 22, `corepack enable` (pnpm 10), Postgres 16 (local or Docker).
+```bash
+pnpm install --frozen-lockfile
+export DATABASE_URL=postgresql://cq:cq@localhost:5432/cq   # a database you own
+pnpm --filter @cq/api db:migrate && pnpm --filter @cq/api db:seed
+pnpm dev                                                    # api on :3001, web on :3000
+```
+Open http://localhost:3000. Without `ANTHROPIC_API_KEY` the coach falls back to local rounds; everything else works.
 
-The game was written as a Claude artifact and expects two runtime capabilities: `db` (save state) and `sample`
-(AI question generation and coaching). Without them it falls back to `localStorage` and the built-in question bank.
-Open the file in a browser, or publish it as an artifact with `db` and `sample` enabled.
+With Docker: `cp infra/.env.example infra/.env` (set `POSTGRES_PASSWORD`), then
+`docker compose -f infra/docker-compose.yml --env-file infra/.env up --build`. Temporary public demos: `docs/DEMO-HOSTING.md`.
 
 ## Tests
-
+```bash
+pnpm lint && pnpm typecheck && pnpm test                    # unit tests, all packages
+pnpm --filter @cq/api test:e2e                              # needs DATABASE_URL (creates its own cq_test)
+pnpm --filter @cq/web test:e2e                              # Playwright + axe against a fake API
+pnpm --filter @cq/web test:e2e:real                         # Playwright against the real API on Postgres
+node tests-legacy/C-behave.js && node tests-legacy/fixes.js && node scripts/parity-report.mjs
 ```
-cd tests
-node C-behave.js    # 49 behaviour tests: answering, saving, quitting, round building
-node fixes.js       # 20 regression tests for the audit fixes
-```
+CI (`.github/workflows/ci.yml`) runs all of the above.
 
-They run the page's `<script>` in node with a stubbed DOM, `localStorage` and artifact runtime. No dependencies.
-
-## Audit
-
-`docs/AUDIT-REPORT.md` is the ranked list of 21 findings from a full audit of v18. Items 1-10 are fixed on this
-branch; the rest are open:
-
-- Repeat cap is not enforced when Claude is offline, and topics 1-5 have no cap (11).
-- Accessibility: focus management, dialog semantics, live regions, 44px tap targets, long results screen (12-13).
-- Database-sourced text reaches `innerHTML` unescaped (14).
-- Several exception questions lack their own rule text (15); light-theme contrast (16).
-- Two simultaneous tabs or devices merge to the larger counters rather than adding up.
+## Docs
+`AGENTS.md` (rules for contributors and agents), `docs/RUNBOOK.md` (state and release gate), `docs/adr/` (decisions),
+`docs/GLOSSARY.md`, `docs/PARITY.md`, `docs/audit/` (latest audit and fix plan), `docs/GITHUB-SETTINGS.md`.
 
 ## License
-
 MIT, see `LICENSE`.

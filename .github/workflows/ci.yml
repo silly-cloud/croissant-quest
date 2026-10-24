@@ -39,6 +39,13 @@ jobs:
       - run: pnpm typecheck
       - name: Unit tests and question-bank validation (packages, api)
         run: pnpm -r --filter "!@cq/web" test
+      - name: Legacy suite and parity gate (69 legacy tests mapped)
+        run: |
+          node tests-legacy/C-behave.js
+          node tests-legacy/fixes.js
+          node scripts/parity-report.mjs
+      - name: Guardrail hook tests
+        run: bash .claude/hooks/test-guardrails.sh
       - name: Web unit tests
         run: pnpm --filter @cq/web --fail-if-no-match test
       - name: API end-to-end (real Postgres)

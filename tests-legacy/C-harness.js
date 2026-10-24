@@ -5,7 +5,7 @@
 // Returns a handle exposing page internals (S, R, BANK, functions) via an
 // accessor block appended INSIDE the script (so top-level let/const are visible).
 const fs = require("fs"), vm = require("vm"), path = require("path");
-const ORIG = path.join(__dirname, "..", "croissant-quest.html");
+const ORIG = path.join(__dirname, "croissant-quest.html");
 
 function mkNode(sel) {
   const n = {
