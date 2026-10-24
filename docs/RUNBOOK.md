@@ -9,7 +9,7 @@ Do not open/merge a PR, publish the artifact, delete branches, or remove `croiss
 | 0 audit + cleanup | DONE, pushed | AUDIT-REPORT-2; `tests-legacy` 49 + 20 pass |
 | 1 shared + content | DONE, pushed, reviewed (ponytail-review) | shared 47 tests, content 5 |
 | contract | DONE (`packages/shared/src/contract.ts`, + `QuestionsResponse`) | typecheck clean |
-| 2 api | DONE, merged (eaf8e84), re-verified by me | unit 23, e2e 31 on real Postgres; read-only review running (agent aa41195f…) |
+| 2 api | DONE + merged (eaf8e84), re-verified; REVIEWED: 3 Must + 13 Should found (`docs/reviews/lane2-api-review.md`), fix agent running in its own worktree (apps/api + shared state only) | unit 23, e2e 31 before fixes |
 | 3 web | IN PROGRESS: one write agent in its own worktree (started from 080abcf, folder `apps/web` only) | report pending |
 | 4 infra | PARTLY: `infra/docker-compose.yml`, `.env.example`, `.github/workflows/ci.yml`, AGENTS.md, GLOSSARY done. TODO: Dockerfiles, README run-in-5-minutes, CI parity check, HTML removal (after parity gate), final reports | compose/CI not yet run |
 
