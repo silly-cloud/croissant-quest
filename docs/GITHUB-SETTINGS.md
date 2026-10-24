@@ -2,6 +2,18 @@
 
 What I could read (2026-10-24, GitHub MCP `list_branches`): **every branch reports `protected: false`, including `main`**. `main` has no `.github/` directory (CI exists only on `claude/nest-next-rebuild`). I could not read rulesets, Actions permissions, secret scanning, Dependabot or signed-commit settings: the tools available here do not expose repository settings. Everything below marked "check" is UNVERIFIED.
 
+## 0. One command (from your own machine, logged in with `gh auth login` as an admin of the repo)
+```bash
+gh api -X POST repos/silly-cloud/croissant-quest/rulesets --input - <<'JSON'
+{"name":"protect-main","target":"branch","enforcement":"active",
+ "conditions":{"ref_name":{"include":["~DEFAULT_BRANCH"],"exclude":[]}},
+ "rules":[{"type":"deletion"},{"type":"non_fast_forward"},
+  {"type":"required_status_checks","parameters":{"strict_required_status_checks_policy":false,
+   "required_status_checks":[{"context":"check"}]}}]}
+JSON
+```
+Checked from this session: `GET /rulesets` = `[]` (no rulesets yet); the `POST` above is refused here by the session's proxy (403), so it must be run by you. Add "Require a pull request" in the UI afterwards if you want it (no approval count is needed for a solo repo).
+
 ## 1. Protect `main` (Settings → Rules → Rulesets → New branch ruleset)
 - [ ] Target: `main` (Include default branch). Enforcement: **Active**.
 - [ ] Restrict deletions.
