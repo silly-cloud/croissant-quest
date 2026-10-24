@@ -67,6 +67,14 @@ describe("health, questions, cors", () => {
   });
 });
 
+/** The coach needs an established device: GET /v1/progress first (ADR 0009). */
+const dev = async (t: TestApp, xff?: string) => {
+  const a = request.agent(t.app.getHttpServer());
+  const g = a.get("/v1/progress");
+  await (xff ? g.set("X-Forwarded-For", xff) : g).expect(200);
+  return a;
+};
+
 describe("coach over HTTP", () => {
   const goodRows = [
     { s: "Paul coupe ___ pain frais.", a: "du", o: ["du", "de la", "de l'", "des"], tag: "m", en: "x" },
@@ -81,7 +89,7 @@ describe("coach over HTTP", () => {
       coachClient: { complete: async () => JSON.stringify(goodRows) },
     });
     try {
-      const r = await request(t.app.getHttpServer()).post("/v1/coach/round").send({ n: 8 }).expect(200);
+      const r = await (await dev(t)).post("/v1/coach/round").send({ n: 8 }).expect(200);
       expect(r.body.fallback).toBe(false);
       expect(r.body.questions).toHaveLength(4);
       expect(r.body.questions[0]).toMatchObject({ _ai: true, t: 6, tier: 3, k: "choice" });
@@ -106,8 +114,8 @@ describe("coach over HTTP", () => {
     Logger.overrideLogger({ log: sink, error: sink, warn: sink, debug: sink, verbose: sink, fatal: sink });
     try {
       const bodies = [
-        await request(t.app.getHttpServer()).post("/v1/coach/round").send({}),
-        await request(t.app.getHttpServer()).post("/v1/coach/explain").send({ qid: qid(BANK[0]!), gave: "x" }),
+        await (await dev(t)).post("/v1/coach/round").send({}),
+        await (await dev(t)).post("/v1/coach/explain").send({ qid: qid(BANK[0]!), gave: "x" }),
       ];
       for (const r of bodies) {
         expect(r.status).toBe(200);
@@ -124,7 +132,7 @@ describe("coach over HTTP", () => {
   it("round without a key: fallback no_key", async () => {
     const t = await makeApp({ coachClient: null });
     try {
-      const r = await request(t.app.getHttpServer()).post("/v1/coach/round").send({}).expect(200);
+      const r = await (await dev(t)).post("/v1/coach/round").send({}).expect(200);
       expect(r.body).toEqual({ fallback: true, reason: "no_key" });
     } finally {
       await t.close();
@@ -134,7 +142,7 @@ describe("coach over HTTP", () => {
   it("round with a real (keyless) env builds no client and makes no network call", async () => {
     const t = await makeApp({ env: { ANTHROPIC_API_KEY: "" } });
     try {
-      const r = await request(t.app.getHttpServer()).post("/v1/coach/round").send({}).expect(200);
+      const r = await (await dev(t)).post("/v1/coach/round").send({}).expect(200);
       expect(r.body).toEqual({ fallback: true, reason: "no_key" });
     } finally {
       await t.close();
@@ -144,7 +152,7 @@ describe("coach over HTTP", () => {
   it("round: body validation -> 400 with issues", async () => {
     const t = await makeApp({ coachClient: null });
     try {
-      const r = await request(t.app.getHttpServer()).post("/v1/coach/round").send({ n: 99 }).expect(400);
+      const r = await (await dev(t)).post("/v1/coach/round").send({ n: 99 }).expect(400);
       expect(r.body.issues).toBeInstanceOf(Array);
     } finally {
       await t.close();
@@ -155,7 +163,7 @@ describe("coach over HTTP", () => {
     const q = BANK.find((x) => x.k === "type")!;
     const t = await makeApp({ coachClient: { complete: async () => "Line one.\nLine two." } });
     try {
-      const r = await request(t.app.getHttpServer()).post("/v1/coach/explain").send({ qid: qid(q), gave: "du" }).expect(200);
+      const r = await (await dev(t)).post("/v1/coach/explain").send({ qid: qid(q), gave: "du" }).expect(200);
       expect(r.body).toEqual({ fallback: false, text: "Line one.\nLine two." });
     } finally {
       await t.close();
@@ -177,19 +185,19 @@ describe("coach over HTTP", () => {
     }
   });
 
-  it("1000 cookieless calls cannot exceed the limit and create no users", async () => {
-    const t = await makeApp({ coachClient: null, coach: { rateLimit: { limit: 5, windowMs: 60_000 } } });
+  it("1000 cookieless calls are all 401 no_device and create no users", async () => {
+    const t = await makeApp({ coachClient: null });
     try {
       const before = await t.prisma.user.count();
-      let ok = 0;
       for (let i = 0; i < 1000; i += 50) {
         const rs = await Promise.all(
           Array.from({ length: 50 }, () => request(t.app.getHttpServer()).post("/v1/coach/round").send({})),
         );
-        ok += rs.filter((r) => r.status === 200).length;
-        for (const r of rs) expect(r.headers["set-cookie"]).toBeUndefined();
+        for (const r of rs) {
+          expect(r.status).toBe(401);
+          expect(r.headers["set-cookie"]).toBeUndefined();
+        }
       }
-      expect(ok).toBe(5);
       expect(await t.prisma.user.count()).toBe(before);
     } finally {
       await t.close();
@@ -213,17 +221,19 @@ describe("coach over HTTP", () => {
   });
 
   it("client IP keys the limiter; X-Forwarded-For counts only with TRUST_PROXY_HOPS > 0", async () => {
-    const lim = { rateLimit: { limit: 2, windowMs: 60_000 } };
-    const direct = await makeApp({ coachClient: null, coach: lim });
-    const proxied = await makeApp({ coachClient: null, env: { TRUST_PROXY_HOPS: "1" }, coach: lim });
+    const env = { COACH_IP_PER_MIN: "2" };
+    const direct = await makeApp({ coachClient: null, env });
+    const proxied = await makeApp({ coachClient: null, env: { ...env, TRUST_PROXY_HOPS: "1" } });
     try {
       const run = async (t: TestApp) => {
         const codes: number[] = [];
-        for (let i = 0; i < 4; i++)
-          codes.push((await request(t.app.getHttpServer()).post("/v1/coach/round").set("X-Forwarded-For", `9.9.9.${i}`).send({})).status);
+        for (let i = 0; i < 4; i++) {
+          const ip = `9.9.9.${i}`;
+          codes.push((await (await dev(t, ip)).post("/v1/coach/round").set("X-Forwarded-For", ip).send({})).status);
+        }
         return codes;
       };
-      expect(await run(direct)).toEqual([200, 200, 429, 429]); // spoofed header ignored
+      expect(await run(direct)).toEqual([200, 200, 429, 429]); // spoofed header ignored: one IP
       expect(await run(proxied)).toEqual([200, 200, 200, 200]); // each forwarded client has its own bucket
     } finally {
       await direct.close();

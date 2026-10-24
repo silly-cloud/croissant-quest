@@ -119,7 +119,7 @@ describe("progress", () => {
 
   it("stores xp and streak columns", async () => {
     const a = await fresh();
-    await save(a, 0, { xp: 123, streak: 4, ts: 5 }).expect(200);
+    await save(a, 0, { xp: 123, streak: 4, last: new Date().toISOString().slice(0, 10), ts: 5 }).expect(200);
     const row = await t.prisma.progress.findFirstOrThrow({ where: { xp: 123 } });
     expect(row.streak).toBe(4);
   });

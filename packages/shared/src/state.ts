@@ -60,9 +60,24 @@ const countMap = (x: unknown, max: number, keep: (k: string) => boolean): Record
   }
   return r;
 };
-/** Truncate by characters (code points), so an emoji is never cut in half. */
-const str = (x: unknown, max: number) =>
-  typeof x !== "string" ? "" : x.length <= max ? x : Array.from(x).slice(0, max).join("");
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+/**
+ * Truncate by characters (code points), so an emoji is never cut in half. The result is always
+ * well-formed (a lone surrogate from a client that sliced UTF-16 units becomes U+FFFD) and has no
+ * U+0000: Postgres jsonb rejects both, which would fail the whole save.
+ */
+const str = (x: unknown, max: number) => {
+  if (typeof x !== "string") return "";
+  const clean = x.replace(/\u0000/g, "").replace(LONE_SURROGATE, "\uFFFD");
+  return clean.length <= max ? clean : Array.from(clean).slice(0, max).join("");
+};
+/** A real calendar date as YYYY-MM-DD, else null (any other string would win every `last` compare). */
+export function isoDay(x: unknown): string | null {
+  if (typeof x !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(x)) return null;
+  const [y, m, d] = x.split("-").map(Number) as [number, number, number];
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d ? x : null;
+}
 const LOG_MAX = 500, FEELLOG_MAX = 20;
 /** Keep only the known fields of a log entry, with capped lengths: these reach the UI and the db. */
 const cleanLog = (e: unknown): LogEntry | null => {
@@ -87,7 +102,7 @@ export function normState(v: unknown, knownQids?: Set<string>): State {
   const o = emptyState();
   for (const k of COUNTERS) o[k] = counter(src[k]);
   o.ts = num(src.ts);
-  o.last = typeof src.last === "string" ? src.last : null;
+  o.last = isoDay(src.last);
   const known = (k: string) => !knownQids || knownQids.has(k);
   o.crowns = countMap(src.crowns, CROWNS_MAX, (k) => TOPIC_IDS.has(k));
   o.wrong = countMap(src.wrong, MAP_MAX, known);
@@ -148,7 +163,8 @@ export function mergeStates(a: State, b: State): State {
 
 /** Count one answer against its rule tag (mutates `s`). */
 export function noteAnswer(s: State, tag: string | undefined, ok: boolean): void {
-  if (!tag) return;
+  // only real rules: a name like "toString" would read (and mutate) Object.prototype
+  if (!tag || !Object.hasOwn(TAG, tag)) return;
   const h = s.hist[tag] ?? [0, 0];
   h[ok ? 0 : 1]++;
   s.hist[tag] = h;

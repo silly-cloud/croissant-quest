@@ -7,12 +7,14 @@ import {
 } from "@cq/shared";
 import type { DeviceRequest } from "../device/device.guard.js";
 import { ZodPipe } from "../../common/zod.pipe.js";
-import { OptionalDeviceGuard } from "../device/device.guard.js";
+import { RequireDeviceGuard } from "../device/device.guard.js";
+import { SameOriginJsonGuard } from "../../common/same-origin.guard.js";
 import { CoachService } from "./coach.service.js";
 import { CoachRateLimitGuard } from "./rate-limit.guard.js";
 
 @Controller("coach")
-@UseGuards(OptionalDeviceGuard, CoachRateLimitGuard)
+// order: same origin + JSON (403/415), then an established device (401), then quotas (429)
+@UseGuards(SameOriginJsonGuard, RequireDeviceGuard, CoachRateLimitGuard)
 export class CoachController {
   constructor(@Inject(CoachService) private readonly coach: CoachService) {}
 

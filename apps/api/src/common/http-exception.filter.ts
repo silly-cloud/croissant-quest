@@ -1,6 +1,12 @@
 import { Catch, HttpException, Logger, type ArgumentsHost, type ExceptionFilter } from "@nestjs/common";
 import type { Response } from "express";
 
+/** 22021 invalid byte sequence (NUL), 22P05 unsupported unicode escape, 22P02 invalid json input. */
+const INVALID_TEXT = new Set(["22021", "22P05", "22P02"]);
+const pgCode = (err: unknown): unknown =>
+  (err as { meta?: { driverAdapterError?: { cause?: { originalCode?: unknown } } } } | null)?.meta?.driverAdapterError?.cause
+    ?.originalCode;
+
 /**
  * One error shape for everything: HttpExceptions keep their body, body-parser errors (bad JSON,
  * too large) become a plain 4xx, anything else is a 500 with no detail. Stack traces and error
@@ -26,6 +32,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // body-parser: entity.too.large, entity.parse.failed, ...
       const message = status === 413 ? "Payload too large" : "Malformed request body";
       res.status(status).json({ statusCode: status, error: message, message });
+      return;
+    }
+
+    // Postgres refused text in the request (NUL, invalid unicode, bad json): the client's fault, not ours
+    if (INVALID_TEXT.has(String(pgCode(err)))) {
+      res.status(400).json({ statusCode: 400, error: "Bad Request", message: "Invalid text in request" });
       return;
     }
 

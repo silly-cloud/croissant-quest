@@ -17,7 +17,7 @@ export function shuffle<T>(a: readonly T[], rng: Rng = Math.random): T[] {
 export function weakTag(s: State): string | null {
   let worst: string | null = null, wa = 1;
   for (const k of Object.keys(s.hist)) {
-    if (!TAG[k]) continue;
+    if (!Object.hasOwn(TAG, k)) continue;
     const h = s.hist[k]!, n = h[0] + h[1];
     if (n < 3) continue;
     const a = h[0] / n;
@@ -30,7 +30,7 @@ export function weakTag(s: State): string | null {
 export function ruleSplit(s: State): { strong: string[]; weak: string[] } {
   const strong: string[] = [], weak: string[] = [];
   for (const k of Object.keys(s.hist)) {
-    if (!TAG[k]) continue;
+    if (!Object.hasOwn(TAG, k)) continue;
     const h = s.hist[k]!, n = h[0] + h[1];
     if (n < 2) continue;
     (h[0] / n >= 0.9 ? strong : weak).push(k);
@@ -71,12 +71,12 @@ export function pickQuestions(
     }
     const nHard = s.calib === "harder" ? 4 : s.calib === "more" ? 1 : 3;
     const hard = drawFrom(bank.filter((q) => strong.includes(q.tag) && (q.tier >= 4 || q.k !== "choice")), nHard);
-    const missed = Object.keys(s.wrong).sort((a, b) => (s.wrong[b] ?? 0) - (s.wrong[a] ?? 0));
+    const missed = new Set(Object.keys(s.wrong)); // drawFrom shuffles, so no order here
     const out: Question[] = [];
     const push = (q: Question) => { if (!out.includes(q) && out.length < 8) out.push(q); };
     hard.forEach(push);
-    drawFrom(bank.filter((q) => missed.includes(qid(q))), 8).forEach(push);
-    drawFrom(bank.filter((q) => weak.includes(q.tag) && !missed.includes(qid(q))), 8).forEach(push);
+    drawFrom(bank.filter((q) => missed.has(qid(q))), 8).forEach(push);
+    drawFrom(bank.filter((q) => weak.includes(q.tag) && !missed.has(qid(q))), 8).forEach(push);
     return shuffle(topUp(out, 6), rng);
   }
 

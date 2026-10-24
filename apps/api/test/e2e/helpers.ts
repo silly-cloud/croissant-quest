@@ -24,6 +24,11 @@ export async function makeApp(
   const env = loadEnv({
     DATABASE_URL: testDatabaseUrl(),
     WEB_ORIGIN: "http://localhost:3000",
+    // the suites create many devices and coach calls from 127.0.0.1; abuse.e2e.ts restores the real defaults
+    DEVICE_CREATE_PER_IP_PER_HOUR: "100000",
+    COACH_IP_PER_MIN: "100000",
+    COACH_DEVICE_PER_DAY: "100000",
+    COACH_GLOBAL_PER_DAY: "100000",
     ...opts.env,
   });
   let mb = Test.createTestingModule({ imports: [AppModule] })
