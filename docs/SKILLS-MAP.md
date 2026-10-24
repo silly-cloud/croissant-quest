@@ -16,10 +16,26 @@ A skill is marked **used** only when it was invoked and its output was kept. Upd
 Name notes: `mattpocock-grilling` and `mattpocock-grill-me`/`-grill-with-docs` exist; there is no skill literally called `grilling`
 elsewhere. Task names in the brief map as: grilling → `mattpocock-grilling`; code-review → `mattpocock-code-review`; pr → `mattpocock-pr`.
 
-## Uses
+## Invocable by me vs slash-only
+
+Invocable in this session (appear in the Skill tool list): all 15 superpowers, all 6 ponytail, 15 mattpocock
+(code-review, codebase-design, diagnosing-bugs, domain-modeling, git-guardrails-claude-code, grilling, migrate-to-shoehorn, pr, prototype, research,
+scaffold-exercises, setup-pre-commit, tdd, wizard, writing-for-agents), the caveman/cavecrew set, and `pstack-setup-pstack`.
+Slash-only / N/A (installed but not in my list): 16 mattpocock skills (ask-matt, grill-me, grill-with-docs, handoff, implement, implement-spec,
+improve-codebase-architecture, retro, setup-matt-pocock-skills, teach, to-questionnaire, to-spec, to-tickets, triage, wait-what, wayfinder),
+about 59 pstack skills, and caveman `megacave`/`ultracave`. The pstack review/challenge/tickets phases therefore ran through the invocable
+equivalents (ponytail-review, mattpocock-code-review via agents, superpowers-requesting-code-review) and are marked as such below.
+
+## Uses (invoked, output kept)
 
 | Skill | Phase | Outcome |
 |---|---|---|
 | superpowers-using-superpowers | start | invoked; skills-first rule followed |
-| ponytail-audit | A | invoked; report in docs/AUDIT-REPORT-2.md |
+| ponytail-audit | A | invoked; method applied in docs/AUDIT-REPORT-2.md (via two read-only agents) |
 | graphify (CLI) | A | `graphify update` on the extracted game script: 111 nodes, 257 edges, 10 communities (`docs/GRAPH_REPORT-legacy-html.md`) |
+| superpowers-brainstorming | B | invoked; its gate was met by the owner's approved plan and kickoff brief, short design doc in `docs/superpowers/specs/` (no builder-check subagent was run) |
+| superpowers-writing-plans | B | invoked; `docs/PLAN.md` (written at `docs/PLAN.md` per the owner's path) |
+| superpowers-subagent-driven-development | C | invoked; adapted: two write agents ran in parallel in separate worktrees on disjoint folders (the skill advises against parallel implementers; the brief asked for it). Ledger and per-task reviewers were NOT run; one reviewer per lane instead |
+| ponytail-review | C | Lane 1 reviewed: `docs/reviews/lane1-ponytail-review.md` (one fix applied) |
+
+Not yet used: superpowers tdd/verification-before-completion/finishing-a-development-branch, mattpocock-pr/code-review/domain-modeling, caveman-review. Entries are added when they are really invoked.
