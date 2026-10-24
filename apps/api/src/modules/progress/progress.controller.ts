@@ -14,6 +14,7 @@ import {
 import { PutProgressBody, type ProgressResponse } from "@cq/shared";
 import { ZodPipe } from "../../common/zod.pipe.js";
 import { DeviceGuard, RequireDeviceGuard, UserId } from "../device/device.guard.js";
+import { SameOriginJsonGuard } from "../../common/same-origin.guard.js";
 import { ProgressService } from "./progress.service.js";
 
 /** `If-Match: 3`, `"3"` or `W/"3"` -> 3. */
@@ -29,7 +30,6 @@ export function parseIfMatch(raw: string | undefined): number {
   return Number(m[1]);
 }
 
-
 @Controller("progress")
 export class ProgressController {
   constructor(@Inject(ProgressService) private readonly progress: ProgressService) {}
@@ -43,7 +43,7 @@ export class ProgressController {
   }
 
   @Put()
-  @UseGuards(RequireDeviceGuard)
+  @UseGuards(SameOriginJsonGuard, RequireDeviceGuard)
   @HttpCode(200)
   @Header("Cache-Control", "no-store")
   put(

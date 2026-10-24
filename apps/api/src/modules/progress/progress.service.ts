@@ -23,6 +23,19 @@ export function clampTs(ts: number, now: number): number {
   return ts > 0 ? Math.min(ts, now + TS_SKEW_MS) : now;
 }
 
+const DAY_MS = 86_400_000;
+/**
+ * `last` may be at most server-today (UTC) + 1 day (the furthest any time zone is ahead). A later
+ * one, or none, takes its streak with it: the pair is one fact (ADR 0006), so the server's pair wins.
+ */
+export function boundLast(s: State, now: number): void {
+  const latest = new Date(now + DAY_MS).toISOString().slice(0, 10);
+  if (!s.last || s.last > latest) {
+    s.last = null;
+    s.streak = 0;
+  }
+}
+
 @Injectable()
 export class ProgressService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -41,6 +54,7 @@ export class ProgressService {
   async put(userId: string, ifMatch: number, incoming: unknown, now = Date.now()): Promise<ProgressResponse> {
     const mine = normState(incoming, KNOWN_QIDS);
     mine.ts = clampTs(mine.ts, now);
+    boundLast(mine, now);
     const outcome = await this.prisma.$transaction(async (tx) => {
       await tx.progress.createMany({
         data: [{ userId, state: normState({}) as unknown as Prisma.InputJsonObject, version: 0 }],
