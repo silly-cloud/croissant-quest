@@ -57,6 +57,18 @@ export const EnvSchema = z
         "must be an http(s) URL"
       )
       .transform((v) => new URL(v).origin),
+    /**
+     * Controlled phone test only (claude-cli): the one browser origin and the one client IPv4 allowed besides
+     * this computer. Both or neither. The firewall is the real gate; this makes the app agree with it.
+     */
+    PUBLIC_TEST_ORIGIN: z.preprocess(unsetIfEmpty, z.string().url().optional()),
+    PUBLIC_TEST_CLIENT_IP: z.preprocess(
+      unsetIfEmpty,
+      z
+        .string()
+        .regex(/^(\d{1,3}\.){3}\d{1,3}$/, "must be one IPv4 address")
+        .optional()
+    ),
     /** Defaults to true in production. The cookie only reaches the API from the same site (see README). */
     COOKIE_SECURE: z.preprocess(
       unsetIfEmpty,
@@ -93,7 +105,20 @@ export const EnvSchema = z
       );
     if (e.HOST !== undefined && !LOOPBACK_HOSTS.has(e.HOST))
       bad("HOST", "must be 127.0.0.1 or ::1 with COACH_PROVIDER=claude-cli");
-    if (!LOCAL_NAMES.has(new URL(e.WEB_ORIGIN).hostname))
+    if (
+      (e.PUBLIC_TEST_ORIGIN === undefined) !==
+      (e.PUBLIC_TEST_CLIENT_IP === undefined)
+    )
+      bad(
+        "PUBLIC_TEST_ORIGIN",
+        "PUBLIC_TEST_ORIGIN and PUBLIC_TEST_CLIENT_IP must be set together"
+      );
+    const publicOrigin =
+      e.PUBLIC_TEST_ORIGIN && new URL(e.PUBLIC_TEST_ORIGIN).origin;
+    if (
+      !LOCAL_NAMES.has(new URL(e.WEB_ORIGIN).hostname) &&
+      e.WEB_ORIGIN !== publicOrigin
+    )
       bad(
         "WEB_ORIGIN",
         "must be http://localhost:<port> or http://127.0.0.1:<port> with COACH_PROVIDER=claude-cli"

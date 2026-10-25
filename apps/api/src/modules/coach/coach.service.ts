@@ -58,6 +58,9 @@ export class CoachService {
 
     const rows = extractJsonArray(res.text);
     const questions = rows ? validateRound(rows, n) : [];
+    this.log.log(
+      `round: ${rows?.length ?? "no"} rows from the model, ${questions.length} valid`
+    );
     if (questions.length < MIN_VALID)
       return { fallback: true, reason: "invalid" };
     return { fallback: false, questions };

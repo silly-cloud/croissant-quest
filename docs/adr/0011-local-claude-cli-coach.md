@@ -43,3 +43,10 @@ provider is unchanged.
 - Tests: `apps/api/test/unit/coach.cli-client.test.ts` (a fake CLI per scenario) and
   `apps/api/test/unit/local-only.test.ts` (env refusals, the guard, and real sockets over the LAN address).
   The real-subscription check is `scripts/smoke-local-coach.sh`, run on the owner's machine.
+
+## Amendment 2026-10-25: controlled phone test
+
+Owner-chosen exception to "local only", off unless both `PUBLIC_TEST_ORIGIN` and `PUBLIC_TEST_CLIENT_IP` are
+set. `WEB_ORIGIN` may then equal that one origin, and `makeLocalOnly` also admits that exact
+`X-Forwarded-Host` and that one client IP. `HOST` stays loopback and the peer must still be loopback; a TLS
+proxy plus a firewall rule for that single IP are the real gate. Unset both after the test.

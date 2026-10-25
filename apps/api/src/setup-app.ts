@@ -60,34 +60,55 @@ const headerList = (v: string | string[] | undefined) =>
  * Host (plus any X-Forwarded-Host/-For a local Next.js proxy adds) must name this machine, which also stops
  * DNS rebinding. Anything else gets a bare 403 before any other middleware runs.
  */
-export function localOnly(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  const ok =
-    isLoopbackAddr(req.socket.remoteAddress ?? "") &&
-    req.headers.host !== undefined &&
-    isLocalHost(req.headers.host) &&
-    headerList(req.headers["x-forwarded-host"]).every(isLocalHost) &&
-    headerList(req.headers["x-forwarded-for"]).every(isLoopbackAddr);
-  if (ok) return next();
-  res.status(403).json({
-    statusCode: 403,
-    error: "local_only",
-    message: "This app only answers on this computer",
-  });
+export const localOnly = makeLocalOnly();
+
+/**
+ * `extra` (phone test, PUBLIC_TEST_*): the Next.js proxy on this computer may forward one exact public
+ * Host and one exact client IP. The peer must still be loopback; the firewall admits only that IP.
+ */
+export function makeLocalOnly(extra?: { host: string; ip: string }) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const ok =
+      isLoopbackAddr(req.socket.remoteAddress ?? "") &&
+      req.headers.host !== undefined &&
+      isLocalHost(req.headers.host) &&
+      headerList(req.headers["x-forwarded-host"]).every(
+        (h) => isLocalHost(h) || h === extra?.host
+      ) &&
+      headerList(req.headers["x-forwarded-for"]).every(
+        (a) => isLoopbackAddr(a) || a === extra?.ip
+      );
+    if (ok) return next();
+    res.status(403).json({
+      statusCode: 403,
+      error: "local_only",
+      message: "This app only answers on this computer",
+    });
+  };
 }
 
 /** Everything main.ts and the e2e tests share. */
 export function setupApp(
   app: INestApplication,
   env: Pick<Env, "WEB_ORIGIN" | "TRUST_PROXY_HOPS"> &
-    Partial<Pick<Env, "COACH_PROVIDER">>
+    Partial<
+      Pick<
+        Env,
+        "COACH_PROVIDER" | "PUBLIC_TEST_ORIGIN" | "PUBLIC_TEST_CLIENT_IP"
+      >
+    >
 ): void {
   const webOrigin = env.WEB_ORIGIN;
   const express = app as NestExpressApplication;
-  if (env.COACH_PROVIDER === "claude-cli") app.use(localOnly);
+  if (env.COACH_PROVIDER === "claude-cli")
+    app.use(
+      env.PUBLIC_TEST_ORIGIN && env.PUBLIC_TEST_CLIENT_IP
+        ? makeLocalOnly({
+            host: new URL(env.PUBLIC_TEST_ORIGIN).host,
+            ip: env.PUBLIC_TEST_CLIENT_IP,
+          })
+        : localOnly
+    );
   app.setGlobalPrefix(API_PREFIX.replace(/^\//, ""));
   express.disable("x-powered-by");
   // Express's weak ETag on /v1/progress is not the save version and only confuses If-Match; questions sets its own
