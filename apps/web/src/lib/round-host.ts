@@ -52,9 +52,9 @@ export const EMPTY_NOTE =
   "You've used every question 3 times. Come back after a break.";
 export const FALLBACK_NOTE =
   "Claude couldn't write them this time, so this drill comes from your own mistakes.";
-/** The local Claude Code CLI coach (ADR 0011) is signed out, or its subscription limit is reached. */
+/** The Claude Code CLI coach is signed out, or its subscription limit is reached. */
 export const LOGIN_NOTE =
-  "Claude Code is signed out on this computer: run `claude` in a terminal and type /login. Meanwhile, this drill comes from your own mistakes.";
+  "Claude Code is signed out on the computer running the app: run `claude` in a terminal and type /login. Meanwhile, this drill comes from your own mistakes.";
 export const LIMIT_NOTE =
   "Your Claude plan's usage limit is reached (run `claude` to see when it resets). Meanwhile, this drill comes from your own mistakes.";
 const fallbackNote = (r: CoachFallbackReason | null) =>

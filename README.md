@@ -25,7 +25,7 @@ pnpm dev                                                    # api on :3001, web 
 
 Open http://localhost:3000. Without `ANTHROPIC_API_KEY` the coach falls back to local rounds; everything else works.
 
-**Coach with your Claude subscription, on your own computer, no API key:** sign in to Claude Code (`claude`),
+**Coach with your Claude subscription, no API key:** sign in to Claude Code (`claude`),
 then `pnpm dev:local` and open http://127.0.0.1:3000. Setup, how it works and limits: `docs/LOCAL-CLAUDE-CLI.md`.
 
 With Docker: `cp infra/.env.example infra/.env` (set `POSTGRES_PASSWORD`), then

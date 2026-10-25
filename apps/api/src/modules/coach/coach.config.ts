@@ -8,7 +8,7 @@ export const coachConfig = {
   /** Overall deadline for one coach call, retries included. Below the web app's 30 s, so our fallback arrives first. */
   timeoutMs: 25_000,
   /**
-   * The same deadline for COACH_PROVIDER=claude-cli (ADR 0011). The CLI starts a process and writes the
+   * The same deadline for COACH_PROVIDER=claude-cli. The CLI starts a process and writes the
    * whole round before answering, so the API's 25 s timed out a real 8-question round.
    */
   cliTimeoutMs: 90_000,
@@ -32,7 +32,7 @@ export interface CoachConfig {
   rateLimit: { limit: number; windowMs: number };
 }
 
-/** The config CoachService runs with: the local Claude CLI gets its own, longer deadline (ADR 0011). */
+/** The config CoachService runs with: the local Claude CLI gets its own, longer deadline. */
 export function coachConfigFor(
   provider: "anthropic" | "claude-cli"
 ): CoachConfig {

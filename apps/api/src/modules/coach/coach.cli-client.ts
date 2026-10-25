@@ -11,7 +11,7 @@ import {
 import { coachConfig } from "./coach.config.js";
 
 /**
- * COACH_PROVIDER=claude-cli (ADR 0011): the coach runs the locally installed, unmodified Claude Code CLI in
+ * COACH_PROVIDER=claude-cli: the coach runs the locally installed, unmodified Claude Code CLI in
  * its documented headless mode (`claude -p`). The CLI signs in, refreshes its login and enforces the
  * subscription's limits itself. This file never opens ~/.claude, never sees a token, and never logs or
  * returns what the CLI prints.

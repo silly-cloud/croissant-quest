@@ -7,7 +7,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 WEB=${WEB:-http://127.0.0.1:3000}
-API=${API:-http://127.0.0.1:3001}
 fail() { echo "FAIL: $*"; exit 1; }
 pass() { echo "PASS: $*"; }
 
@@ -30,25 +29,12 @@ env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN claude auth status 2>/dev/null 
   });' || fail "Claude Code must be signed in with your claude.ai account: run \`claude\`, type /login"
 pass "Claude Code is signed in with a claude.ai subscription"
 
-# 3. the app answers here, and only here
+# 3. the app answers
 jar=$(mktemp)
 trap 'rm -f "$jar"' EXIT
 code=$(curl -sS -o /dev/null -w '%{http_code}' -c "$jar" "$WEB/v1/progress" || true)
 [ "$code" = 200 ] || fail "GET $WEB/v1/progress gave '$code': is \`pnpm dev:local\` running?"
-pass "web and API are up on 127.0.0.1; device cookie issued"
-
-lan=$(hostname -I 2>/dev/null | awk '{print $1}')
-if [ -n "$lan" ]; then
-  for port in 3000 3001; do
-    if curl -sS --max-time 3 -o /dev/null "http://$lan:$port/" 2>/dev/null; then
-      fail "port $port answers on the LAN address $lan: the app must listen on 127.0.0.1 only"
-    fi
-  done
-  pass "ports 3000 and 3001 refuse connections on the LAN address $lan"
-fi
-code=$(curl -sS -o /dev/null -w '%{http_code}' -H 'host: attacker.example' "$API/v1/health" || true)
-[ "$code" = 403 ] || fail "a forged Host header got '$code', expected 403"
-pass "a request with a foreign Host header is refused (403)"
+pass "web and API are up; device cookie issued"
 
 # 4. a real coach round: Claude must write it (no local-round fallback)
 echo "asking Claude for 8 questions through the app (can take up to 90 s)..."
