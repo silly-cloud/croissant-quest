@@ -1,0 +1,4 @@
+pnpm exec lint-staged
+if git diff --cached --name-only | grep -qE '\.tsx?$'; then
+  pnpm -r typecheck
+fi

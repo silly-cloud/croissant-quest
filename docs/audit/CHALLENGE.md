@@ -1,0 +1,8 @@
+# Challenge pass (phase 4)
+
+## pstack-sharpen (followed manually), applied to the owner's audit brief
+1. **What a top professional would add that the brief does not ask for:** a threat model with an attacker budget (what one stranger with curl can cost per hour), and a data-loss model per sync scenario (one tab, two tabs, offline phone, clock skew), each stated as "expected vs what the code does", not just a list of findings.
+2. **Rawest material:** the actual HTTP traffic and database rows produced by real runs (lanes D, H and K captured these), and the legacy game's outputs on identical seeded inputs (lane A), instead of the docs' and agents' descriptions of behaviour.
+3. **Methods and tools:** mutation testing on the rules (lane C: 92 mutants), differential testing against the legacy game (lane A: 3025 judge cases, 400 round draws), property-style random interleavings for merge (lane K: 200 steps × 3 seeds), a live browser with axe (lane E), mock tool-call fuzzing of the hook (lane G: 120 attempts).
+4. **What, other than us, shows the result is right:** the tests and probes themselves, re-runnable from the scratch scripts; GitHub CI on a real runner (has never run: UNVERIFIED); the owner's decisions on the DECISION tickets.
+**Sharpened prompt** (what this audit actually tries to answer): "For each way a learner can play (one tab, two tabs, offline then online, wrong clock) and each kind of outsider (curious, hostile with curl, hostile website), say what happens to the learner's progress and to the owner's API bill, with a reproduction, and the smallest change that makes it right." The owner's choices (merge model, identity scope, coach exposure) stay open: see OWNER-QUESTIONS.md.
