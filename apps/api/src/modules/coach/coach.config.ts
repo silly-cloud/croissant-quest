@@ -16,7 +16,7 @@ export const coachConfig = {
   retries: 2,
   /** First backoff; doubles each retry (500 ms, 1 s). */
   backoffMs: 500,
-  maxTokens: { round: 2500, explain: 300 },
+  maxTokens: { round: 8000, explain: 300 },
   /** Per device per window, shared by /coach/round and /coach/explain. Daily, per-IP and global limits are env (ADR 0009). */
   rateLimit: { limit: 10, windowMs: 60_000 },
 } as const;

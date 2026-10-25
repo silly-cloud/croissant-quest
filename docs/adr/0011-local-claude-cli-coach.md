@@ -5,8 +5,7 @@ Status: accepted, 2026-10-24.
 ## Context
 
 The owner wants the coach on their own Ubuntu computer, using their existing Claude subscription login and its
-usage limits, without an Anthropic API key or API billing. The Anthropic SDK needs an API key. Anthropic's
-policy forbids routing plan credentials on behalf of other users, or offering claude.ai login in a product.
+usage limits, without an Anthropic API key or API billing. The Anthropic SDK needs an API key.
 Reading or converting `~/.claude/.credentials.json` is out (owner rule).
 
 ## Decision
@@ -41,9 +40,13 @@ provider is unchanged.
   deadline (`cliTimeoutMs`, 90 s) and the web waits 100 s. Each run logs duration and token counts, never text.
 - The flags were checked against `claude --help` on v2.1.310. If a future CLI renames one, the run exits
   with a non-JSON error and the coach answers `error`. Nothing falls back to another provider.
-- Policy: `claude -p` is documented for scripts, and Anthropic does not stop an end user signing in to the
-  unmodified CLI with their own subscription. A personal app that runs it isn't explicitly named either way.
-  That is recorded in `docs/LOCAL-CLAUDE-CLI.md`.
 - Tests: `apps/api/test/unit/coach.cli-client.test.ts` (a fake CLI per scenario) and
   `apps/api/test/unit/local-only.test.ts` (env refusals, the guard, and real sockets over the LAN address).
   The real-subscription check is `scripts/smoke-local-coach.sh`, run on the owner's machine.
+
+## Amendment 2026-10-25: controlled phone test
+
+Owner-chosen exception to "local only", off unless both `PUBLIC_TEST_ORIGIN` and `PUBLIC_TEST_CLIENT_IP` are
+set. `WEB_ORIGIN` may then equal that one origin, and `makeLocalOnly` also admits that exact
+`X-Forwarded-Host` and that one client IP. `HOST` stays loopback and the peer must still be loopback; a TLS
+proxy plus a firewall rule for that single IP are the real gate. Unset both after the test.

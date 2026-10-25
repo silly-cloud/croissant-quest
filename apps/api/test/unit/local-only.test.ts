@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import { describe, expect, it } from "vitest";
 import { loadEnv } from "../../src/env.js";
-import { localOnly, setupApp } from "../../src/setup-app.js";
+import { localOnly, makeLocalOnly, setupApp } from "../../src/setup-app.js";
 
 const base = { DATABASE_URL: "postgresql://x" };
 const cli = { ...base, COACH_PROVIDER: "claude-cli" };
@@ -177,6 +177,53 @@ describe("localOnly middleware", () => {
       TRUST_PROXY_HOPS: 0,
     });
     expect(calls).not.toContain(localOnly);
+  });
+});
+
+describe("phone test: PUBLIC_TEST_*", () => {
+  const pub = {
+    ...cli,
+    PUBLIC_TEST_ORIGIN: "https://phone-test.example",
+    PUBLIC_TEST_CLIENT_IP: "198.51.100.7",
+    WEB_ORIGIN: "https://phone-test.example",
+  };
+  it("needs both settings, and WEB_ORIGIN only for that exact origin", () => {
+    expect(loadEnv(pub).PUBLIC_TEST_CLIENT_IP).toBe("198.51.100.7");
+    expect(() => loadEnv({ ...pub, PUBLIC_TEST_CLIENT_IP: "" })).toThrow(
+      /set together/
+    );
+    expect(() =>
+      loadEnv({ ...pub, WEB_ORIGIN: "http://1.2.3.4:3000" })
+    ).toThrow(/WEB_ORIGIN/);
+    expect(() => loadEnv({ ...pub, HOST: "0.0.0.0" })).toThrow(/HOST/);
+  });
+  const g = makeLocalOnly({ host: "phone-test.example", ip: "198.51.100.7" });
+  const run = (addr: string, headers: Record<string, string>) => {
+    let status = 200,
+      passed = false;
+    const res = { status: (s: number) => ((status = s), res), json: () => res };
+    g(
+      { socket: { remoteAddress: addr }, headers } as never,
+      res as never,
+      () => (passed = true)
+    );
+    return passed ? 200 : status;
+  };
+  it("admits only the proxied phone request, never another IP, host or peer", () => {
+    const ok = {
+      host: "127.0.0.1:3001",
+      "x-forwarded-host": "phone-test.example",
+      "x-forwarded-for": "198.51.100.7",
+    };
+    expect(run("127.0.0.1", ok)).toBe(200);
+    expect(run("127.0.0.1", { ...ok, "x-forwarded-for": "8.8.8.8" })).toBe(403);
+    expect(
+      run("127.0.0.1", { ...ok, "x-forwarded-for": "198.51.100.7, 8.8.8.8" })
+    ).toBe(403);
+    expect(
+      run("127.0.0.1", { ...ok, "x-forwarded-host": "evil.example:3000" })
+    ).toBe(403);
+    expect(run("198.51.100.7", ok)).toBe(403); // direct to the API: not a loopback peer
   });
 });
 

@@ -88,10 +88,6 @@ round and fails unless Claude wrote it (`fallback: false`). It ends with `ALL PA
 
 ## Limits and what is not promised
 
-- **Policy.** Anthropic documents `claude -p` for scripts, and says it doesn't stop an end user from
-  signing in to the unmodified CLI with their own subscription. Plan limits "assume ordinary, individual
-  usage". No page names "a personal app that runs `claude -p`" as allowed or forbidden. Keep it personal,
-  and don't share access, host it or put it behind a tunnel. If you need certainty, ask Anthropic support.
 - **Billing.** Calls count against your plan's usage limits, not an API bill. The `total_cost_usd` in the CLI's
   JSON is a client-side estimate, not a charge. If you turned on paid extra usage for your plan on claude.ai,
   usage beyond the limit may be charged there: check your claude.ai settings if you want a hard stop.
