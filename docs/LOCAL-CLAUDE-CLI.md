@@ -1,14 +1,14 @@
-# Coach on your own computer, with your Claude subscription (no API key)
+# Coach with your Claude subscription (no API key)
 
 `COACH_PROVIDER=claude-cli` makes the coach run the **Claude Code CLI you installed and signed in to**, in its
 documented headless mode (`claude -p`). Claude Code handles the login, refreshes it, and applies your plan's
 usage limits. The app never reads `~/.claude/.credentials.json`, never sees a token, and needs no
-`ANTHROPIC_API_KEY`. It is for **one person on one computer**: the API and web servers listen on 127.0.0.1
-only and refuse anything else. Decision record: `docs/adr/0011-local-claude-cli-coach.md`.
+`ANTHROPIC_API_KEY`. The CLI runs on the machine that runs the API. Like the `anthropic` provider, it listens
+on whatever `HOST` you set (all interfaces when unset) and answers any client that reaches it.
 
 ## How your subscription is used
 
-1. The browser calls the Next.js server on `127.0.0.1:3000`. Next forwards `/v1/*` to the API on `127.0.0.1:3001`.
+1. The browser calls the Next.js server (port 3000). Next forwards `/v1/*` to the API (port 3001).
 2. The API runs `claude auth status`, the CLI's own report of which login it would use. It reads only
    `loggedIn` and `authMethod`, and refuses to run unless `authMethod` is `claude.ai` (your Pro/Max login).
    An API key, `apiKeyHelper` or cloud provider in the CLI is refused, never used.
@@ -54,13 +54,13 @@ the API refuses to start with either set, and the smoke test checks for them.
 
 ```bash
 cd croissant-quest
-pnpm dev:local        # API on 127.0.0.1:3001 (COACH_PROVIDER=claude-cli), web on 127.0.0.1:3000
+pnpm dev:local        # API on :3001 (COACH_PROVIDER=claude-cli), web on :3000, all interfaces
 ```
 
-`dev:local` sets `COACH_PROVIDER=claude-cli`, `HOST=127.0.0.1` and `WEB_ORIGIN=http://127.0.0.1:3000` itself,
-and they override `apps/api/.env`. Open **http://127.0.0.1:3000** (not `localhost`, so the browser's origin
-matches). The API terminal should say
-`API listening on 127.0.0.1:3001 (coach local Claude Code CLI, claude.ai subscription, this computer only)`.
+`dev:local` sets `COACH_PROVIDER=claude-cli` and `WEB_ORIGIN` (default `http://127.0.0.1:3000`; export
+`WEB_ORIGIN` to change it) itself, and they override `apps/api/.env`. Open the URL that equals `WEB_ORIGIN`
+(e.g. **http://127.0.0.1:3000**, not `localhost`), so the browser's origin matches. The API terminal should say
+`API listening on :3001 (coach local Claude Code CLI, claude.ai subscription)`.
 
 ## Smoke test (real, uses your subscription for one coach round)
 
@@ -70,28 +70,23 @@ With `pnpm dev:local` running, in a second terminal:
 bash scripts/smoke-local-coach.sh
 ```
 
-It checks there's no API key, then `claude auth status` (prints only `loggedIn`/`authMethod`). It then
-confirms the ports refuse your LAN address and a foreign `Host` gets 403. Finally it asks the app for one coach
-round and fails unless Claude wrote it (`fallback: false`). It ends with `ALL PASS`.
+It checks there's no API key, then `claude auth status` (prints only `loggedIn`/`authMethod`). Then it asks
+the app for one coach round and fails unless Claude wrote it (`fallback: false`). It ends with `ALL PASS`.
 
 ## Troubleshooting
 
-| You see                                                                              | Meaning                                                                     | Do                                                                                            |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| "Claude Code is signed out on this computer…" in the app, or `reason=login_required` | the CLI is not signed in, or its login expired                              | run `claude`, type `/login`; no restart needed                                                |
-| "Your Claude plan's usage limit is reached…", or `reason=rate_limited`               | your plan's own limit (e.g. the session or weekly limit)                    | wait; `claude` shows when it resets. The app does not retry                                   |
-| API exits: `ANTHROPIC_API_KEY: must be unset…`                                       | a key is set in the shell or `apps/api/.env`                                | remove it; this provider never uses a key                                                     |
-| API exits: `Claude Code CLI uses "api_key"…`                                         | the CLI itself is set to an API key, helper or provider                     | `claude auth logout`, then `claude` and `/login` with your claude.ai account                  |
-| API exits: `Claude Code CLI not found`                                               | `claude` is not on the API's PATH                                           | install it, or set `CLAUDE_CLI_PATH=/absolute/path/to/claude` in `apps/api/.env`              |
-| `reason=timeout`                                                                     | no answer within the CLI deadline (`cliTimeoutMs`, 90 s, `coach.config.ts`) | send the API log lines `claude -p exit … in … ms, N output tokens` and `timed out after … ms` |
-| `reason=error`                                                                       | anything else (the API terminal logs the category, never the CLI's text)    | send the API terminal lines                                                                   |
+| You see                                                                                  | Meaning                                                                     | Do                                                                                            |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| "Claude Code is signed out on the computer running the app…", or `reason=login_required` | the CLI is not signed in, or its login expired                              | run `claude`, type `/login`; no restart needed                                                |
+| "Your Claude plan's usage limit is reached…", or `reason=rate_limited`                   | your plan's own limit (e.g. the session or weekly limit)                    | wait; `claude` shows when it resets. The app does not retry                                   |
+| API exits: `ANTHROPIC_API_KEY: must be unset…`                                           | a key is set in the shell or `apps/api/.env`                                | remove it; this provider never uses a key                                                     |
+| API exits: `Claude Code CLI uses "api_key"…`                                             | the CLI itself is set to an API key, helper or provider                     | `claude auth logout`, then `claude` and `/login` with your claude.ai account                  |
+| API exits: `Claude Code CLI not found`                                                   | `claude` is not on the API's PATH                                           | install it, or set `CLAUDE_CLI_PATH=/absolute/path/to/claude` in `apps/api/.env`              |
+| `reason=timeout`                                                                         | no answer within the CLI deadline (`cliTimeoutMs`, 90 s, `coach.config.ts`) | send the API log lines `claude -p exit … in … ms, N output tokens` and `timed out after … ms` |
+| `reason=error`                                                                           | anything else (the API terminal logs the category, never the CLI's text)    | send the API terminal lines                                                                   |
 
 ## Limits and what is not promised
 
-- **Policy.** Anthropic documents `claude -p` for scripts, and says it doesn't stop an end user from
-  signing in to the unmodified CLI with their own subscription. Plan limits "assume ordinary, individual
-  usage". No page names "a personal app that runs `claude -p`" as allowed or forbidden. Keep it personal,
-  and don't share access, host it or put it behind a tunnel. If you need certainty, ask Anthropic support.
 - **Billing.** Calls count against your plan's usage limits, not an API bill. The `total_cost_usd` in the CLI's
   JSON is a client-side estimate, not a charge. If you turned on paid extra usage for your plan on claude.ai,
   usage beyond the limit may be charged there: check your claude.ai settings if you want a hard stop.

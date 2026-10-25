@@ -1,6 +1,6 @@
 # Five-minute coach test with a real API key
 
-Goal: try the Claude-written questions on the hosted app for a few minutes, with a hard spending cap, then switch the coach off again. Use an **Anthropic API key** (`sk-ant-api…`) from the Console. Do **not** use Claude Code's `.credentials.json`: it holds subscription sign-in tokens, not an API key; the app cannot use them and using them outside Claude Code breaks Anthropic's terms.
+Goal: try the Claude-written questions on the hosted app for a few minutes, with a hard spending cap, then switch the coach off again. Use an **Anthropic API key** (`sk-ant-api…`) from the Console. Do **not** use Claude Code's `.credentials.json`: it holds subscription sign-in tokens, not an API key, and the app cannot use them.
 
 ## 1. Make a capped, throwaway key (Anthropic Console)
 

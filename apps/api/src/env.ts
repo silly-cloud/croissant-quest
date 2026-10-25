@@ -3,11 +3,6 @@ import { z } from "zod";
 const unsetIfEmpty = (v: unknown) =>
   typeof v === "string" && v.trim() === "" ? undefined : v;
 
-/** Interfaces that only this machine can reach. */
-export const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1"]);
-/** Hostnames (as `URL.hostname` gives them) that mean this machine. */
-export const LOCAL_NAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
-
 const limit = (def: number) =>
   z.preprocess(
     unsetIfEmpty,
@@ -25,7 +20,7 @@ export const EnvSchema = z
       .transform((v) => (v && v.trim() ? v.trim() : undefined)),
     /**
      * Which model client the coach uses. `anthropic` (default): the API with ANTHROPIC_API_KEY.
-     * `claude-cli`: the local Claude Code CLI and its own claude.ai login, no API key (ADR 0011). Never automatic.
+     * `claude-cli`: the local Claude Code CLI and its own claude.ai login, no API key. Never automatic.
      */
     COACH_PROVIDER: z.preprocess(
       unsetIfEmpty,
@@ -44,7 +39,7 @@ export const EnvSchema = z
         .regex(/^(claude|\/[^\0\n]+)$/, "must be `claude` or an absolute path")
         .default("claude")
     ),
-    /** Interface to listen on. Unset: all interfaces (Docker). claude-cli: loopback only, default 127.0.0.1. */
+    /** Interface to listen on. Unset: all interfaces. */
     HOST: z.preprocess(unsetIfEmpty, z.string().optional()),
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     /** Reduced to its origin: CORS compares against `Origin`, which never has a path or trailing slash. */
@@ -78,7 +73,7 @@ export const EnvSchema = z
   })
   .superRefine((e, ctx) => {
     if (e.COACH_PROVIDER !== "claude-cli") return;
-    // the subscription-backed coach must never be reachable from another machine, nor bill an API account
+    // the subscription-backed coach must never bill an API account
     const bad = (path: string, message: string) =>
       ctx.addIssue({ code: "custom", path: [path], message });
     if (e.ANTHROPIC_API_KEY)
@@ -91,23 +86,9 @@ export const EnvSchema = z
         "ANTHROPIC_AUTH_TOKEN",
         "must be unset with COACH_PROVIDER=claude-cli (it would bypass your claude.ai login)"
       );
-    if (e.HOST !== undefined && !LOOPBACK_HOSTS.has(e.HOST))
-      bad("HOST", "must be 127.0.0.1 or ::1 with COACH_PROVIDER=claude-cli");
-    if (!LOCAL_NAMES.has(new URL(e.WEB_ORIGIN).hostname))
-      bad(
-        "WEB_ORIGIN",
-        "must be http://localhost:<port> or http://127.0.0.1:<port> with COACH_PROVIDER=claude-cli"
-      );
-    if (e.TRUST_PROXY_HOPS !== 0)
-      bad(
-        "TRUST_PROXY_HOPS",
-        "must be 0 with COACH_PROVIDER=claude-cli (no reverse proxy in front of a local app)"
-      );
   })
   .transform((e) => ({
     ...e,
-    HOST:
-      e.HOST ?? (e.COACH_PROVIDER === "claude-cli" ? "127.0.0.1" : undefined),
     COOKIE_SECURE: e.COOKIE_SECURE
       ? e.COOKIE_SECURE === "true"
       : e.NODE_ENV === "production",

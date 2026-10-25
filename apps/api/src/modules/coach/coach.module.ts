@@ -22,7 +22,7 @@ import { CoachRateLimitGuard } from "./rate-limit.guard.js";
     {
       provide: COACH_CLIENT,
       inject: [ENV],
-      // the provider is chosen explicitly; there is no fallback from one to the other (ADR 0011)
+      // the provider is chosen explicitly; there is no fallback from one to the other
       useFactory: (env: Env) =>
         env.COACH_PROVIDER === "claude-cli"
           ? new ClaudeCliCoachClient({ bin: env.CLAUDE_CLI_PATH })

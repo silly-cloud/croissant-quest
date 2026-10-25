@@ -46,7 +46,7 @@ async function bootstrap() {
   else await app.listen(env.PORT);
   const coach =
     env.COACH_PROVIDER === "claude-cli"
-      ? "local Claude Code CLI, claude.ai subscription, this computer only"
+      ? "local Claude Code CLI, claude.ai subscription"
       : env.ANTHROPIC_API_KEY
         ? "enabled"
         : "disabled: no key";

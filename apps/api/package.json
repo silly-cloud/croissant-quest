@@ -6,7 +6,7 @@
   "scripts": {
     "generate": "prisma generate",
     "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
-    "dev:local": "COACH_PROVIDER=claude-cli HOST=127.0.0.1 WEB_ORIGIN=http://127.0.0.1:3000 tsx watch --env-file-if-exists=.env src/main.ts",
+    "dev:local": "COACH_PROVIDER=claude-cli WEB_ORIGIN=${WEB_ORIGIN:-http://127.0.0.1:3000} tsx watch --env-file-if-exists=.env src/main.ts",
     "build": "prisma generate && tsup",
     "start": "node --env-file-if-exists=.env dist/main.js",
     "lint": "eslint src test prisma",
